@@ -24,6 +24,7 @@ using Windows.Data.Xml.Dom;
 using Windows.Graphics.Imaging;
 using System.Threading.Tasks;
 using Windows.Storage.Search;
+using Windows.System;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
@@ -87,7 +88,7 @@ namespace Slideshow
         /// session. The state will be null the first time a page is visited.</param>
         private async void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
-            fileList = await GetImageList(KnownFolders.PicturesLibrary);
+            fileList = await BackgroundSlideshow.TileUpdater.GetImageList(KnownFolders.PicturesLibrary); // Change TileUpdater name
             StorageFile file = fileList[random.Next(0, fileList.Count)];
 
             int index;
@@ -121,6 +122,7 @@ namespace Slideshow
                 result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
             {
                 Register_Timer_Task(Constants.IndexList[index]);
+                Register_User_Task();
             }
         }
 
@@ -159,6 +161,12 @@ namespace Slideshow
         }
 
         #endregion
+
+        private async void Open_File_Click(object sender, RoutedEventArgs e)
+        {
+            var file = node.Value;
+            await Launcher.LaunchFileAsync(file);
+        }
 
         private async void Next_Click(object sender, RoutedEventArgs e)
         {
@@ -268,161 +276,177 @@ namespace Slideshow
             var registration = builder.Register();              
         }
 
-        private async static Task<IReadOnlyList<StorageFile>> GetImageList(StorageFolder folder)
+        private void Register_User_Task()
         {
-            List<String> fileType = new List<String>();
-            fileType.Add(".bmp");
-            fileType.Add(".jpg");
-            fileType.Add(".jpeg");
-            fileType.Add(".png");
-            fileType.Add(".tiff");
-            var queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileType);
-            queryOptions.FolderDepth = FolderDepth.Deep;
-
-            var query = folder.CreateFileQueryWithOptions(queryOptions);
-
-            var fileList = await query.GetFilesAsync();
-            if (fileList.Count < 1)
+            /* Timer Task */
+            foreach (var task in BackgroundTaskRegistration.AllTasks)
             {
-                Debug.WriteLine("No pictures found");
+                if (task.Value.Name == Constants.TaskName)
+                    return;
             }
-            else
-            {
-                Debug.WriteLine(fileList.Count + " pictures found");
-            }
-
-            return fileList;
+            Debug.WriteLine("Register timer task");
+            BackgroundTaskBuilder builder = new BackgroundTaskBuilder();
+            builder.Name = "USER_TASK";
+            builder.TaskEntryPoint = Constants.TaskEntry;
+            builder.SetTrigger(new SystemTrigger(SystemTriggerType.InternetAvailable, false));
+            var registration = builder.Register();
         }
 
-        private async Task<XmlDocument> CreateUpdate(StorageFile file)
-        {
-            try
-            {
-                if (file == null)
-                    return null;
+        //private async static Task<IReadOnlyList<StorageFile>> GetImageList(StorageFolder folder)
+        //{
+        //    List<String> fileType = new List<String>();
+        //    fileType.Add(".bmp");
+        //    fileType.Add(".jpg");
+        //    fileType.Add(".jpeg");
+        //    fileType.Add(".png");
+        //    fileType.Add(".tiff");
+        //    var queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileType);
+        //    queryOptions.FolderDepth = FolderDepth.Deep;
 
-                Debug.WriteLine("Got file " + file.Name);
+        //    var query = folder.CreateFileQueryWithOptions(queryOptions);
 
-                // create a stream from the file and decode the image
-                var fileStream = await file.OpenAsync(FileAccessMode.Read);
-                BitmapDecoder decoder = await BitmapDecoder.CreateAsync(fileStream);
-                Debug.WriteLine("Decoded");
-                uint height310x310, width310x310;
-                double ratio;
+        //    var fileList = await query.GetFilesAsync();
+        //    if (fileList.Count < 1)
+        //    {
+        //        Debug.WriteLine("No pictures found");
+        //    }
+        //    else
+        //    {
+        //        Debug.WriteLine(fileList.Count + " pictures found");
+        //    }
 
-                Debug.WriteLine("Original Width = " + decoder.PixelWidth);
-                Debug.WriteLine("Original Height = " + decoder.PixelHeight);
+        //    return fileList;
+        //}
 
-                ratio = (double)decoder.PixelHeight / decoder.PixelWidth;
+        //private async Task<XmlDocument> CreateUpdate(StorageFile file)
+        //{
+        //    try
+        //    {
+        //        if (file == null)
+        //            return null;
 
-                /* Landscape */
-                if (ratio <= 1)
-                {
-                    if (decoder.PixelWidth < 310)
-                    {
-                        Debug.WriteLine(file.Name + " is too small");
-                        return null;
-                    }
+        //        Debug.WriteLine("Got file " + file.Name);
 
-                    height310x310 = (uint)(310 * ratio);
-                    width310x310 = 310;
+        //        // create a stream from the file and decode the image
+        //        var fileStream = await file.OpenAsync(FileAccessMode.Read);
+        //        BitmapDecoder decoder = await BitmapDecoder.CreateAsync(fileStream);
+        //        Debug.WriteLine("Decoded");
+        //        uint height310x310, width310x310;
+        //        double ratio;
 
-                }
-                /* Portrait */
-                else
-                {
-                    if (decoder.PixelHeight < 310)
-                    {
-                        Debug.WriteLine(file.Name + " is too small");
-                        return null;
-                    }
+        //        Debug.WriteLine("Original Width = " + decoder.PixelWidth);
+        //        Debug.WriteLine("Original Height = " + decoder.PixelHeight);
 
-                    width310x310 = (uint)(310 * (1 / ratio));
-                    height310x310 = 310;
-                }
+        //        ratio = (double)decoder.PixelHeight / decoder.PixelWidth;
 
-                /* 310 x 310 */
-                BitmapTransform transform = new BitmapTransform() { ScaledHeight = height310x310, ScaledWidth = width310x310 };
-                PixelDataProvider pixelData = await decoder.GetPixelDataAsync(
-                        BitmapPixelFormat.Rgba8,
-                        BitmapAlphaMode.Straight,
-                        transform,
-                        ExifOrientationMode.RespectExifOrientation,
-                        ColorManagementMode.DoNotColorManage);
+        //        /* Landscape */
+        //        if (ratio <= 1)
+        //        {
+        //            if (decoder.PixelWidth < 310)
+        //            {
+        //                Debug.WriteLine(file.Name + " is too small");
+        //                return null;
+        //            }
 
-                var file310x310 = await ApplicationData.Current.LocalFolder.CreateFileAsync(file.DisplayName + file.FileType, CreationCollisionOption.GenerateUniqueName);
-                var destinationStream = await file310x310.OpenAsync(FileAccessMode.ReadWrite);
+        //            height310x310 = (uint)(310 * ratio);
+        //            width310x310 = 310;
 
-                BitmapEncoder encoder;
-                switch (Path.GetExtension(file310x310.Path).ToLower())
-                {
-                    case ".bmp":
-                        encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, destinationStream);
-                        break;
+        //        }
+        //        /* Portrait */
+        //        else
+        //        {
+        //            if (decoder.PixelHeight < 310)
+        //            {
+        //                Debug.WriteLine(file.Name + " is too small");
+        //                return null;
+        //            }
 
-                    case ".jpg":
-                    case ".jpeg":
-                        encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, destinationStream);
-                        break;
+        //            width310x310 = (uint)(310 * (1 / ratio));
+        //            height310x310 = 310;
+        //        }
 
-                    case ".png":
-                        encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, destinationStream);
-                        break;
+        //        /* 310 x 310 */
+        //        BitmapTransform transform = new BitmapTransform() { ScaledHeight = height310x310, ScaledWidth = width310x310 };
+        //        PixelDataProvider pixelData = await decoder.GetPixelDataAsync(
+        //                BitmapPixelFormat.Rgba8,
+        //                BitmapAlphaMode.Straight,
+        //                transform,
+        //                ExifOrientationMode.RespectExifOrientation,
+        //                ColorManagementMode.DoNotColorManage);
 
-                    case ".tiff":
-                        encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.TiffEncoderId, destinationStream);
-                        break;
+        //        var file310x310 = await ApplicationData.Current.LocalFolder.CreateFileAsync(file.DisplayName + file.FileType, CreationCollisionOption.GenerateUniqueName);
+        //        var destinationStream = await file310x310.OpenAsync(FileAccessMode.ReadWrite);
 
-                    default:
-                        return null;
-                }
+        //        BitmapEncoder encoder;
+        //        switch (Path.GetExtension(file310x310.Path).ToLower())
+        //        {
+        //            case ".bmp":
+        //                encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, destinationStream);
+        //                break;
 
-                encoder.SetPixelData(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Premultiplied, width310x310, height310x310, 96, 96, pixelData.DetachPixelData());
-                await encoder.FlushAsync();
-                destinationStream.Dispose();
+        //            case ".jpg":
+        //            case ".jpeg":
+        //                encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, destinationStream);
+        //                break;
 
-                Debug.WriteLine(file310x310.Path);
+        //            case ".png":
+        //                encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, destinationStream);
+        //                break;
 
-                /* Set tile update */
-                var tile1 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Image);
-                var tileImageAttributes = (XmlElement)tile1.GetElementsByTagName("image").Item(0);
-                tileImageAttributes.SetAttribute("src", "ms-appdata:///local/" + file310x310.Name);
-                tileImageAttributes.SetAttribute("alt", file.DisplayName);
-                var bindingElement = (XmlElement)tile1.GetElementsByTagName("binding").Item(0);
-                bindingElement.SetAttribute("branding", "none");
+        //            case ".tiff":
+        //                encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.TiffEncoderId, destinationStream);
+        //                break;
 
-                var tile2 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWide310x150Image);
-                tileImageAttributes = (XmlElement)tile2.GetElementsByTagName("image").Item(0);
-                tileImageAttributes.SetAttribute("src", "ms-appdata:///local/" + file310x310.Name);
-                tileImageAttributes.SetAttribute("alt", file.DisplayName);
-                bindingElement = (XmlElement)tile2.GetElementsByTagName("binding").Item(0);
-                bindingElement.SetAttribute("branding", "none");
+        //            default:
+        //                return null;
+        //        }
 
-                IXmlNode node = tile1.ImportNode(tile2.GetElementsByTagName("binding").Item(0), true);
-                tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
+        //        encoder.SetPixelData(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Premultiplied, width310x310, height310x310, 96, 96, pixelData.DetachPixelData());
+        //        await encoder.FlushAsync();
+        //        destinationStream.Dispose();
 
-                var tile3 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare310x310Image);
-                tileImageAttributes = (XmlElement)tile3.GetElementsByTagName("image").Item(0);
-                tileImageAttributes.SetAttribute("src", "ms-appdata:///local/" + file310x310.Name);
-                tileImageAttributes.SetAttribute("alt", file.DisplayName);
-                bindingElement = (XmlElement)tile3.GetElementsByTagName("binding").Item(0);
-                bindingElement.SetAttribute("branding", "none");
+        //        Debug.WriteLine(file310x310.Path);
 
-                node = tile1.ImportNode(bindingElement, true);
-                tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
+        //        /* Set tile update */
+        //        var tile1 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Image);
+        //        var tileImageAttributes = (XmlElement)tile1.GetElementsByTagName("image").Item(0);
+        //        tileImageAttributes.SetAttribute("src", "ms-appdata:///local/" + file310x310.Name);
+        //        tileImageAttributes.SetAttribute("alt", file.DisplayName);
+        //        var bindingElement = (XmlElement)tile1.GetElementsByTagName("binding").Item(0);
+        //        bindingElement.SetAttribute("branding", "none");
 
-                Debug.WriteLine("Done");
+        //        var tile2 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWide310x150Image);
+        //        tileImageAttributes = (XmlElement)tile2.GetElementsByTagName("image").Item(0);
+        //        tileImageAttributes.SetAttribute("src", "ms-appdata:///local/" + file310x310.Name);
+        //        tileImageAttributes.SetAttribute("alt", file.DisplayName);
+        //        bindingElement = (XmlElement)tile2.GetElementsByTagName("binding").Item(0);
+        //        bindingElement.SetAttribute("branding", "none");
 
-                return tile1;
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine("{0} Error ", e);
-                Debug.WriteLine(e.StackTrace);
-            }
+        //        IXmlNode node = tile1.ImportNode(tile2.GetElementsByTagName("binding").Item(0), true);
+        //        tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
 
-            return null;
-        }
+        //        var tile3 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare310x310Image);
+        //        tileImageAttributes = (XmlElement)tile3.GetElementsByTagName("image").Item(0);
+        //        tileImageAttributes.SetAttribute("src", "ms-appdata:///local/" + file310x310.Name);
+        //        tileImageAttributes.SetAttribute("alt", file.DisplayName);
+        //        bindingElement = (XmlElement)tile3.GetElementsByTagName("binding").Item(0);
+        //        bindingElement.SetAttribute("branding", "none");
+
+        //        node = tile1.ImportNode(bindingElement, true);
+        //        tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
+
+        //        Debug.WriteLine("Done");
+
+        //        return tile1;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Debug.WriteLine("{0} Error ", e);
+        //        Debug.WriteLine(e.StackTrace);
+        //    }
+
+        //    return null;
+        //}
 
         private async void Run(int seconds, IReadOnlyList<StorageFile> fileList)
         {
@@ -441,7 +465,7 @@ namespace Slideshow
             /* First background tile */
             StorageFile file;
             file = fileList[random.Next(0, fileList.Count)];
-            var tile = await CreateUpdate(file);
+            var tile = await BackgroundSlideshow.TileUpdater.CreateUpdate(file); // Change class name
             if (tile != null)
             {
                 updater.Update(new TileNotification(tile) { ExpirationTime = now.AddMinutes(1) });
@@ -456,7 +480,7 @@ namespace Slideshow
                 {
                     file = fileList[random.Next(0, fileList.Count)];
 
-                    tile = await CreateUpdate(file);
+                    tile = await BackgroundSlideshow.TileUpdater.CreateUpdate(file); // Change class name
                     if (tile != null)
                     {
                         ScheduledTileNotification scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddMinutes(1) };

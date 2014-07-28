@@ -26,7 +26,7 @@
   <ItemGroup>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\Slideshow.exe">
       <PackagePath>Slideshow.exe</PackagePath>
-      <Modified>2014-07-28T09:58:33.162</Modified>
+      <Modified>2014-07-28T21:05:07.152</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\SlideshowBackground\bin\Debug\BackgroundSlideshow.winmd">
       <PackagePath>BackgroundSlideshow.winmd</PackagePath>
@@ -77,7 +77,7 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\MainPage.xbf">
       <PackagePath>MainPage.xbf</PackagePath>
-      <Modified>2014-07-28T03:15:33.463</Modified>
+      <Modified>2014-07-28T21:05:06.659</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\Slideshow.xr.xml">
       <PackagePath>Slideshow.xr.xml</PackagePath>

@@ -14,10 +14,11 @@
         <AppBar x:Name="MainAppBar">
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <AppBarButton x:ConnectionId='4' Name="PreviousButton" Icon="Previous" Label="Previous" ToolTipService.ToolTip="Previous Image"                       />
-                    <AppBarButton x:ConnectionId='5' Name="NextButton" Icon="Next" Label="Next" ToolTipService.ToolTip="Next Image"                   />
+                    <AppBarButton x:ConnectionId='4' Name="OpenButton" Icon="OpenFile" Label="Open File" ToolTipService.ToolTip="Open File Location"                         />
+                    <AppBarButton x:ConnectionId='5' Name="PreviousButton" Icon="Previous" Label="Previous" ToolTipService.ToolTip="Previous Image"                       />
+                    <AppBarButton x:ConnectionId='6' Name="NextButton" Icon="Next" Label="Next" ToolTipService.ToolTip="Next Image"                   />
                 </StackPanel>
-                <StackPanel VerticalAlignment="Center" Margin="250,0">
+                <StackPanel VerticalAlignment="Center" Margin="280,0">
                     <TextBlock Name="FileName" FontSize="20" TextAlignment="Center" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
