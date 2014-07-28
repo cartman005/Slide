@@ -44,15 +44,15 @@ namespace Slideshow
         protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
 
-/*
 #if DEBUG
+            /*
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 this.DebugSettings.EnableFrameRateCounter = true;
             }
+            */
 #endif
- */
-
+ 
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
@@ -107,7 +107,6 @@ namespace Slideshow
         private async void OnSuspending(object sender, SuspendingEventArgs e)
         {
             var deferral = e.SuspendingOperation.GetDeferral();
-
             await SuspensionManager.SaveAsync();
             deferral.Complete();
         }

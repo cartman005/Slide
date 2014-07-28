@@ -1,0 +1,42 @@
+﻿<Page
+    x:Name="pageRoot"
+    x:Class="Slideshow.MainPage"
+    DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Slideshow"
+    xmlns:common="using:Slideshow.Common"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.BottomAppBar>
+        <AppBar x:Name="MainAppBar">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <AppBarButton x:ConnectionId='4' Name="PreviousButton" Icon="Previous" Label="Previous" ToolTipService.ToolTip="Previous Image"                       />
+                    <AppBarButton x:ConnectionId='5' Name="NextButton" Icon="Next" Label="Next" ToolTipService.ToolTip="Next Image"                   />
+                </StackPanel>
+                <StackPanel VerticalAlignment="Center" Margin="250,0">
+                    <TextBlock Name="FileName" FontSize="20" TextAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <AppBarButton x:ConnectionId='1' Name="PlayButton" Icon="Play" Label="Play" ToolTipService.ToolTip="Play"                    Visibility="Collapsed"/>
+                    <AppBarButton x:ConnectionId='2' Name="PauseButton" Icon="Pause" Label="Pause" ToolTipService.ToolTip="Pause"                    />
+                    <ComboBox x:ConnectionId='3' Name="Interval"                                     Width="126" Height="30" VerticalAlignment="Center" PlaceholderText="Select Interval">
+                        <x:String>5 seconds</x:String>
+                        <x:String>10 seconds</x:String>
+                        <x:String>30 seconds</x:String>
+                        <x:String>1 minute</x:String>
+                        <x:String>3 minutes</x:String>
+                    </ComboBox>
+                </StackPanel>
+            </Grid>
+        </AppBar>
+    </Page.BottomAppBar>
+
+    <Grid Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
+        <Image x:Name="MainImage" HorizontalAlignment="Center" Height="768" VerticalAlignment="Center" Width="1366"/>
+    </Grid>
+</Page>
+

@@ -1,4 +1,5 @@
-﻿using Slideshow.Common;
+﻿using BackgroundSlideshow;
+using Slideshow.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,6 +19,11 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Notifications;
+using Windows.Data.Xml.Dom;
+using Windows.Graphics.Imaging;
+using System.Threading.Tasks;
+using Windows.Storage.Search;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
@@ -28,14 +34,6 @@ namespace Slideshow
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private const string TIMER_TASK_NAME = "SlideshowTimer";
-        private const string USER_PRESENT_TASK_NAME = "SlideshowUserPresent";
-        private const string TASK_ENTRY = "SlideshowBackground.TileUpdater";
-        public const string SETTINGS_NAME = "Interval";
-        private const int LIST_LIMIT = 100;
-        public const int DEFAULT_INTERVAL_INDEX = 2;
-        public static readonly int[] INDEX_LIST = { 5, 10, 30, 60, 180 };
-
         private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
         private LinkedList<StorageFile> imageList;
@@ -89,20 +87,20 @@ namespace Slideshow
         /// session. The state will be null the first time a page is visited.</param>
         private async void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
-            fileList = await GetImages.GetImageList(KnownFolders.PicturesLibrary);
+            fileList = await GetImageList(KnownFolders.PicturesLibrary);
             StorageFile file = fileList[random.Next(0, fileList.Count)];
 
             int index;
-            if (settings.Values.ContainsKey(SETTINGS_NAME))
+            if (settings.Values.ContainsKey(Constants.SettingsName))
             {
-                index = (int)(settings.Values[SETTINGS_NAME]);
+                index = (int)(settings.Values[Constants.SettingsName]);
             }
             else
             {
-                index = DEFAULT_INTERVAL_INDEX;
+                index = Constants.DefaultIntervalIndex;
             }
 
-            //((ComboBox)FindName("Interval")).SelectedIndex = index;
+            ((ComboBox)FindName("Interval")).SelectedIndex = index;
 
             /* Set image */
             imageList = new LinkedList<StorageFile>();
@@ -122,8 +120,7 @@ namespace Slideshow
             if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity ||
                 result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
             {
-                Register_Timer_Task(INDEX_LIST[index]);
-                //Register_User_Task();
+                Register_Timer_Task(Constants.IndexList[index]);
             }
         }
 
@@ -172,7 +169,7 @@ namespace Slideshow
                     var file = fileList[random.Next(0, fileList.Count)];
                     imageList.AddAfter(node, file);
 
-                    if (imageList.Count > LIST_LIMIT)
+                    if (imageList.Count > Constants.ListLimit)
                     {
                         imageList.RemoveFirst();
                     }
@@ -201,7 +198,7 @@ namespace Slideshow
                     var file = fileList[random.Next(0, fileList.Count)];
                     imageList.AddBefore(node, file);
 
-                    if (imageList.Count > LIST_LIMIT)
+                    if (imageList.Count > Constants.ListLimit)
                     {
                         imageList.RemoveLast();
                     }
@@ -245,14 +242,14 @@ namespace Slideshow
             Debug.WriteLine("Interval changed");
             int index = ((ComboBox)FindName("Interval")).SelectedIndex;
 
-            settings.Values[SETTINGS_NAME] = index;
+            settings.Values[Constants.SettingsName] = index;
 
-            timer.Interval = TimeSpan.FromSeconds(INDEX_LIST[index]);
+            timer.Interval = TimeSpan.FromSeconds(Constants.IndexList[index]);
 
             if (!timer.IsEnabled)
                 timer.Start();
 
-            GetImages.Run(INDEX_LIST[index], fileList);
+            Run(Constants.IndexList[index], fileList);
         }
 
         private void Register_Timer_Task(int seconds)
@@ -260,31 +257,219 @@ namespace Slideshow
             /* Timer Task */
             foreach (var task in BackgroundTaskRegistration.AllTasks)
             {
-                if (task.Value.Name == TIMER_TASK_NAME)
+                if (task.Value.Name == Constants.TaskName)
                     return;
             }
             Debug.WriteLine("Register timer task");
             BackgroundTaskBuilder builder = new BackgroundTaskBuilder();
-            builder.Name = TIMER_TASK_NAME;
-            builder.TaskEntryPoint = TASK_ENTRY;
+            builder.Name = Constants.TaskName;
+            builder.TaskEntryPoint = Constants.TaskEntry;
             builder.SetTrigger(new TimeTrigger(15, false));
             var registration = builder.Register();              
         }
 
-        private void Register_User_Task()
-        {            
-            /* User Present Task */
-            foreach (var task in BackgroundTaskRegistration.AllTasks)
+        private async static Task<IReadOnlyList<StorageFile>> GetImageList(StorageFolder folder)
+        {
+            List<String> fileType = new List<String>();
+            fileType.Add(".bmp");
+            fileType.Add(".jpg");
+            fileType.Add(".jpeg");
+            fileType.Add(".png");
+            fileType.Add(".tiff");
+            var queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileType);
+            queryOptions.FolderDepth = FolderDepth.Deep;
+
+            var query = folder.CreateFileQueryWithOptions(queryOptions);
+
+            var fileList = await query.GetFilesAsync();
+            if (fileList.Count < 1)
             {
-                if (task.Value.Name == USER_PRESENT_TASK_NAME)
-                    return;
+                Debug.WriteLine("No pictures found");
             }
-            Debug.WriteLine("Register user task");
-            BackgroundTaskBuilder builder = new BackgroundTaskBuilder();
-            builder.Name = USER_PRESENT_TASK_NAME;
-            builder.TaskEntryPoint = TASK_ENTRY;
-            builder.SetTrigger(new SystemTrigger(SystemTriggerType.NetworkStateChange, false));
-            var registration = builder.Register();
+            else
+            {
+                Debug.WriteLine(fileList.Count + " pictures found");
+            }
+
+            return fileList;
+        }
+
+        private async Task<XmlDocument> CreateUpdate(StorageFile file)
+        {
+            try
+            {
+                if (file == null)
+                    return null;
+
+                Debug.WriteLine("Got file " + file.Name);
+
+                // create a stream from the file and decode the image
+                var fileStream = await file.OpenAsync(FileAccessMode.Read);
+                BitmapDecoder decoder = await BitmapDecoder.CreateAsync(fileStream);
+                Debug.WriteLine("Decoded");
+                uint height310x310, width310x310;
+                double ratio;
+
+                Debug.WriteLine("Original Width = " + decoder.PixelWidth);
+                Debug.WriteLine("Original Height = " + decoder.PixelHeight);
+
+                ratio = (double)decoder.PixelHeight / decoder.PixelWidth;
+
+                /* Landscape */
+                if (ratio <= 1)
+                {
+                    if (decoder.PixelWidth < 310)
+                    {
+                        Debug.WriteLine(file.Name + " is too small");
+                        return null;
+                    }
+
+                    height310x310 = (uint)(310 * ratio);
+                    width310x310 = 310;
+
+                }
+                /* Portrait */
+                else
+                {
+                    if (decoder.PixelHeight < 310)
+                    {
+                        Debug.WriteLine(file.Name + " is too small");
+                        return null;
+                    }
+
+                    width310x310 = (uint)(310 * (1 / ratio));
+                    height310x310 = 310;
+                }
+
+                /* 310 x 310 */
+                BitmapTransform transform = new BitmapTransform() { ScaledHeight = height310x310, ScaledWidth = width310x310 };
+                PixelDataProvider pixelData = await decoder.GetPixelDataAsync(
+                        BitmapPixelFormat.Rgba8,
+                        BitmapAlphaMode.Straight,
+                        transform,
+                        ExifOrientationMode.RespectExifOrientation,
+                        ColorManagementMode.DoNotColorManage);
+
+                var file310x310 = await ApplicationData.Current.LocalFolder.CreateFileAsync(file.DisplayName + file.FileType, CreationCollisionOption.GenerateUniqueName);
+                var destinationStream = await file310x310.OpenAsync(FileAccessMode.ReadWrite);
+
+                BitmapEncoder encoder;
+                switch (Path.GetExtension(file310x310.Path).ToLower())
+                {
+                    case ".bmp":
+                        encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, destinationStream);
+                        break;
+
+                    case ".jpg":
+                    case ".jpeg":
+                        encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, destinationStream);
+                        break;
+
+                    case ".png":
+                        encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, destinationStream);
+                        break;
+
+                    case ".tiff":
+                        encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.TiffEncoderId, destinationStream);
+                        break;
+
+                    default:
+                        return null;
+                }
+
+                encoder.SetPixelData(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Premultiplied, width310x310, height310x310, 96, 96, pixelData.DetachPixelData());
+                await encoder.FlushAsync();
+                destinationStream.Dispose();
+
+                Debug.WriteLine(file310x310.Path);
+
+                /* Set tile update */
+                var tile1 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Image);
+                var tileImageAttributes = (XmlElement)tile1.GetElementsByTagName("image").Item(0);
+                tileImageAttributes.SetAttribute("src", "ms-appdata:///local/" + file310x310.Name);
+                tileImageAttributes.SetAttribute("alt", file.DisplayName);
+                var bindingElement = (XmlElement)tile1.GetElementsByTagName("binding").Item(0);
+                bindingElement.SetAttribute("branding", "none");
+
+                var tile2 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWide310x150Image);
+                tileImageAttributes = (XmlElement)tile2.GetElementsByTagName("image").Item(0);
+                tileImageAttributes.SetAttribute("src", "ms-appdata:///local/" + file310x310.Name);
+                tileImageAttributes.SetAttribute("alt", file.DisplayName);
+                bindingElement = (XmlElement)tile2.GetElementsByTagName("binding").Item(0);
+                bindingElement.SetAttribute("branding", "none");
+
+                IXmlNode node = tile1.ImportNode(tile2.GetElementsByTagName("binding").Item(0), true);
+                tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
+
+                var tile3 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare310x310Image);
+                tileImageAttributes = (XmlElement)tile3.GetElementsByTagName("image").Item(0);
+                tileImageAttributes.SetAttribute("src", "ms-appdata:///local/" + file310x310.Name);
+                tileImageAttributes.SetAttribute("alt", file.DisplayName);
+                bindingElement = (XmlElement)tile3.GetElementsByTagName("binding").Item(0);
+                bindingElement.SetAttribute("branding", "none");
+
+                node = tile1.ImportNode(bindingElement, true);
+                tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
+
+                Debug.WriteLine("Done");
+
+                return tile1;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("{0} Error ", e);
+                Debug.WriteLine(e.StackTrace);
+            }
+
+            return null;
+        }
+
+        private async void Run(int seconds, IReadOnlyList<StorageFile> fileList)
+        {
+            var updater = TileUpdateManager.CreateTileUpdaterForApplication();
+            updater.EnableNotificationQueue(true);
+            updater.Clear();
+
+            await ApplicationData.Current.ClearAsync(ApplicationDataLocality.Local);
+
+            DateTime now = DateTime.Now;
+            DateTime planTill = now.AddMinutes(30);
+            DateTime updateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0).AddMinutes(1);
+
+            var random = new Random(); // this should be placed in a static member variable, but is ok for this example
+
+            /* First background tile */
+            StorageFile file;
+            file = fileList[random.Next(0, fileList.Count)];
+            var tile = await CreateUpdate(file);
+            if (tile != null)
+            {
+                updater.Update(new TileNotification(tile) { ExpirationTime = now.AddMinutes(1) });
+            }
+
+            for (var startPlanning = updateTime; startPlanning < planTill; startPlanning = startPlanning.AddSeconds(seconds))
+            {
+                Debug.WriteLine(startPlanning);
+                Debug.WriteLine(planTill);
+
+                try
+                {
+                    file = fileList[random.Next(0, fileList.Count)];
+
+                    tile = await CreateUpdate(file);
+                    if (tile != null)
+                    {
+                        ScheduledTileNotification scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddMinutes(1) };
+                        updater.AddToSchedule(scheduledNotification);
+
+                        Debug.WriteLine("schedule for: " + startPlanning);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine("exception: " + e.Message);
+                }
+            }
         }
     }
 }

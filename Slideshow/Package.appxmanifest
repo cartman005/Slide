@@ -27,7 +27,7 @@
         <m2:SplashScreen Image="Assets\SplashScreen.png" />
       </m2:VisualElements>
       <Extensions>
-        <Extension Category="windows.backgroundTasks" EntryPoint="SlideshowBackground.TileUpdater">
+        <Extension Category="windows.backgroundTasks" EntryPoint="BackgroundSlideshow.TileUpdater">
           <BackgroundTasks>
             <Task Type="systemEvent" />
             <Task Type="timer" />

@@ -7,8 +7,8 @@
     <SolutionConfiguration>Debug|AnyCPU</SolutionConfiguration>
     <PackageArchitecture>neutral</PackageArchitecture>
     <PackageIdentityName>09863c68-5f10-4ed6-853c-d466e1d1386e</PackageIdentityName>
-    <IntermediateOutputPath>C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\obj\Debug\</IntermediateOutputPath>
-    <RegisteredManifestChecksum>507C916F2F15A2B3F02008E9463A0515C5C5FAF22A64D890C3FCD48AC788E104</RegisteredManifestChecksum>
+    <IntermediateOutputPath>C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\obj\Debug\</IntermediateOutputPath>
+    <RegisteredManifestChecksum>192861E976978105E937878D93EBBBF469E347FADC55044EC8CF546EBB3E6ED0</RegisteredManifestChecksum>
     <RegisteredPackageMoniker>09863c68-5f10-4ed6-853c-d466e1d1386e_1.0.0.0_neutral__4rbkc058yf47p</RegisteredPackageMoniker>
     <RegisteredUserModeAppID>09863c68-5f10-4ed6-853c-d466e1d1386e_4rbkc058yf47p!App</RegisteredUserModeAppID>
     <RegisteredPackageID>09863c68-5f10-4ed6-853c-d466e1d1386e</RegisteredPackageID>
@@ -17,71 +17,75 @@
     <JitOptimizationSuppressed>True</JitOptimizationSuppressed>
   </PropertyGroup>
   <ItemGroup>
-    <AppXManifest Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\bin\Debug\AppxManifest.xml">
+    <AppXManifest Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-07-27T23:03:54.806</Modified>
+      <Modified>2014-07-28T09:58:34.243</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\bin\Debug\Slideshow.exe">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\Slideshow.exe">
       <PackagePath>Slideshow.exe</PackagePath>
-      <Modified>2014-07-27T23:35:57.143</Modified>
+      <Modified>2014-07-28T09:58:33.162</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\Assets\BadgeLogo.scale-100.png">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\SlideshowBackground\bin\Debug\BackgroundSlideshow.winmd">
+      <PackagePath>BackgroundSlideshow.winmd</PackagePath>
+      <Modified>2014-07-28T09:58:30.488</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\BadgeLogo.scale-100.png">
       <PackagePath>Assets\BadgeLogo.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2014-07-26T18:03:53.960</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\Assets\Logo.scale-100.png">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Logo.scale-100.png">
       <PackagePath>Assets\Logo.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2013-07-31T15:01:26.000</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\Assets\SmallLogo.scale-100.png">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\SmallLogo.scale-100.png">
       <PackagePath>Assets\SmallLogo.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2013-07-31T15:01:26.000</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\Assets\SplashScreen.scale-100.png">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\SplashScreen.scale-100.png">
       <PackagePath>Assets\SplashScreen.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2013-07-31T15:01:26.000</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\Assets\Square310x310Logo.scale-100.png">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Square310x310Logo.scale-100.png">
       <PackagePath>Assets\Square310x310Logo.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2014-07-23T01:27:24.000</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\Assets\StoreLogo.scale-100.png">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\StoreLogo.scale-100.png">
       <PackagePath>Assets\StoreLogo.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2013-07-31T15:01:26.000</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\Assets\Wide310x150Logo.scale-100.png">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Wide310x150Logo.scale-100.png">
       <PackagePath>Assets\Wide310x150Logo.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2013-10-27T19:56:12.000</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\Common\ReadMe.txt">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Common\ReadMe.txt">
       <PackagePath>Common\ReadMe.txt</PackagePath>
       <Modified>2014-07-26T17:03:53.723</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\bin\Debug\App.xbf">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\App.xbf">
       <PackagePath>App.xbf</PackagePath>
-      <Modified>2014-07-26T17:15:13.918</Modified>
+      <Modified>2014-07-28T03:15:33.462</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\bin\Debug\MainPage.xbf">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\MainPage.xbf">
       <PackagePath>MainPage.xbf</PackagePath>
-      <Modified>2014-07-27T23:03:52.006</Modified>
+      <Modified>2014-07-28T03:15:33.463</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\bin\Debug\Slideshow.xr.xml">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\Slideshow.xr.xml">
       <PackagePath>Slideshow.xr.xml</PackagePath>
       <Modified>2014-07-27T04:32:32.520</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Dropbox\Windows 8 App\Slideshow\Slideshow\bin\Debug\resources.pri">
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
-      <Modified>2014-07-27T23:03:53.680</Modified>
+      <Modified>2014-07-28T09:53:28.779</Modified>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>
