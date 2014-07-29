@@ -166,7 +166,9 @@ namespace Kozlowski.Slideshow
         private async void Open_File_Click(object sender, RoutedEventArgs e)
         {
             var file = node.Value;
-            await Launcher.LaunchFileAsync(file);
+            LauncherOptions launcherOptions = new LauncherOptions();
+            launcherOptions.DisplayApplicationPicker = true;
+            await Launcher.LaunchFileAsync(file, launcherOptions);
         }
 
         private async void Next_Click(object sender, RoutedEventArgs e)
