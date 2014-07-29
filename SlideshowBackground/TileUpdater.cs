@@ -41,8 +41,6 @@ namespace Kozlowski.Slideshow.Background
 
             Debug.WriteLine("Using index " + index);
 
-            //fileList = (List<StorageFile>) await GetImageList(KnownFolders.PicturesLibrary);
-
             DoWork(Constants.IndexList[index]);
             Debug.WriteLine("Background task done");
             defferal.Complete();

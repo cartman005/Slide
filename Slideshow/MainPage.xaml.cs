@@ -25,6 +25,8 @@ using Windows.Graphics.Imaging;
 using System.Threading.Tasks;
 using Windows.Storage.Search;
 using Windows.System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
@@ -40,9 +42,10 @@ namespace Kozlowski.Slideshow
         private LinkedList<StorageFile> imageList;
         private LinkedListNode<StorageFile> node;
         public static Random random;
-        private List<StorageFile> fileList;
+        private IReadOnlyList<StorageFile> fileList;
         private DispatcherTimer timer;
         private ApplicationDataContainer settings = null;
+        private ObservableCollection<ListItem> collection = new ObservableCollection<ListItem>();
 
         /// <summary>
         /// This can be changed to a strongly typed view model.
@@ -71,7 +74,7 @@ namespace Kozlowski.Slideshow
             random = new Random();
             timer = new DispatcherTimer();
             timer.Tick += Next_Click;
-                        
+
             settings = ApplicationData.Current.RoamingSettings;
         }
 
@@ -88,10 +91,8 @@ namespace Kozlowski.Slideshow
         /// session. The state will be null the first time a page is visited.</param>
         private async void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
-            fileList = new List<StorageFile>();
-            fileList.AddRange(await Kozlowski.Slideshow.Background.TileUpdater.GetImageList(KnownFolders.PicturesLibrary)); // Change TileUpdater name   
-            StorageFile file = fileList[random.Next(0, fileList.Count)]; // What if count is 0?
-
+            fileList = await Kozlowski.Slideshow.Background.TileUpdater.GetImageList(KnownFolders.PicturesLibrary); // Change TileUpdater name   
+            
             int index;
             if (settings.Values.ContainsKey(Constants.SettingsName))
             {
@@ -103,28 +104,18 @@ namespace Kozlowski.Slideshow
             }
 
             ((ComboBox)FindName("Interval")).SelectedIndex = index;
-
-            /* Set image */
-            imageList = new LinkedList<StorageFile>();
-            if (file != null)
-            {
-                IRandomAccessStream fileStream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
-                BitmapImage bitmapImage = new BitmapImage();
-                await bitmapImage.SetSourceAsync(fileStream);
-                MainImage.Source = bitmapImage;
-                imageList.AddFirst(file);
-                node = imageList.First;
-                ((TextBlock)FindName("FileName")).Text = file.DisplayName;
-            }
-
+            
             /* Register background task and create first tile updates */
             var result = await BackgroundExecutionManager.RequestAccessAsync();
             if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity ||
                 result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
             {
                 Register_Timer_Task(Constants.IndexList[index]);
-                //Register_User_Task();
+                Register_User_Task();
             }
+
+            this.DataContext = new ViewModel();
+
         }
 
         /// <summary>
@@ -171,72 +162,6 @@ namespace Kozlowski.Slideshow
             await Launcher.LaunchFileAsync(file, launcherOptions);
         }
 
-        private async void Next_Click(object sender, RoutedEventArgs e)
-        {
-            if (node != null)
-            { 
-                if (node == imageList.Last)
-                {
-
-                    if (fileList.Count < 1)
-                    {
-                        fileList.AddRange(await Kozlowski.Slideshow.Background.TileUpdater.GetImageList(KnownFolders.PicturesLibrary));
-                    }
-                    int index = random.Next(0, fileList.Count);
-                    var file = fileList[index];
-                    fileList.RemoveAt(index);
-
-                    imageList.AddAfter(node, file);
-
-                    if (imageList.Count > Constants.ListLimit)
-                    {
-                        imageList.RemoveFirst();
-                    }
-                }
-
-                node = node.Next;
-
-                IRandomAccessStream fileStream = await node.Value.OpenAsync(Windows.Storage.FileAccessMode.Read);
-                BitmapImage bitmapImage = new BitmapImage();
-                await bitmapImage.SetSourceAsync(fileStream);
-                MainImage.Source = bitmapImage;
-                ((TextBlock)FindName("FileName")).Text = node.Value.DisplayName;
-
-                /* Reset timer */
-                timer.Stop();
-                timer.Start();
-            }
-        }
-
-        private async void Previous_Click(object sender, RoutedEventArgs e)
-        {
-            if (node != null)
-            {
-                if (node == imageList.First)
-                {
-                    var file = fileList[random.Next(0, fileList.Count)];
-
-                    imageList.AddBefore(node, file);
-                    if (imageList.Count > Constants.ListLimit)
-                    {
-                        imageList.RemoveLast();
-                    }
-                }
-
-                node = node.Previous;
-
-                IRandomAccessStream fileStream = await node.Value.OpenAsync(Windows.Storage.FileAccessMode.Read);
-                BitmapImage bitmapImage = new BitmapImage();
-                await bitmapImage.SetSourceAsync(fileStream);
-                MainImage.Source = bitmapImage;
-                ((TextBlock)MainAppBar.FindName("FileName")).Text = node.Value.DisplayName;
-
-                /* Reset timer */
-                timer.Stop();
-                timer.Start();
-            }
-        }
-
         private void Play_Click(object sender, RoutedEventArgs e)
         {
             ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
@@ -253,7 +178,7 @@ namespace Kozlowski.Slideshow
 
         private void Next_Click(object sender, object e)
         {
-            Next_Click(sender, null);
+            
         }
 
         private void Interval_Changed(object sender, SelectionChangedEventArgs e)
@@ -301,6 +226,51 @@ namespace Kozlowski.Slideshow
             builder.TaskEntryPoint = Constants.TaskEntry;
             builder.SetTrigger(new SystemTrigger(SystemTriggerType.InternetAvailable, false));
             var registration = builder.Register();
+        }
+
+        private void List_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+    }
+    
+    public class ViewModel
+    {
+        public ObservableCollection<ListItem> Collection { get; set; }
+
+        public ViewModel()
+        {
+            Collection = new ObservableCollection<ListItem>();
+            Populate_View(Collection);
+        }
+
+        private async void Populate_View(ObservableCollection<ListItem> col)
+        {
+            
+            IReadOnlyList<StorageFile> fileList = await Kozlowski.Slideshow.Background.TileUpdater.GetImageList(KnownFolders.PicturesLibrary);
+            foreach(StorageFile f in fileList)
+            {
+                Debug.WriteLine(f.Path);
+                col.Add(new ListItem { Image = new BitmapImage(new Uri(f.Path, UriKind.RelativeOrAbsolute)) });
+            }
+        }
+    }
+
+    public class ListItem : INotifyPropertyChanged
+    {
+        private BitmapImage i;
+
+        public BitmapImage Image { get { return i; } set { i = value; NotifyPropertyChanged("Source"); } }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged(string Obj)
+        {
+            if (PropertyChanged != null)
+            {
+                Debug.WriteLine("PROPERTY CHANGED");
+                this.PropertyChanged(this, new PropertyChangedEventArgs(Obj));
+            }
         }
     }
 }
