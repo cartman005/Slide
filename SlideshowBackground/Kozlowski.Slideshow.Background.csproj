@@ -7,8 +7,8 @@
     <ProjectGuid>{11B4A61C-ACFA-44AE-BB84-96BC1EE9F163}</ProjectGuid>
     <OutputType>winmdobj</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BackgroundSlideshow</RootNamespace>
-    <AssemblyName>BackgroundSlideshow</AssemblyName>
+    <RootNamespace>Kozlowski.Slideshow.Background</RootNamespace>
+    <AssemblyName>Kozlowski.Slideshow.Background</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
     <MinimumVisualStudioVersion>12</MinimumVisualStudioVersion>

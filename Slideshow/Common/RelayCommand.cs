@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Slideshow.Common
+namespace Kozlowski.Slideshow.Common
 {
     /// <summary>
     /// A command whose sole purpose is to relay its functionality 

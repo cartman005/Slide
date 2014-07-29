@@ -9,7 +9,7 @@ using Windows.Storage;
 using Windows.Storage.Search;
 using Windows.UI.Notifications;
 
-namespace BackgroundSlideshow
+namespace Kozlowski.Slideshow.Background
 {
     public sealed class GetImages
     {

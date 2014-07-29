@@ -7,8 +7,8 @@
     <ProjectGuid>{75D508C3-4290-42EC-BEFB-FA2B0712FB88}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Slideshow</RootNamespace>
-    <AssemblyName>Slideshow</AssemblyName>
+    <RootNamespace>Kozlowski.Slideshow</RootNamespace>
+    <AssemblyName>Kozlowski.Slideshow</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
     <MinimumVisualStudioVersion>12</MinimumVisualStudioVersion>
@@ -102,10 +102,6 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
@@ -145,9 +141,9 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SlideshowBackground\BackgroundSlideshow.csproj">
+    <ProjectReference Include="..\SlideshowBackground\Kozlowski.Slideshow.Background.csproj">
       <Project>{11b4a61c-acfa-44ae-bb84-96bc1ee9f163}</Project>
-      <Name>BackgroundSlideshow</Name>
+      <Name>Kozlowski.Slideshow.Background</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">

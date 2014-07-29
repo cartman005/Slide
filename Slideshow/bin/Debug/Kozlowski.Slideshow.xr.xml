@@ -61,6 +61,6 @@
       <RootProperty Name="VerticalAlignment" />
       <RootProperty Name="Width" />
     </RootType>
-    <RootType FullName="Slideshow.MainPage" />
+    <RootType FullName="Kozlowski.Slideshow.MainPage" />
   </Roots.RootTypes>
 </Roots>

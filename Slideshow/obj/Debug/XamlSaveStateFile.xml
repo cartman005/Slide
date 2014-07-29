@@ -1,6 +1,6 @@
 <XamlCompilerSaveState>
   <ReferenceAssemblyList>
-    <LocalAssembly PathName="c:\users\dan kozlowski\documents\github\slideshow\slideshow\obj\debug\intermediatexaml\slideshow.exe" HashGuid="167611d2-a4d4-ae79-abbf-6293eba65013" />
-    <ReferenceAssembly PathName="c:\users\dan kozlowski\documents\github\slideshow\slideshowbackground\bin\debug\backgroundslideshow.winmd" HashGuid="2c63724f-7ebc-e806-2425-0eb89b7d55e1" />
+    <LocalAssembly PathName="c:\users\dan kozlowski\documents\github\slideshow\slideshow\obj\debug\intermediatexaml\kozlowski.slideshow.exe" HashGuid="91cc632b-07d9-bfec-82d7-882d86f47d1a" />
+    <ReferenceAssembly PathName="c:\users\dan kozlowski\documents\github\slideshow\slideshowbackground\bin\debug\kozlowski.slideshow.background.winmd" HashGuid="7143643d-2e4d-58be-07e3-b6ced37838cc" />
   </ReferenceAssemblyList>
 </XamlCompilerSaveState>

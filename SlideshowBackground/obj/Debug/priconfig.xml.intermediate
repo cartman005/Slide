@@ -26,8 +26,8 @@
       <qualifier name="Configuration" value="" />
       <qualifier name="AlternateForm" value="" />
     </default>
-    <indexer-config type="RESW" convertDotsToSlashes="true" initialPath="BackgroundSlideshow" />
-    <indexer-config type="RESJSON" initialPath="BackgroundSlideshow" />
+    <indexer-config type="RESW" convertDotsToSlashes="true" initialPath="Kozlowski.Slideshow.Background" />
+    <indexer-config type="RESJSON" initialPath="Kozlowski.Slideshow.Background" />
     <indexer-config type="RESFILES" qualifierDelimiter="." />
   </index>
   <index root="\" startIndexAt="obj\Debug\pri.resfiles">

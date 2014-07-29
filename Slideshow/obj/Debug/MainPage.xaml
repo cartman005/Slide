@@ -1,11 +1,11 @@
 ﻿<Page
     x:Name="pageRoot"
-    x:Class="Slideshow.MainPage"
+    x:Class="Kozlowski.Slideshow.MainPage"
     DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Slideshow"
-    xmlns:common="using:Slideshow.Common"
+    xmlns:local="using:Kozlowski.Slideshow"
+    xmlns:common="using:Kozlowski.Slideshow.Common"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -14,7 +14,7 @@
         <AppBar x:Name="MainAppBar">
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <AppBarButton x:ConnectionId='4' Name="OpenButton" Icon="OpenFile" Label="Open File" ToolTipService.ToolTip="Open File Location"                         />
+                    <AppBarButton x:ConnectionId='4' Name="OpenButton" Icon="OpenFile" Label="Open File" ToolTipService.ToolTip="Open File with Default Application"                         />
                     <AppBarButton x:ConnectionId='5' Name="PreviousButton" Icon="Previous" Label="Previous" ToolTipService.ToolTip="Previous Image"                       />
                     <AppBarButton x:ConnectionId='6' Name="NextButton" Icon="Next" Label="Next" ToolTipService.ToolTip="Next Image"                   />
                 </StackPanel>
