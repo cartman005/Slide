@@ -11,20 +11,20 @@
     mc:Ignorable="d">
 
     <Page.BottomAppBar>
-        <AppBar x:Name="MainAppBar">
+        <AppBar x:ConnectionId='1' x:Name="MainAppBar"                           >
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <AppBarButton x:ConnectionId='4' Name="OpenButton" Icon="OpenFile" Label="Open File" ToolTipService.ToolTip="Open File with Default Application"                         />
-                    <AppBarButton x:ConnectionId='5' Name="PreviousButton" Icon="Previous" Label="Previous" ToolTipService.ToolTip="Previous Image"                       />
-                    <AppBarButton x:ConnectionId='6' Name="NextButton" Icon="Next" Label="Next" ToolTipService.ToolTip="Next Image"                   />
+                    <AppBarButton x:ConnectionId='5' Name="OpenButton" Icon="OpenWith" Label="Open With" ToolTipService.ToolTip="Open File with Another Application"                         TabIndex="4"/>
+                    <AppBarButton x:ConnectionId='6' Name="PreviousButton" Icon="Previous" Label="Previous" ToolTipService.ToolTip="Previous Image"                        AutomationProperties.AccessKey="KeyLeft" TabIndex="5"/>
+                    <AppBarButton x:ConnectionId='7' Name="NextButton" Icon="Next" Label="Next" ToolTipService.ToolTip="Next Image"                    AutomationProperties.AccessKey="KeyRight" TabIndex="6"/>
                 </StackPanel>
                 <StackPanel VerticalAlignment="Center" Margin="280,0">
                     <TextBlock Name="FileName" FontSize="20" TextAlignment="Center" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                    <AppBarButton x:ConnectionId='1' Name="PlayButton" Icon="Play" Label="Play" ToolTipService.ToolTip="Play"                    Visibility="Collapsed"/>
-                    <AppBarButton x:ConnectionId='2' Name="PauseButton" Icon="Pause" Label="Pause" ToolTipService.ToolTip="Pause"                    />
-                    <ComboBox x:ConnectionId='3' Name="Interval"                                     Width="126" Height="30" VerticalAlignment="Center" PlaceholderText="Select Interval">
+                    <AppBarButton x:ConnectionId='2' Name="PlayButton" Icon="Play" Label="Play" ToolTipService.ToolTip="Play"                    Visibility="Collapsed" AutomationProperties.AccessKey="Space" TabIndex="1"/>
+                    <AppBarButton x:ConnectionId='3' Name="PauseButton" Icon="Pause" Label="Pause" ToolTipService.ToolTip="Pause"                     AutomationProperties.AccessKey="Space" TabIndex="2"/>
+                    <ComboBox x:ConnectionId='4' Name="Interval"                                     Width="126" Height="30" VerticalAlignment="Center" PlaceholderText="Select Interval" TabIndex="3">
                         <x:String>5 seconds</x:String>
                         <x:String>10 seconds</x:String>
                         <x:String>30 seconds</x:String>

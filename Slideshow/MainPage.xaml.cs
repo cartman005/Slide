@@ -123,7 +123,30 @@ namespace Kozlowski.Slideshow
                 result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
             {
                 Register_Timer_Task(Constants.IndexList[index]);
-                //Register_User_Task();
+                Register_User_Task();
+            }
+
+            // Set the input focus to ensure that keyboard events are raised.
+            //this.Loaded += delegate { this.Focus(FocusState.Programmatic); };
+            Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+        }
+
+        private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
+        {
+            switch(args.VirtualKey)
+            {                
+                case VirtualKey.Left:
+                    Previous_Click(null, null);
+                    break;
+                case VirtualKey.Right:
+                    Next_Click(null, null);
+                    break;
+                case VirtualKey.Space:
+                    if (timer.IsEnabled)
+                        Pause_Click(null, null);
+                    else
+                        Play_Click(null, null);
+                    break;
             }
         }
 
@@ -239,16 +262,22 @@ namespace Kozlowski.Slideshow
 
         private void Play_Click(object sender, RoutedEventArgs e)
         {
-            ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
-            ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
             timer.Start();
+            if (MainAppBar.Visibility == Visibility.Visible)
+            {
+                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
+                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
+            }
         }
 
         private void Pause_Click(object sender, RoutedEventArgs e)
-        {
-            ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
-            ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
+        {            
             timer.Stop();
+            if (MainAppBar.Visibility == Visibility.Visible)
+            {
+                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
+                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
+            }
         }
 
         private void Next_Click(object sender, object e)
@@ -301,6 +330,20 @@ namespace Kozlowski.Slideshow
             builder.TaskEntryPoint = Constants.TaskEntry;
             builder.SetTrigger(new SystemTrigger(SystemTriggerType.InternetAvailable, false));
             var registration = builder.Register();
+        }
+
+        private void MainAppBar_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (timer.IsEnabled)
+            {
+                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
+                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
+                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
+            }
         }
     }
 }

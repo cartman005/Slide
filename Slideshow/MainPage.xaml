@@ -11,20 +11,20 @@
     mc:Ignorable="d">
 
     <Page.BottomAppBar>
-        <AppBar x:Name="MainAppBar">
+        <AppBar x:Name="MainAppBar" Loaded="MainAppBar_Loaded">
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <AppBarButton Name="OpenButton" Icon="OpenWith" Label="Open With" ToolTipService.ToolTip="Open File with Another Application" Click="Open_File_Click" />
-                    <AppBarButton Name="PreviousButton" Icon="Previous" Label="Previous" ToolTipService.ToolTip="Previous Image" Click="Previous_Click"/>
-                    <AppBarButton Name="NextButton" Icon="Next" Label="Next" ToolTipService.ToolTip="Next Image" Click="Next_Click"/>
+                    <AppBarButton Name="OpenButton" Icon="OpenWith" Label="Open With" ToolTipService.ToolTip="Open File with Another Application" Click="Open_File_Click" TabIndex="4"/>
+                    <AppBarButton Name="PreviousButton" Icon="Previous" Label="Previous" ToolTipService.ToolTip="Previous Image" Click="Previous_Click" AutomationProperties.AccessKey="KeyLeft" TabIndex="5"/>
+                    <AppBarButton Name="NextButton" Icon="Next" Label="Next" ToolTipService.ToolTip="Next Image" Click="Next_Click" AutomationProperties.AccessKey="KeyRight" TabIndex="6"/>
                 </StackPanel>
                 <StackPanel VerticalAlignment="Center" Margin="280,0">
                     <TextBlock Name="FileName" FontSize="20" TextAlignment="Center" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                    <AppBarButton Name="PlayButton" Icon="Play" Label="Play" ToolTipService.ToolTip="Play" Click="Play_Click" Visibility="Collapsed"/>
-                    <AppBarButton Name="PauseButton" Icon="Pause" Label="Pause" ToolTipService.ToolTip="Pause" Click="Pause_Click"/>
-                    <ComboBox Name="Interval" SelectionChanged="Interval_Changed" Width="126" Height="30" VerticalAlignment="Center" PlaceholderText="Select Interval">
+                    <AppBarButton Name="PlayButton" Icon="Play" Label="Play" ToolTipService.ToolTip="Play" Click="Play_Click" Visibility="Collapsed" AutomationProperties.AccessKey="Space" TabIndex="1"/>
+                    <AppBarButton Name="PauseButton" Icon="Pause" Label="Pause" ToolTipService.ToolTip="Pause" Click="Pause_Click" AutomationProperties.AccessKey="Space" TabIndex="2"/>
+                    <ComboBox Name="Interval" SelectionChanged="Interval_Changed" Width="126" Height="30" VerticalAlignment="Center" PlaceholderText="Select Interval" TabIndex="3">
                         <x:String>5 seconds</x:String>
                         <x:String>10 seconds</x:String>
                         <x:String>30 seconds</x:String>
