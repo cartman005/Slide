@@ -10,13 +10,16 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <!-- Collection of items displayed by this page -->
+        <CollectionViewSource x:Name="ItemsViewSource" Source="{Binding Items}"/>
+    </Page.Resources>
+
     <Page.BottomAppBar>
         <AppBar x:ConnectionId='1' x:Name="MainAppBar"                           >
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <AppBarButton x:ConnectionId='5' Name="OpenButton" Icon="OpenWith" Label="Open With" ToolTipService.ToolTip="Open File with Another Application"                         TabIndex="4"/>
-                    <AppBarButton x:ConnectionId='6' Name="PreviousButton" Icon="Previous" Label="Previous" ToolTipService.ToolTip="Previous Image"                        AutomationProperties.AccessKey="KeyLeft" TabIndex="5"/>
-                    <AppBarButton x:ConnectionId='7' Name="NextButton" Icon="Next" Label="Next" ToolTipService.ToolTip="Next Image"                    AutomationProperties.AccessKey="KeyRight" TabIndex="6"/>
                 </StackPanel>
                 <StackPanel VerticalAlignment="Center" Margin="280,0">
                     <TextBlock Name="FileName" FontSize="20" TextAlignment="Center" />
@@ -37,7 +40,15 @@
     </Page.BottomAppBar>
 
     <Grid Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
-        <Image x:Name="MainImage" HorizontalAlignment="Center" Height="768" VerticalAlignment="Center" Width="1366"/>
+        <FlipView x:ConnectionId='6' x:Name="FlipView" ItemsSource="{Binding Source={StaticResource ItemsViewSource}}"                                             >
+            <FlipView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Image Source="{Binding Image}" Stretch="Uniform"/>
+                    </Grid>
+                </DataTemplate>
+            </FlipView.ItemTemplate>
+        </FlipView>
     </Grid>
 </Page>
 

@@ -25,6 +25,7 @@ using Windows.Graphics.Imaging;
 using System.Threading.Tasks;
 using Windows.Storage.Search;
 using Windows.System;
+using System.Collections.ObjectModel;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
@@ -37,12 +38,12 @@ namespace Kozlowski.Slideshow
     {
         private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
-        private LinkedList<StorageFile> imageList;
-        private LinkedListNode<StorageFile> node;
         public static Random random;
         private List<StorageFile> fileList;
         private DispatcherTimer timer;
         private ApplicationDataContainer settings = null;
+        public ObservableCollection<ListItem> Items { get; set; }
+        private int maxIndex;
 
         /// <summary>
         /// This can be changed to a strongly typed view model.
@@ -70,9 +71,18 @@ namespace Kozlowski.Slideshow
 
             random = new Random();
             timer = new DispatcherTimer();
+            Items = new ObservableCollection<ListItem>();
             timer.Tick += Next_Click;
                         
             settings = ApplicationData.Current.RoamingSettings;
+
+            FlipView.ItemsSource = Items;
+        }
+
+        private void Next_Click(object sender, object e)
+        {
+            GetMoreFiles(1);
+            FlipView.SelectedIndex++;
         }
 
         /// <summary>
@@ -90,8 +100,7 @@ namespace Kozlowski.Slideshow
         {
             fileList = new List<StorageFile>();
             fileList.AddRange(await Kozlowski.Slideshow.Background.TileUpdater.GetImageList(KnownFolders.PicturesLibrary)); // Change TileUpdater name   
-            StorageFile file = fileList[random.Next(0, fileList.Count)]; // What if count is 0?
-
+            GetMoreFiles(10);
             int index;
             if (settings.Values.ContainsKey(Constants.SettingsName))
             {
@@ -103,19 +112,6 @@ namespace Kozlowski.Slideshow
             }
 
             ((ComboBox)FindName("Interval")).SelectedIndex = index;
-
-            /* Set image */
-            imageList = new LinkedList<StorageFile>();
-            if (file != null)
-            {
-                IRandomAccessStream fileStream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
-                BitmapImage bitmapImage = new BitmapImage();
-                await bitmapImage.SetSourceAsync(fileStream);
-                MainImage.Source = bitmapImage;
-                imageList.AddFirst(file);
-                node = imageList.First;
-                ((TextBlock)FindName("FileName")).Text = file.DisplayName;
-            }
 
             /* Register background task and create first tile updates */
             var result = await BackgroundExecutionManager.RequestAccessAsync();
@@ -131,12 +127,30 @@ namespace Kozlowski.Slideshow
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
         }
 
+        private async void GetMoreFiles(int count)
+        {
+            StorageFile file;
+            IRandomAccessStream fileStream;
+            BitmapImage bitmapImage;
+
+            for (int i = 0; i < count; i++)
+            {
+                file = fileList[random.Next(0, fileList.Count)]; // What if count is 0?
+                fileStream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
+                bitmapImage = new BitmapImage();
+                await bitmapImage.SetSourceAsync(fileStream);
+                Items.Add(new ListItem { Image = bitmapImage, File = file });
+
+                maxIndex++;
+            }
+        }
+
         private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
         {
             switch(args.VirtualKey)
             {                
                 case VirtualKey.Left:
-                    Previous_Click(null, null);
+                //    Previous_Click(null, null);
                     break;
                 case VirtualKey.Right:
                     Next_Click(null, null);
@@ -188,78 +202,24 @@ namespace Kozlowski.Slideshow
 
         private async void Open_File_Click(object sender, RoutedEventArgs e)
         {
-            var file = node.Value;
+            StorageFile file = ((ListItem)FlipView.SelectedItem).File;
             LauncherOptions launcherOptions = new LauncherOptions();
             launcherOptions.DisplayApplicationPicker = true;
             await Launcher.LaunchFileAsync(file, launcherOptions);
         }
 
-        private async void Next_Click(object sender, RoutedEventArgs e)
-        {
-            if (node != null)
-            { 
-                if (node == imageList.Last)
-                {
+        private void Next_Click(object sender, RoutedEventArgs e)
+        { 
+            /* Reset timer */
+            timer.Stop();
+            timer.Start();
 
-                    if (fileList.Count < 1)
-                    {
-                        fileList.AddRange(await Kozlowski.Slideshow.Background.TileUpdater.GetImageList(KnownFolders.PicturesLibrary));
-                    }
-                    int index = random.Next(0, fileList.Count);
-                    var file = fileList[index];
-                    fileList.RemoveAt(index);
-
-                    imageList.AddAfter(node, file);
-
-                    if (imageList.Count > Constants.ListLimit)
-                    {
-                        imageList.RemoveFirst();
-                    }
-                }
-
-                node = node.Next;
-
-                IRandomAccessStream fileStream = await node.Value.OpenAsync(Windows.Storage.FileAccessMode.Read);
-                BitmapImage bitmapImage = new BitmapImage();
-                await bitmapImage.SetSourceAsync(fileStream);
-                MainImage.Source = bitmapImage;
-                ((TextBlock)FindName("FileName")).Text = node.Value.DisplayName;
-
-                /* Reset timer */
-                timer.Stop();
-                timer.Start();
-            }
-        }
-
-        private async void Previous_Click(object sender, RoutedEventArgs e)
-        {
-            if (node != null)
+            if (FlipView.SelectedIndex == maxIndex)
             {
-                if (node == imageList.First)
-                {
-                    var file = fileList[random.Next(0, fileList.Count)];
-
-                    imageList.AddBefore(node, file);
-                    if (imageList.Count > Constants.ListLimit)
-                    {
-                        imageList.RemoveLast();
-                    }
-                }
-
-                node = node.Previous;
-
-                IRandomAccessStream fileStream = await node.Value.OpenAsync(Windows.Storage.FileAccessMode.Read);
-                BitmapImage bitmapImage = new BitmapImage();
-                await bitmapImage.SetSourceAsync(fileStream);
-                MainImage.Source = bitmapImage;
-                ((TextBlock)MainAppBar.FindName("FileName")).Text = node.Value.DisplayName;
-
-                /* Reset timer */
-                timer.Stop();
-                timer.Start();
+                GetMoreFiles(10);
             }
         }
-
+        
         private void Play_Click(object sender, RoutedEventArgs e)
         {
             timer.Start();
@@ -280,7 +240,7 @@ namespace Kozlowski.Slideshow
             }
         }
 
-        private void Next_Click(object sender, object e)
+        private void FlipView_SelectionChanged(object sender, object e)
         {
             Next_Click(sender, null);
         }
@@ -344,6 +304,23 @@ namespace Kozlowski.Slideshow
                 ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
                 ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
             }
+        }
+    }
+
+    public class ListItem
+    {       
+        public BitmapImage Image { get; set; }
+
+        public StorageFile File { get; set; }
+
+        public string Name()
+        {
+            return File.DisplayName;
+        }
+
+        public override string ToString()
+        {
+            return Name();
         }
     }
 }

@@ -10,13 +10,16 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <!-- Collection of items displayed by this page -->
+        <CollectionViewSource x:Name="ItemsViewSource" Source="{Binding Items}"/>
+    </Page.Resources>
+
     <Page.BottomAppBar>
         <AppBar x:Name="MainAppBar" Loaded="MainAppBar_Loaded">
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <AppBarButton Name="OpenButton" Icon="OpenWith" Label="Open With" ToolTipService.ToolTip="Open File with Another Application" Click="Open_File_Click" TabIndex="4"/>
-                    <AppBarButton Name="PreviousButton" Icon="Previous" Label="Previous" ToolTipService.ToolTip="Previous Image" Click="Previous_Click" AutomationProperties.AccessKey="KeyLeft" TabIndex="5"/>
-                    <AppBarButton Name="NextButton" Icon="Next" Label="Next" ToolTipService.ToolTip="Next Image" Click="Next_Click" AutomationProperties.AccessKey="KeyRight" TabIndex="6"/>
                 </StackPanel>
                 <StackPanel VerticalAlignment="Center" Margin="280,0">
                     <TextBlock Name="FileName" FontSize="20" TextAlignment="Center" />
@@ -37,6 +40,14 @@
     </Page.BottomAppBar>
 
     <Grid Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
-        <Image x:Name="MainImage" HorizontalAlignment="Center" Height="768" VerticalAlignment="Center" Width="1366"/>
+        <FlipView x:Name="FlipView" ItemsSource="{Binding Source={StaticResource ItemsViewSource}}" SelectionChanged="FlipView_SelectionChanged">
+            <FlipView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Image Source="{Binding Image}" Stretch="Uniform"/>
+                    </Grid>
+                </DataTemplate>
+            </FlipView.ItemTemplate>
+        </FlipView>
     </Grid>
 </Page>

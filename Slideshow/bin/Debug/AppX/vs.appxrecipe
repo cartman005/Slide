@@ -26,7 +26,7 @@
   <ItemGroup>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\Kozlowski.Slideshow.exe">
       <PackagePath>Kozlowski.Slideshow.exe</PackagePath>
-      <Modified>2014-07-30T04:03:07.236</Modified>
+      <Modified>2014-08-03T06:24:45.021</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\SlideshowBackground\bin\Debug\Kozlowski.Slideshow.Background.winmd">
       <PackagePath>Kozlowski.Slideshow.Background.winmd</PackagePath>
@@ -77,11 +77,11 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\MainPage.xbf">
       <PackagePath>MainPage.xbf</PackagePath>
-      <Modified>2014-07-30T04:01:14.911</Modified>
+      <Modified>2014-08-03T06:18:01.489</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\Kozlowski.Slideshow.xr.xml">
       <PackagePath>Kozlowski.Slideshow.xr.xml</PackagePath>
-      <Modified>2014-07-30T04:01:14.877</Modified>
+      <Modified>2014-08-03T06:07:23.468</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
