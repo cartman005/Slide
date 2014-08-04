@@ -20,17 +20,17 @@
     <AppXManifest Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-07-30T03:23:34.135</Modified>
+      <Modified>2014-08-04T02:29:42.207</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\Kozlowski.Slideshow.exe">
       <PackagePath>Kozlowski.Slideshow.exe</PackagePath>
-      <Modified>2014-08-03T06:24:45.021</Modified>
+      <Modified>2014-08-04T02:29:40.818</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\SlideshowBackground\bin\Debug\Kozlowski.Slideshow.Background.winmd">
       <PackagePath>Kozlowski.Slideshow.Background.winmd</PackagePath>
-      <Modified>2014-07-29T22:33:02.259</Modified>
+      <Modified>2014-08-04T02:29:38.278</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\BadgeLogo.scale-100.png">
       <PackagePath>Assets\BadgeLogo.scale-100.png</PackagePath>
@@ -77,15 +77,15 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\MainPage.xbf">
       <PackagePath>MainPage.xbf</PackagePath>
-      <Modified>2014-08-03T06:18:01.489</Modified>
+      <Modified>2014-08-04T02:08:21.352</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\Kozlowski.Slideshow.xr.xml">
       <PackagePath>Kozlowski.Slideshow.xr.xml</PackagePath>
-      <Modified>2014-08-03T06:07:23.468</Modified>
+      <Modified>2014-08-04T01:21:59.857</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
-      <Modified>2014-07-28T22:58:27.640</Modified>
+      <Modified>2014-08-04T02:08:22.571</Modified>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>

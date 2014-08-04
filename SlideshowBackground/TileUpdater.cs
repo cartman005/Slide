@@ -24,7 +24,7 @@ namespace Kozlowski.Slideshow.Background
             settings = ApplicationData.Current.RoamingSettings;
         }
 
-        public void Run(IBackgroundTaskInstance taskInstance)
+        public async void Run(IBackgroundTaskInstance taskInstance)
         {            
             var defferal = taskInstance.GetDeferral();
             Debug.WriteLine("Background task running");
@@ -43,7 +43,7 @@ namespace Kozlowski.Slideshow.Background
 
             //fileList = (List<StorageFile>) await GetImageList(KnownFolders.PicturesLibrary);
 
-            DoWork(Constants.IndexList[index]);
+            await DoWork(Constants.IndexList[index]);
             Debug.WriteLine("Background task done");
             defferal.Complete();
         }
@@ -210,9 +210,9 @@ namespace Kozlowski.Slideshow.Background
             }).AsAsyncOperation<XmlDocument>();
         }
         
-        public static void DoWork(int seconds)
+        public static IAsyncAction DoWork(int seconds)
         {
-            Task.Run(async () =>
+            return Task.Run(async () =>
             {
                 var updater = TileUpdateManager.CreateTileUpdaterForApplication();
                 updater.EnableNotificationQueue(true);
@@ -269,7 +269,7 @@ namespace Kozlowski.Slideshow.Background
                         Debug.WriteLine("exception: " + e.Message);
                     }
                 }
-            });
+            }).AsAsyncAction();
         }
     }
 }

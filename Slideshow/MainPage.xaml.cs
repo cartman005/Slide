@@ -69,20 +69,30 @@ namespace Kozlowski.Slideshow
             this.navigationHelper.LoadState += navigationHelper_LoadState;
             this.navigationHelper.SaveState += navigationHelper_SaveState;
 
-            random = new Random();
-            timer = new DispatcherTimer();
-            Items = new ObservableCollection<ListItem>();
-            timer.Tick += Next_Click;
-                        
             settings = ApplicationData.Current.RoamingSettings;
 
+            Items = new ObservableCollection<ListItem>();
             FlipView.ItemsSource = Items;
+
+            random = new Random();
+            timer = new DispatcherTimer();
+            timer.Tick += Timer_Tick;
+
         }
 
-        private void Next_Click(object sender, object e)
+        public void Move_Forward()
         {
-            GetMoreFiles(1);
-            FlipView.SelectedIndex++;
+           if (maxIndex - FlipView.SelectedIndex < 3)
+           {
+                Load_More_Files(10);
+           }
+        }
+
+        public void Reset_Timer()
+        {
+            // Reset the timer
+            timer.Stop();
+            timer.Start();
         }
 
         /// <summary>
@@ -100,7 +110,7 @@ namespace Kozlowski.Slideshow
         {
             fileList = new List<StorageFile>();
             fileList.AddRange(await Kozlowski.Slideshow.Background.TileUpdater.GetImageList(KnownFolders.PicturesLibrary)); // Change TileUpdater name   
-            GetMoreFiles(10);
+            Load_More_Files(10);
             int index;
             if (settings.Values.ContainsKey(Constants.SettingsName))
             {
@@ -127,7 +137,7 @@ namespace Kozlowski.Slideshow
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
         }
 
-        private async void GetMoreFiles(int count)
+        private async void Load_More_Files(int count)
         {
             StorageFile file;
             IRandomAccessStream fileStream;
@@ -140,7 +150,7 @@ namespace Kozlowski.Slideshow
                 bitmapImage = new BitmapImage();
                 await bitmapImage.SetSourceAsync(fileStream);
                 Items.Add(new ListItem { Image = bitmapImage, File = file });
-
+                Debug.WriteLine("Added file " + file.DisplayName);
                 maxIndex++;
             }
         }
@@ -150,10 +160,11 @@ namespace Kozlowski.Slideshow
             switch(args.VirtualKey)
             {                
                 case VirtualKey.Left:
-                //    Previous_Click(null, null);
+                    Reset_Timer();
                     break;
                 case VirtualKey.Right:
-                    Next_Click(null, null);
+                    Reset_Timer();
+                    Move_Forward();
                     break;
                 case VirtualKey.Space:
                     if (timer.IsEnabled)
@@ -202,28 +213,18 @@ namespace Kozlowski.Slideshow
 
         private async void Open_File_Click(object sender, RoutedEventArgs e)
         {
+            timer.Stop();
             StorageFile file = ((ListItem)FlipView.SelectedItem).File;
             LauncherOptions launcherOptions = new LauncherOptions();
             launcherOptions.DisplayApplicationPicker = true;
             await Launcher.LaunchFileAsync(file, launcherOptions);
-        }
-
-        private void Next_Click(object sender, RoutedEventArgs e)
-        { 
-            /* Reset timer */
-            timer.Stop();
             timer.Start();
-
-            if (FlipView.SelectedIndex == maxIndex)
-            {
-                GetMoreFiles(10);
-            }
         }
         
         private void Play_Click(object sender, RoutedEventArgs e)
         {
             timer.Start();
-            if (MainAppBar.Visibility == Visibility.Visible)
+            if (MainAppBar.IsOpen)
             {
                 ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
                 ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
@@ -233,7 +234,7 @@ namespace Kozlowski.Slideshow
         private void Pause_Click(object sender, RoutedEventArgs e)
         {            
             timer.Stop();
-            if (MainAppBar.Visibility == Visibility.Visible)
+            if (MainAppBar.IsOpen)
             {
                 ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
                 ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
@@ -242,10 +243,33 @@ namespace Kozlowski.Slideshow
 
         private void FlipView_SelectionChanged(object sender, object e)
         {
-            Next_Click(sender, null);
+            Reset_Timer();
+
+            if (maxIndex - FlipView.SelectedIndex < 3)
+                Load_More_Files(10);
         }
 
-        private void Interval_Changed(object sender, SelectionChangedEventArgs e)
+        private void Timer_Tick(object sender, object e)
+        {
+            FlipView.SelectedIndex++;
+            Move_Forward();
+        }
+
+        private void MainAppBar_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (timer.IsEnabled)
+            {
+                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
+                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
+                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
+            }
+        }
+
+        private async void Interval_Changed(object sender, SelectionChangedEventArgs e)
         {
             Debug.WriteLine("Interval changed");
             int index = ((ComboBox)FindName("Interval")).SelectedIndex;
@@ -257,7 +281,7 @@ namespace Kozlowski.Slideshow
             if (!timer.IsEnabled)
                 timer.Start();
 
-            Kozlowski.Slideshow.Background.TileUpdater.DoWork(Constants.IndexList[index]);
+            await Kozlowski.Slideshow.Background.TileUpdater.DoWork(Constants.IndexList[index]);
         }
 
         private void Register_Timer_Task(int seconds)
@@ -286,41 +310,10 @@ namespace Kozlowski.Slideshow
             }
             Debug.WriteLine("Register timer task");
             BackgroundTaskBuilder builder = new BackgroundTaskBuilder();
-            builder.Name = "USER_TASK";
+            builder.Name = "USER_TASK2";
             builder.TaskEntryPoint = Constants.TaskEntry;
-            builder.SetTrigger(new SystemTrigger(SystemTriggerType.InternetAvailable, false));
+            builder.SetTrigger(new SystemTrigger(SystemTriggerType.UserPresent, false));
             var registration = builder.Register();
-        }
-
-        private void MainAppBar_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (timer.IsEnabled)
-            {
-                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
-                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
-                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
-            }
-        }
-    }
-
-    public class ListItem
-    {       
-        public BitmapImage Image { get; set; }
-
-        public StorageFile File { get; set; }
-
-        public string Name()
-        {
-            return File.DisplayName;
-        }
-
-        public override string ToString()
-        {
-            return Name();
         }
     }
 }
