@@ -142,6 +142,10 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Kozlowski.Slideshow.Shared\Kozlowski.Slideshow.Shared.csproj">
+      <Project>{49ba1518-ece7-4be6-a791-f8ab83098f56}</Project>
+      <Name>Kozlowski.Slideshow.Shared</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SlideshowBackground\Kozlowski.Slideshow.Background.csproj">
       <Project>{11b4a61c-acfa-44ae-bb84-96bc1ee9f163}</Project>
       <Name>Kozlowski.Slideshow.Background</Name>

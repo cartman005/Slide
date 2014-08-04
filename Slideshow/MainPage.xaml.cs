@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Windows.Storage.Search;
 using Windows.System;
 using System.Collections.ObjectModel;
+using Kozlowski.Slideshow.Shared;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
@@ -38,10 +39,10 @@ namespace Kozlowski.Slideshow
     {
         private NavigationHelper navigationHelper;
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
-        public static Random random;
         private List<StorageFile> fileList;
         private DispatcherTimer timer;
         private ApplicationDataContainer settings = null;
+        private bool isPaused;
         public ObservableCollection<ListItem> Items { get; set; }
         private int maxIndex;
 
@@ -74,18 +75,18 @@ namespace Kozlowski.Slideshow
             Items = new ObservableCollection<ListItem>();
             FlipView.ItemsSource = Items;
 
-            random = new Random();
             timer = new DispatcherTimer();
             timer.Tick += Timer_Tick;
-
+            isPaused = false;
         }
 
         public void Move_Forward()
         {
-           if (maxIndex - FlipView.SelectedIndex < 3)
-           {
-                Load_More_Files(10);
-           }
+            Debug.WriteLine(FlipView.SelectedIndex);
+            if (maxIndex - FlipView.SelectedIndex < 3)
+            {
+                LoadMoreFiles(10);
+            }
         }
 
         public void Reset_Timer()
@@ -109,8 +110,8 @@ namespace Kozlowski.Slideshow
         private async void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
             fileList = new List<StorageFile>();
-            fileList.AddRange(await Kozlowski.Slideshow.Background.TileUpdater.GetImageList(KnownFolders.PicturesLibrary)); // Change TileUpdater name   
-            Load_More_Files(10);
+            fileList.AddRange(await Kozlowski.Slideshow.Background.TileMaker.GetImageList(KnownFolders.PicturesLibrary));
+            LoadMoreFiles(10);
             int index;
             if (settings.Values.ContainsKey(Constants.SettingsName))
             {
@@ -128,8 +129,8 @@ namespace Kozlowski.Slideshow
             if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity ||
                 result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
             {
-                Register_Timer_Task(Constants.IndexList[index]);
-                Register_User_Task();
+                RegisterTimerTask(Constants.IndexList[index]);
+                RegisterUserTask();
             }
 
             // Set the input focus to ensure that keyboard events are raised.
@@ -137,7 +138,7 @@ namespace Kozlowski.Slideshow
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
         }
 
-        private async void Load_More_Files(int count)
+        private async void LoadMoreFiles(int count)
         {
             StorageFile file;
             IRandomAccessStream fileStream;
@@ -145,13 +146,14 @@ namespace Kozlowski.Slideshow
 
             for (int i = 0; i < count; i++)
             {
-                file = fileList[random.Next(0, fileList.Count)]; // What if count is 0?
+                file = fileList[SingleRandom.Instance.Next(0, fileList.Count)]; // What if count is 0?
                 fileStream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
                 bitmapImage = new BitmapImage();
                 await bitmapImage.SetSourceAsync(fileStream);
-                Items.Add(new ListItem { Image = bitmapImage, File = file });
-                Debug.WriteLine("Added file " + file.DisplayName);
+                Items.Add(new ListItem { Image = bitmapImage, Path = file.Path, Name = file.DisplayName });
+                fileStream.Dispose();
                 maxIndex++;
+                Debug.WriteLine("Max " + maxIndex);
             }
         }
 
@@ -213,17 +215,16 @@ namespace Kozlowski.Slideshow
 
         private async void Open_File_Click(object sender, RoutedEventArgs e)
         {
-            timer.Stop();
-            StorageFile file = ((ListItem)FlipView.SelectedItem).File;
+            StorageFile file = await StorageFile.GetFileFromPathAsync(((ListItem)FlipView.SelectedItem).Path);
             LauncherOptions launcherOptions = new LauncherOptions();
             launcherOptions.DisplayApplicationPicker = true;
             await Launcher.LaunchFileAsync(file, launcherOptions);
-            timer.Start();
         }
         
         private void Play_Click(object sender, RoutedEventArgs e)
         {
             timer.Start();
+            isPaused = false;
             if (MainAppBar.IsOpen)
             {
                 ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
@@ -234,6 +235,7 @@ namespace Kozlowski.Slideshow
         private void Pause_Click(object sender, RoutedEventArgs e)
         {            
             timer.Stop();
+            isPaused = true;
             if (MainAppBar.IsOpen)
             {
                 ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
@@ -245,8 +247,10 @@ namespace Kozlowski.Slideshow
         {
             Reset_Timer();
 
+            FileName.Text = ((ListItem)FlipView.SelectedItem).Name;
+
             if (maxIndex - FlipView.SelectedIndex < 3)
-                Load_More_Files(10);
+                LoadMoreFiles(10);
         }
 
         private void Timer_Tick(object sender, object e)
@@ -255,17 +259,19 @@ namespace Kozlowski.Slideshow
             Move_Forward();
         }
 
-        private void MainAppBar_Loaded(object sender, RoutedEventArgs e)
+        private void MainAppBar_Opened(object sender, object e)
         {
-            if (timer.IsEnabled)
-            {
-                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
-                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
-            }
-            else
+            timer.Stop();
+            Debug.WriteLine("Loaded");
+            if (isPaused)
             {
                 ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
                 ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
+            }
+            else
+            {
+                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
+                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
             }
         }
 
@@ -281,39 +287,43 @@ namespace Kozlowski.Slideshow
             if (!timer.IsEnabled)
                 timer.Start();
 
-            await Kozlowski.Slideshow.Background.TileUpdater.DoWork(Constants.IndexList[index]);
+            await TileMaker.CreateTiles(Constants.IndexList[index]);
         }
 
-        private void Register_Timer_Task(int seconds)
+        private void RegisterTimerTask(int seconds)
         {
             /* Timer Task */
             foreach (var task in BackgroundTaskRegistration.AllTasks)
             {
-                if (task.Value.Name == Constants.TaskName)
+                if (task.Value.Name == Constants.TimerTaskName)
                     return;
             }
-            Debug.WriteLine("Register timer task");
             BackgroundTaskBuilder builder = new BackgroundTaskBuilder();
-            builder.Name = Constants.TaskName;
+            builder.Name = Constants.TimerTaskName;
             builder.TaskEntryPoint = Constants.TaskEntry;
             builder.SetTrigger(new TimeTrigger(15, false));
             var registration = builder.Register();              
         }
 
-        private void Register_User_Task()
+        private void RegisterUserTask()
         {
             /* Timer Task */
             foreach (var task in BackgroundTaskRegistration.AllTasks)
             {
-                if (task.Value.Name == Constants.TaskName)
+                if (task.Value.Name == Constants.UserTaskName)
                     return;
             }
-            Debug.WriteLine("Register timer task");
             BackgroundTaskBuilder builder = new BackgroundTaskBuilder();
-            builder.Name = "USER_TASK2";
+            builder.Name = Constants.UserTaskName;
             builder.TaskEntryPoint = Constants.TaskEntry;
             builder.SetTrigger(new SystemTrigger(SystemTriggerType.UserPresent, false));
             var registration = builder.Register();
+        }
+
+        private void MainAppBar_Closed(object sender, object e)
+        {
+            if (!isPaused)
+                timer.Start();
         }
     }
 }

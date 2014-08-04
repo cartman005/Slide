@@ -16,7 +16,7 @@
     </Page.Resources>
 
     <Page.BottomAppBar>
-        <AppBar x:Name="MainAppBar" Loaded="MainAppBar_Loaded">
+        <AppBar x:Name="MainAppBar" Opened="MainAppBar_Opened" Closed="MainAppBar_Closed">
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <AppBarButton Name="OpenButton" Icon="OpenWith" Label="Open With" ToolTipService.ToolTip="Open File with Another Application" Click="Open_File_Click" TabIndex="4"/>

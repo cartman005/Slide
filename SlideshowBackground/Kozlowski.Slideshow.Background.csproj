@@ -102,10 +102,15 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="CodeLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Static Values.cs" />
+    <Compile Include="TileMaker.cs" />
     <Compile Include="TileUpdater.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Kozlowski.Slideshow.Shared\Kozlowski.Slideshow.Shared.csproj">
+      <Project>{49ba1518-ece7-4be6-a791-f8ab83098f56}</Project>
+      <Name>Kozlowski.Slideshow.Shared</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">
     <VisualStudioVersion>12.0</VisualStudioVersion>

@@ -1,2 +1,4 @@
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\Kozlowski.Slideshow.Shared.csproj;neutral
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\Kozlowski.Slideshow.Shared.csproj;neutral
 C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Kozlowski.Slideshow.csproj;neutral
 C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\SlideshowBackground\Kozlowski.Slideshow.Background.csproj;neutral

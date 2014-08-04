@@ -1,0 +1,16 @@
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\bin\Debug\Kozlowski.Slideshow.Shared.dll
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\bin\Debug\Kozlowski.Slideshow.Shared.pdb
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\bin\Debug\Kozlowski.Slideshow.Shared.pri
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\Kozlowski.Slideshow.Shared.dll
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\Kozlowski.Slideshow.Shared.pdb
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\priconfig.xml
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\priconfig.xml.intermediate
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\layout.resfiles
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\layout.resfiles.intermediate
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\resources.resfiles
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\resources.resfiles.intermediate
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\pri.resfiles
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\pri.resfiles.intermediate
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\qualifiers.txt
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\qualifiers.txt.intermediate
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\obj\Debug\MultipleQualifiersPerDimensionFound.txt

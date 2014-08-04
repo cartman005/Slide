@@ -51,8 +51,7 @@
       <InProcessServer>
         <Path>CLRHost.dll</Path>
         <ActivatableClass ActivatableClassId="Kozlowski.Slideshow.Background.TileUpdater" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Kozlowski.Slideshow.Background.GetImages" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Kozlowski.Slideshow.Background.Constants" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Kozlowski.Slideshow.Background.TileMaker" ThreadingModel="both" />
       </InProcessServer>
     </Extension>
   </Extensions>

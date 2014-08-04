@@ -12,16 +12,13 @@ namespace Kozlowski.Slideshow
     {
         public BitmapImage Image { get; set; }
 
-        public StorageFile File { get; set; }
+        public string Path { get; set; }
 
-        public string GetName()
-        {
-            return File.DisplayName;
-        }
+        public string Name { get; set; }
 
         public override string ToString()
         {
-            return GetName();
+            return Name;
         }
     }
 }

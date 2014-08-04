@@ -8,7 +8,7 @@
     <PackageArchitecture>neutral</PackageArchitecture>
     <PackageIdentityName>09863c68-5f10-4ed6-853c-d466e1d1386e</PackageIdentityName>
     <IntermediateOutputPath>C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\obj\Debug\</IntermediateOutputPath>
-    <RegisteredManifestChecksum>C15EFBE49131D1DE0C5196B53D177E4C5E6DE5C7712F615D607F03D9CE823F9E</RegisteredManifestChecksum>
+    <RegisteredManifestChecksum>305D2F7B784125C83352BFF3FB8983FBD3CE648F0D806230E3762FCCDB2C9C52</RegisteredManifestChecksum>
     <RegisteredPackageMoniker>09863c68-5f10-4ed6-853c-d466e1d1386e_1.0.0.0_neutral__4rbkc058yf47p</RegisteredPackageMoniker>
     <RegisteredUserModeAppID>09863c68-5f10-4ed6-853c-d466e1d1386e_4rbkc058yf47p!App</RegisteredUserModeAppID>
     <RegisteredPackageID>09863c68-5f10-4ed6-853c-d466e1d1386e</RegisteredPackageID>
@@ -20,17 +20,21 @@
     <AppXManifest Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-04T02:29:42.207</Modified>
+      <Modified>2014-08-04T14:54:38.133</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\Kozlowski.Slideshow.exe">
       <PackagePath>Kozlowski.Slideshow.exe</PackagePath>
-      <Modified>2014-08-04T02:29:40.818</Modified>
+      <Modified>2014-08-04T15:40:01.892</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\SlideshowBackground\bin\Debug\Kozlowski.Slideshow.Background.winmd">
       <PackagePath>Kozlowski.Slideshow.Background.winmd</PackagePath>
-      <Modified>2014-08-04T02:29:38.278</Modified>
+      <Modified>2014-08-04T14:12:44.232</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\bin\Debug\Kozlowski.Slideshow.Shared.dll">
+      <PackagePath>Kozlowski.Slideshow.Shared.dll</PackagePath>
+      <Modified>2014-08-04T14:12:43.253</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\BadgeLogo.scale-100.png">
       <PackagePath>Assets\BadgeLogo.scale-100.png</PackagePath>
@@ -73,19 +77,19 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\App.xbf">
       <PackagePath>App.xbf</PackagePath>
-      <Modified>2014-07-29T00:20:56.383</Modified>
+      <Modified>2014-08-04T13:43:24.647</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\MainPage.xbf">
       <PackagePath>MainPage.xbf</PackagePath>
-      <Modified>2014-08-04T02:08:21.352</Modified>
+      <Modified>2014-08-04T15:24:10.278</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\Kozlowski.Slideshow.xr.xml">
       <PackagePath>Kozlowski.Slideshow.xr.xml</PackagePath>
-      <Modified>2014-08-04T01:21:59.857</Modified>
+      <Modified>2014-08-04T15:24:10.252</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
-      <Modified>2014-08-04T02:08:22.571</Modified>
+      <Modified>2014-08-04T14:54:36.653</Modified>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>

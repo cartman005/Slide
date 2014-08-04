@@ -23,7 +23,8 @@
     </RootType>
     <RootType FullName="Windows.UI.Xaml.Controls.AppBar">
       <RootProperty Name="Content" />
-      <RootEvent Name="Loaded" />
+      <RootEvent Name="Opened" />
+      <RootEvent Name="Closed" />
     </RootType>
     <RootType FullName="Windows.UI.Xaml.Controls.Grid">
       <RootProperty Name="Children" />
