@@ -27,7 +27,6 @@ namespace Kozlowski.Slideshow.Background
         public async void Run(IBackgroundTaskInstance taskInstance)
         {            
             var defferal = taskInstance.GetDeferral();
-            Debug.WriteLine("Background task running");
             int index;
             settings = ApplicationData.Current.RoamingSettings;
             if (settings.Values.ContainsKey(Constants.SettingsName))
@@ -38,9 +37,7 @@ namespace Kozlowski.Slideshow.Background
             {
                 index = Constants.DefaultIntervalIndex;
             }
-
-            Debug.WriteLine("Using index " + index);
-            
+                        
             await TileMaker.CreateTiles(Constants.IndexList[index]);
             Debug.WriteLine("Background task done");
             defferal.Complete();

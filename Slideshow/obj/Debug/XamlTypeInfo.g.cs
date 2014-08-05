@@ -124,33 +124,35 @@ namespace Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo
 
         private void InitTypeTables()
         {
-            _typeNameTable = new string[12];
-            _typeNameTable[0] = "Kozlowski.Slideshow.MainPage";
-            _typeNameTable[1] = "Windows.UI.Xaml.Controls.Page";
-            _typeNameTable[2] = "Windows.UI.Xaml.Controls.UserControl";
-            _typeNameTable[3] = "System.Collections.ObjectModel.ObservableCollection`1<Kozlowski.Slideshow.ListItem>";
-            _typeNameTable[4] = "System.Collections.ObjectModel.Collection`1<Kozlowski.Slideshow.ListItem>";
-            _typeNameTable[5] = "Object";
-            _typeNameTable[6] = "Kozlowski.Slideshow.ListItem";
-            _typeNameTable[7] = "Windows.UI.Xaml.Media.Imaging.BitmapImage";
-            _typeNameTable[8] = "String";
-            _typeNameTable[9] = "Kozlowski.Slideshow.Common.ObservableDictionary";
-            _typeNameTable[10] = "Kozlowski.Slideshow.Common.NavigationHelper";
-            _typeNameTable[11] = "Windows.UI.Xaml.DependencyObject";
+            _typeNameTable = new string[13];
+            _typeNameTable[0] = "Kozlowski.Slideshow.FileConverter";
+            _typeNameTable[1] = "Object";
+            _typeNameTable[2] = "Kozlowski.Slideshow.MainPage";
+            _typeNameTable[3] = "Windows.UI.Xaml.Controls.Page";
+            _typeNameTable[4] = "Windows.UI.Xaml.Controls.UserControl";
+            _typeNameTable[5] = "System.Collections.ObjectModel.ObservableCollection`1<Kozlowski.Slideshow.ListItem>";
+            _typeNameTable[6] = "System.Collections.ObjectModel.Collection`1<Kozlowski.Slideshow.ListItem>";
+            _typeNameTable[7] = "Kozlowski.Slideshow.ListItem";
+            _typeNameTable[8] = "Windows.Storage.StorageFile";
+            _typeNameTable[9] = "String";
+            _typeNameTable[10] = "Kozlowski.Slideshow.Common.ObservableDictionary";
+            _typeNameTable[11] = "Kozlowski.Slideshow.Common.NavigationHelper";
+            _typeNameTable[12] = "Windows.UI.Xaml.DependencyObject";
 
-            _typeTable = new global::System.Type[12];
-            _typeTable[0] = typeof(global::Kozlowski.Slideshow.MainPage);
-            _typeTable[1] = typeof(global::Windows.UI.Xaml.Controls.Page);
-            _typeTable[2] = typeof(global::Windows.UI.Xaml.Controls.UserControl);
-            _typeTable[3] = typeof(global::System.Collections.ObjectModel.ObservableCollection<global::Kozlowski.Slideshow.ListItem>);
-            _typeTable[4] = typeof(global::System.Collections.ObjectModel.Collection<global::Kozlowski.Slideshow.ListItem>);
-            _typeTable[5] = typeof(global::System.Object);
-            _typeTable[6] = typeof(global::Kozlowski.Slideshow.ListItem);
-            _typeTable[7] = typeof(global::Windows.UI.Xaml.Media.Imaging.BitmapImage);
-            _typeTable[8] = typeof(global::System.String);
-            _typeTable[9] = typeof(global::Kozlowski.Slideshow.Common.ObservableDictionary);
-            _typeTable[10] = typeof(global::Kozlowski.Slideshow.Common.NavigationHelper);
-            _typeTable[11] = typeof(global::Windows.UI.Xaml.DependencyObject);
+            _typeTable = new global::System.Type[13];
+            _typeTable[0] = typeof(global::Kozlowski.Slideshow.FileConverter);
+            _typeTable[1] = typeof(global::System.Object);
+            _typeTable[2] = typeof(global::Kozlowski.Slideshow.MainPage);
+            _typeTable[3] = typeof(global::Windows.UI.Xaml.Controls.Page);
+            _typeTable[4] = typeof(global::Windows.UI.Xaml.Controls.UserControl);
+            _typeTable[5] = typeof(global::System.Collections.ObjectModel.ObservableCollection<global::Kozlowski.Slideshow.ListItem>);
+            _typeTable[6] = typeof(global::System.Collections.ObjectModel.Collection<global::Kozlowski.Slideshow.ListItem>);
+            _typeTable[7] = typeof(global::Kozlowski.Slideshow.ListItem);
+            _typeTable[8] = typeof(global::Windows.Storage.StorageFile);
+            _typeTable[9] = typeof(global::System.String);
+            _typeTable[10] = typeof(global::Kozlowski.Slideshow.Common.ObservableDictionary);
+            _typeTable[11] = typeof(global::Kozlowski.Slideshow.Common.NavigationHelper);
+            _typeTable[12] = typeof(global::Windows.UI.Xaml.DependencyObject);
         }
 
         private int LookupTypeIndexByName(string typeName)
@@ -185,24 +187,25 @@ namespace Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo
             return -1;
         }
 
-        private object Activate_0_MainPage() { return new global::Kozlowski.Slideshow.MainPage(); }
-        private object Activate_3_ObservableCollection() { return new global::System.Collections.ObjectModel.ObservableCollection<global::Kozlowski.Slideshow.ListItem>(); }
-        private object Activate_4_Collection() { return new global::System.Collections.ObjectModel.Collection<global::Kozlowski.Slideshow.ListItem>(); }
-        private object Activate_6_ListItem() { return new global::Kozlowski.Slideshow.ListItem(); }
-        private object Activate_9_ObservableDictionary() { return new global::Kozlowski.Slideshow.Common.ObservableDictionary(); }
-        private void VectorAdd_3_ObservableCollection(object instance, object item)
+        private object Activate_0_FileConverter() { return new global::Kozlowski.Slideshow.FileConverter(); }
+        private object Activate_2_MainPage() { return new global::Kozlowski.Slideshow.MainPage(); }
+        private object Activate_5_ObservableCollection() { return new global::System.Collections.ObjectModel.ObservableCollection<global::Kozlowski.Slideshow.ListItem>(); }
+        private object Activate_6_Collection() { return new global::System.Collections.ObjectModel.Collection<global::Kozlowski.Slideshow.ListItem>(); }
+        private object Activate_7_ListItem() { return new global::Kozlowski.Slideshow.ListItem(); }
+        private object Activate_10_ObservableDictionary() { return new global::Kozlowski.Slideshow.Common.ObservableDictionary(); }
+        private void VectorAdd_5_ObservableCollection(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Kozlowski.Slideshow.ListItem>)instance;
             var newItem = (global::Kozlowski.Slideshow.ListItem)item;
             collection.Add(newItem);
         }
-        private void VectorAdd_4_Collection(object instance, object item)
+        private void VectorAdd_6_Collection(object instance, object item)
         {
             var collection = (global::System.Collections.Generic.ICollection<global::Kozlowski.Slideshow.ListItem>)instance;
             var newItem = (global::Kozlowski.Slideshow.ListItem)item;
             collection.Add(newItem);
         }
-        private void MapAdd_9_ObservableDictionary(object instance, object key, object item)
+        private void MapAdd_10_ObservableDictionary(object instance, object key, object item)
         {
             var collection = (global::System.Collections.Generic.IDictionary<global::System.String, global::System.Object>)instance;
             var newKey = (global::System.String)key;
@@ -220,9 +223,20 @@ namespace Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo
             switch (typeIndex)
             {
 
-            case 0:   //  Kozlowski.Slideshow.MainPage
+            case 0:   //  Kozlowski.Slideshow.FileConverter
+                userType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
+                userType.Activator = Activate_0_FileConverter;
+                userType.SetIsLocalType();
+                xamlType = userType;
+                break;
+
+            case 1:   //  Object
+                xamlType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 2:   //  Kozlowski.Slideshow.MainPage
                 userType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.Controls.Page"));
-                userType.Activator = Activate_0_MainPage;
+                userType.Activator = Activate_2_MainPage;
                 userType.AddMemberName("Items");
                 userType.AddMemberName("DefaultViewModel");
                 userType.AddMemberName("NavigationHelper");
@@ -230,66 +244,64 @@ namespace Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo
                 xamlType = userType;
                 break;
 
-            case 1:   //  Windows.UI.Xaml.Controls.Page
+            case 3:   //  Windows.UI.Xaml.Controls.Page
                 xamlType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 2:   //  Windows.UI.Xaml.Controls.UserControl
+            case 4:   //  Windows.UI.Xaml.Controls.UserControl
                 xamlType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
 
-            case 3:   //  System.Collections.ObjectModel.ObservableCollection`1<Kozlowski.Slideshow.ListItem>
+            case 5:   //  System.Collections.ObjectModel.ObservableCollection`1<Kozlowski.Slideshow.ListItem>
                 userType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("System.Collections.ObjectModel.Collection`1<Kozlowski.Slideshow.ListItem>"));
-                userType.CollectionAdd = VectorAdd_3_ObservableCollection;
+                userType.CollectionAdd = VectorAdd_5_ObservableCollection;
                 userType.SetIsReturnTypeStub();
                 xamlType = userType;
                 break;
 
-            case 4:   //  System.Collections.ObjectModel.Collection`1<Kozlowski.Slideshow.ListItem>
+            case 6:   //  System.Collections.ObjectModel.Collection`1<Kozlowski.Slideshow.ListItem>
                 userType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.Activator = Activate_4_Collection;
-                userType.CollectionAdd = VectorAdd_4_Collection;
+                userType.Activator = Activate_6_Collection;
+                userType.CollectionAdd = VectorAdd_6_Collection;
                 xamlType = userType;
                 break;
 
-            case 5:   //  Object
-                xamlType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlSystemBaseType(typeName, type);
-                break;
-
-            case 6:   //  Kozlowski.Slideshow.ListItem
+            case 7:   //  Kozlowski.Slideshow.ListItem
                 userType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.Activator = Activate_6_ListItem;
-                userType.AddMemberName("Image");
+                userType.Activator = Activate_7_ListItem;
+                userType.AddMemberName("File");
                 userType.AddMemberName("Path");
                 userType.AddMemberName("Name");
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 7:   //  Windows.UI.Xaml.Media.Imaging.BitmapImage
-                xamlType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlSystemBaseType(typeName, type);
-                break;
-
-            case 8:   //  String
-                xamlType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlSystemBaseType(typeName, type);
-                break;
-
-            case 9:   //  Kozlowski.Slideshow.Common.ObservableDictionary
+            case 8:   //  Windows.Storage.StorageFile
                 userType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
-                userType.DictionaryAdd = MapAdd_9_ObservableDictionary;
+                userType.SetIsReturnTypeStub();
+                xamlType = userType;
+                break;
+
+            case 9:   //  String
+                xamlType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlSystemBaseType(typeName, type);
+                break;
+
+            case 10:   //  Kozlowski.Slideshow.Common.ObservableDictionary
+                userType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Object"));
+                userType.DictionaryAdd = MapAdd_10_ObservableDictionary;
                 userType.SetIsReturnTypeStub();
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 10:   //  Kozlowski.Slideshow.Common.NavigationHelper
+            case 11:   //  Kozlowski.Slideshow.Common.NavigationHelper
                 userType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlUserType(this, typeName, type, GetXamlTypeByName("Windows.UI.Xaml.DependencyObject"));
                 userType.SetIsReturnTypeStub();
                 userType.SetIsLocalType();
                 xamlType = userType;
                 break;
 
-            case 11:   //  Windows.UI.Xaml.DependencyObject
+            case 12:   //  Windows.UI.Xaml.DependencyObject
                 xamlType = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlSystemBaseType(typeName, type);
                 break;
             }
@@ -307,35 +319,25 @@ namespace Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo
             var that = (global::Kozlowski.Slideshow.MainPage)instance;
             that.Items = (global::System.Collections.ObjectModel.ObservableCollection<global::Kozlowski.Slideshow.ListItem>)Value;
         }
-        private object get_1_ListItem_Image(object instance)
+        private object get_1_ListItem_File(object instance)
         {
             var that = (global::Kozlowski.Slideshow.ListItem)instance;
-            return that.Image;
+            return that.File;
         }
-        private void set_1_ListItem_Image(object instance, object Value)
+        private void set_1_ListItem_File(object instance, object Value)
         {
             var that = (global::Kozlowski.Slideshow.ListItem)instance;
-            that.Image = (global::Windows.UI.Xaml.Media.Imaging.BitmapImage)Value;
+            that.File = (global::Windows.Storage.StorageFile)Value;
         }
         private object get_2_ListItem_Path(object instance)
         {
             var that = (global::Kozlowski.Slideshow.ListItem)instance;
             return that.Path;
         }
-        private void set_2_ListItem_Path(object instance, object Value)
-        {
-            var that = (global::Kozlowski.Slideshow.ListItem)instance;
-            that.Path = (global::System.String)Value;
-        }
         private object get_3_ListItem_Name(object instance)
         {
             var that = (global::Kozlowski.Slideshow.ListItem)instance;
             return that.Name;
-        }
-        private void set_3_ListItem_Name(object instance, object Value)
-        {
-            var that = (global::Kozlowski.Slideshow.ListItem)instance;
-            that.Name = (global::System.String)Value;
         }
         private object get_4_MainPage_DefaultViewModel(object instance)
         {
@@ -361,23 +363,23 @@ namespace Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo
                 xamlMember.Getter = get_0_MainPage_Items;
                 xamlMember.Setter = set_0_MainPage_Items;
                 break;
-            case "Kozlowski.Slideshow.ListItem.Image":
+            case "Kozlowski.Slideshow.ListItem.File":
                 userType = (global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Kozlowski.Slideshow.ListItem");
-                xamlMember = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlMember(this, "Image", "Windows.UI.Xaml.Media.Imaging.BitmapImage");
-                xamlMember.Getter = get_1_ListItem_Image;
-                xamlMember.Setter = set_1_ListItem_Image;
+                xamlMember = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlMember(this, "File", "Windows.Storage.StorageFile");
+                xamlMember.Getter = get_1_ListItem_File;
+                xamlMember.Setter = set_1_ListItem_File;
                 break;
             case "Kozlowski.Slideshow.ListItem.Path":
                 userType = (global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Kozlowski.Slideshow.ListItem");
                 xamlMember = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlMember(this, "Path", "String");
                 xamlMember.Getter = get_2_ListItem_Path;
-                xamlMember.Setter = set_2_ListItem_Path;
+                xamlMember.SetIsReadOnly();
                 break;
             case "Kozlowski.Slideshow.ListItem.Name":
                 userType = (global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Kozlowski.Slideshow.ListItem");
                 xamlMember = new global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlMember(this, "Name", "String");
                 xamlMember.Getter = get_3_ListItem_Name;
-                xamlMember.Setter = set_3_ListItem_Name;
+                xamlMember.SetIsReadOnly();
                 break;
             case "Kozlowski.Slideshow.MainPage.DefaultViewModel":
                 userType = (global::Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo.XamlUserType)GetXamlTypeByName("Kozlowski.Slideshow.MainPage");

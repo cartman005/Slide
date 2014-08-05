@@ -10,11 +10,11 @@ namespace Kozlowski.Slideshow
 {
     public class ListItem
     {
-        public BitmapImage Image { get; set; }
+        public StorageFile File { get; set; }
 
-        public string Path { get; set; }
+        public string Path { get { return File.Path; } }
 
-        public string Name { get; set; }
+        public string Name { get { return File.DisplayName; } }
 
         public override string ToString()
         {

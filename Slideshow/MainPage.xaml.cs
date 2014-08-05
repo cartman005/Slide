@@ -138,20 +138,14 @@ namespace Kozlowski.Slideshow
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
         }
 
-        private async void LoadMoreFiles(int count)
+        private void LoadMoreFiles(int count)
         {
             StorageFile file;
-            IRandomAccessStream fileStream;
-            BitmapImage bitmapImage;
 
             for (int i = 0; i < count; i++)
             {
                 file = fileList[SingleRandom.Instance.Next(0, fileList.Count)]; // What if count is 0?
-                fileStream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
-                bitmapImage = new BitmapImage();
-                await bitmapImage.SetSourceAsync(fileStream);
-                Items.Add(new ListItem { Image = bitmapImage, Path = file.Path, Name = file.DisplayName });
-                fileStream.Dispose();
+                Items.Add(new ListItem { File = file });
                 maxIndex++;
                 Debug.WriteLine("Max " + maxIndex);
             }

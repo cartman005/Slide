@@ -13,6 +13,7 @@
     <Page.Resources>
         <!-- Collection of items displayed by this page -->
         <CollectionViewSource x:Name="ItemsViewSource" Source="{Binding Items}"/>
+        <local:FileConverter x:Key="ImageConverter"/>
     </Page.Resources>
 
     <Page.BottomAppBar>
@@ -44,7 +45,7 @@
             <FlipView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <Image Source="{Binding Image}" Stretch="Uniform"/>
+                        <Image Source="{Binding File, Converter={StaticResource ImageConverter}}" Stretch="Uniform"/>
                     </Grid>
                 </DataTemplate>
             </FlipView.ItemTemplate>
