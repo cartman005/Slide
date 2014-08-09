@@ -13,20 +13,25 @@ using Windows.UI.Notifications;
 
 namespace Kozlowski.Slideshow.Background
 {
+    // Uses code from http://code.msdn.microsoft.com/windowsapps/Tile-Update-every-minute-68dbbbff
     public sealed class TileMaker
     {        
-        public static IAsyncOperation<IReadOnlyList<StorageFile>> GetImageList(StorageFolder folder)
+        public static IAsyncOperation<IReadOnlyList<StorageFile>> GetImageList(StorageFolder folder, bool includeSubfolders)
         {
             return Task.Run<IReadOnlyList<StorageFile>>(async () =>
             {
                 List<String> fileType = new List<String>();
                 fileType.Add(".bmp");
+                fileType.Add(".gif");
                 fileType.Add(".jpg");
                 fileType.Add(".jpeg");
                 fileType.Add(".png");
                 fileType.Add(".tiff");
                 var queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileType);
-                queryOptions.FolderDepth = FolderDepth.Deep;
+                if (includeSubfolders)
+                    queryOptions.FolderDepth = FolderDepth.Deep;
+                else
+                    queryOptions.FolderDepth = FolderDepth.Shallow;
 
                 var query = folder.CreateFileQueryWithOptions(queryOptions);
 
@@ -56,13 +61,9 @@ namespace Kozlowski.Slideshow.Background
                     // create a stream from the file and decode the image
                     var fileStream = await file.OpenAsync(FileAccessMode.Read);
                     BitmapDecoder decoder = await BitmapDecoder.CreateAsync(fileStream);
-                    Debug.WriteLine("Decoded");
                     uint height310x310, width310x310;
                     double ratio;
-
-                    Debug.WriteLine("Original Width = " + decoder.PixelWidth);
-                    Debug.WriteLine("Original Height = " + decoder.PixelHeight);
-
+                
                     ratio = (double)decoder.PixelHeight / decoder.PixelWidth;
 
                     /* Landscape */
@@ -110,6 +111,10 @@ namespace Kozlowski.Slideshow.Background
                             encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, destinationStream);
                             break;
 
+                        case ".gif":
+                            encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.GifEncoderId, destinationStream);
+                            break;
+
                         case ".jpg":
                         case ".jpeg":
                             encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, destinationStream);
@@ -136,14 +141,14 @@ namespace Kozlowski.Slideshow.Background
                     /* Set tile update */
                     var tile1 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Image);
                     var tileImageAttributes = (XmlElement)tile1.GetElementsByTagName("image").Item(0);
-                    tileImageAttributes.SetAttribute("src", "ms-appdata:///local/" + file310x310.Name);
+                    tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}", file310x310.Name));
                     tileImageAttributes.SetAttribute("alt", file.DisplayName);
                     var bindingElement = (XmlElement)tile1.GetElementsByTagName("binding").Item(0);
                     bindingElement.SetAttribute("branding", "none");
 
                     var tile2 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWide310x150Image);
                     tileImageAttributes = (XmlElement)tile2.GetElementsByTagName("image").Item(0);
-                    tileImageAttributes.SetAttribute("src", "ms-appdata:///local/" + file310x310.Name);
+                    tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}", file310x310.Name));
                     tileImageAttributes.SetAttribute("alt", file.DisplayName);
                     bindingElement = (XmlElement)tile2.GetElementsByTagName("binding").Item(0);
                     bindingElement.SetAttribute("branding", "none");
@@ -153,16 +158,14 @@ namespace Kozlowski.Slideshow.Background
 
                     var tile3 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare310x310Image);
                     tileImageAttributes = (XmlElement)tile3.GetElementsByTagName("image").Item(0);
-                    tileImageAttributes.SetAttribute("src", "ms-appdata:///local/" + file310x310.Name);
+                    tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/", file310x310.Name));
                     tileImageAttributes.SetAttribute("alt", file.DisplayName);
                     bindingElement = (XmlElement)tile3.GetElementsByTagName("binding").Item(0);
                     bindingElement.SetAttribute("branding", "none");
 
                     node = tile1.ImportNode(bindingElement, true);
                     tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
-
-                    Debug.WriteLine("Done");
-
+                    
                     return tile1;
                 }
                 catch (Exception e)
@@ -179,6 +182,8 @@ namespace Kozlowski.Slideshow.Background
         {
             return Task.Run(async () =>
             {
+                Settings settings = new Settings(); // ?? Do this HERE?
+
                 var updater = TileUpdateManager.CreateTileUpdaterForApplication();
                 updater.EnableNotificationQueue(true);
                 updater.Clear();
@@ -190,7 +195,7 @@ namespace Kozlowski.Slideshow.Background
                 DateTime updateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0).AddMinutes(1);
 
                 List<StorageFile> fileList = new List<StorageFile>();
-                fileList.AddRange(await GetImageList(KnownFolders.PicturesLibrary));
+                fileList.AddRange(await GetImageList(settings.RootFolder, settings.IncludeSubfolders));
 
                 /* First background tile */
                 int index = SingleRandom.Instance.Next(0, fileList.Count);
@@ -203,16 +208,14 @@ namespace Kozlowski.Slideshow.Background
                     updater.Update(new TileNotification(tile) { ExpirationTime = now.AddMinutes(1) });
                 }
 
+                Debug.WriteLine("Create updates from " + updateTime + " to " + planTill);
                 for (var startPlanning = updateTime; startPlanning < planTill; startPlanning = startPlanning.AddSeconds(seconds))
                 {
-                    Debug.WriteLine(startPlanning);
-                    Debug.WriteLine(planTill);
-
                     try
                     {
                         if (fileList.Count < 1)
                         {
-                            fileList.AddRange(await GetImageList(KnownFolders.PicturesLibrary));
+                            fileList.AddRange(await GetImageList(settings.RootFolder, settings.IncludeSubfolders));
                         }
                         index = SingleRandom.Instance.Next(0, fileList.Count);
                         file = fileList[index];
@@ -223,8 +226,6 @@ namespace Kozlowski.Slideshow.Background
                         {
                             ScheduledTileNotification scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddMinutes(1) };
                             updater.AddToSchedule(scheduledNotification);
-
-                            Debug.WriteLine("schedule for: " + startPlanning);
                         }
                     }
                     catch (Exception e)

@@ -27,6 +27,7 @@ using Windows.Storage.Search;
 using Windows.System;
 using System.Collections.ObjectModel;
 using Kozlowski.Slideshow.Shared;
+using System.ComponentModel;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
@@ -41,7 +42,7 @@ namespace Kozlowski.Slideshow
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
         private List<StorageFile> fileList;
         private DispatcherTimer timer;
-        private ApplicationDataContainer settings = null;
+        private Settings settings;
         private bool isPaused;
         public ObservableCollection<ListItem> Items { get; set; }
         private int maxIndex;
@@ -70,7 +71,7 @@ namespace Kozlowski.Slideshow
             this.navigationHelper.LoadState += navigationHelper_LoadState;
             this.navigationHelper.SaveState += navigationHelper_SaveState;
 
-            settings = ApplicationData.Current.RoamingSettings;
+            settings = new Settings();
 
             Items = new ObservableCollection<ListItem>();
             FlipView.ItemsSource = Items;
@@ -82,7 +83,6 @@ namespace Kozlowski.Slideshow
 
         public void Move_Forward()
         {
-            Debug.WriteLine(FlipView.SelectedIndex);
             if (maxIndex - FlipView.SelectedIndex < 3)
             {
                 LoadMoreFiles(10);
@@ -110,32 +110,36 @@ namespace Kozlowski.Slideshow
         private async void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
             fileList = new List<StorageFile>();
-            fileList.AddRange(await Kozlowski.Slideshow.Background.TileMaker.GetImageList(KnownFolders.PicturesLibrary));
+            fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
             LoadMoreFiles(10);
-            int index;
-            if (settings.Values.ContainsKey(Constants.SettingsName))
-            {
-                index = (int)(settings.Values[Constants.SettingsName]);
-            }
-            else
-            {
-                index = Constants.DefaultIntervalIndex;
-            }
 
-            ((ComboBox)FindName("Interval")).SelectedIndex = index;
+            //((ComboBox)FindName("Interval")).SelectedIndexn = index;
+            Debug.WriteLine("Setting " + settings.Interval);
+            settings.PropertyChanged += x_PropertyChanged;
+            timer.Interval = TimeSpan.FromSeconds(settings.Interval);
 
             /* Register background task and create first tile updates */
             var result = await BackgroundExecutionManager.RequestAccessAsync();
             if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity ||
                 result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
             {
-                RegisterTimerTask(Constants.IndexList[index]);
+                RegisterTimerTask(settings.Interval);
                 RegisterUserTask();
             }
 
             // Set the input focus to ensure that keyboard events are raised.
             //this.Loaded += delegate { this.Focus(FocusState.Programmatic); };
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+        }
+
+        private async void x_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            timer.Interval = TimeSpan.FromSeconds(settings.Interval);
+
+            if (!timer.IsEnabled)
+                timer.Start();
+
+            await TileMaker.CreateTiles(settings.Interval);
         }
 
         private void LoadMoreFiles(int count)
@@ -147,7 +151,6 @@ namespace Kozlowski.Slideshow
                 file = fileList[SingleRandom.Instance.Next(0, fileList.Count)]; // What if count is 0?
                 Items.Add(new ListItem { File = file });
                 maxIndex++;
-                Debug.WriteLine("Max " + maxIndex);
             }
         }
 
@@ -207,7 +210,7 @@ namespace Kozlowski.Slideshow
 
         #endregion
 
-        private async void Open_File_Click(object sender, RoutedEventArgs e)
+        private async void OpenFile_Click(object sender, RoutedEventArgs e)
         {
             StorageFile file = await StorageFile.GetFileFromPathAsync(((ListItem)FlipView.SelectedItem).Path);
             LauncherOptions launcherOptions = new LauncherOptions();
@@ -256,7 +259,6 @@ namespace Kozlowski.Slideshow
         private void MainAppBar_Opened(object sender, object e)
         {
             timer.Stop();
-            Debug.WriteLine("Loaded");
             if (isPaused)
             {
                 ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
@@ -269,19 +271,10 @@ namespace Kozlowski.Slideshow
             }
         }
 
-        private async void Interval_Changed(object sender, SelectionChangedEventArgs e)
+        private void MainAppBar_Closed(object sender, object e)
         {
-            Debug.WriteLine("Interval changed");
-            int index = ((ComboBox)FindName("Interval")).SelectedIndex;
-
-            settings.Values[Constants.SettingsName] = index;
-
-            timer.Interval = TimeSpan.FromSeconds(Constants.IndexList[index]);
-
-            if (!timer.IsEnabled)
+            if (!isPaused)
                 timer.Start();
-
-            await TileMaker.CreateTiles(Constants.IndexList[index]);
         }
 
         private void RegisterTimerTask(int seconds)
@@ -312,12 +305,6 @@ namespace Kozlowski.Slideshow
             builder.TaskEntryPoint = Constants.TaskEntry;
             builder.SetTrigger(new SystemTrigger(SystemTriggerType.UserPresent, false));
             var registration = builder.Register();
-        }
-
-        private void MainAppBar_Closed(object sender, object e)
-        {
-            if (!isPaused)
-                timer.Start();
         }
     }
 }

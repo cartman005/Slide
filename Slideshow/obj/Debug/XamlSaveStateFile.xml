@@ -1,7 +1,7 @@
 <XamlCompilerSaveState>
   <ReferenceAssemblyList>
-    <LocalAssembly PathName="c:\users\dan kozlowski\documents\github\slideshow\slideshow\obj\debug\intermediatexaml\kozlowski.slideshow.exe" HashGuid="b75d2174-f558-d28b-0ab4-c281121300e7" />
-    <ReferenceAssembly PathName="c:\users\dan kozlowski\documents\github\slideshow\slideshowbackground\bin\debug\kozlowski.slideshow.background.winmd" HashGuid="a1847740-3803-2cde-17c3-18aadf4a126f" />
-    <ReferenceAssembly PathName="c:\users\dan kozlowski\documents\github\slideshow\kozlowski.slideshow.shared\bin\debug\kozlowski.slideshow.shared.dll" HashGuid="0621c6e2-3ea3-6c58-8808-1e4d745f3966" />
+    <LocalAssembly PathName="c:\users\dan kozlowski\documents\github\slideshow\slideshow\obj\debug\intermediatexaml\kozlowski.slideshow.exe" HashGuid="32f262af-8d85-4848-1f61-859196973a77" />
+    <ReferenceAssembly PathName="c:\users\dan kozlowski\documents\github\slideshow\slideshowbackground\bin\debug\kozlowski.slideshow.background.winmd" HashGuid="717c2f7f-04c1-7e58-44f9-cc0a03a0e422" />
+    <ReferenceAssembly PathName="c:\users\dan kozlowski\documents\github\slideshow\kozlowski.slideshow.shared\bin\debug\kozlowski.slideshow.shared.dll" HashGuid="d8188a63-706b-46ee-9c54-c14b81ef9141" />
   </ReferenceAssemblyList>
 </XamlCompilerSaveState>

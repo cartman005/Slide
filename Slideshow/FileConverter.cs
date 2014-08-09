@@ -42,6 +42,7 @@ namespace Kozlowski.Slideshow
             imageFile = await StorageFile.GetFileFromPathAsync(path);
             if (imageFile != null)
             {
+                /* Ensures the filestream is disposed of */
                 using (IRandomAccessStream fileStream = await imageFile.OpenReadAsync())
                 {
                     if (fileStream.CanRead)

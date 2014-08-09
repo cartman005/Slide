@@ -38,3 +38,8 @@ C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\obj\Debug\qualifiers
 C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\obj\Debug\qualifiers.txt.intermediate
 C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\obj\Debug\MultipleQualifiersPerDimensionFound.txt
 C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\obj\Debug\ProjectArchitectures.txt
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\SlideshowSettingsFlyout.xbf
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\obj\Debug\SlideshowSettingsFlyout.g.i.cs
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\obj\Debug\SlideshowSettingsFlyout.g.cs
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\obj\Debug\SlideshowSettingsFlyout.xaml
+C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\obj\Debug\SlideshowSettingsFlyout.xbf

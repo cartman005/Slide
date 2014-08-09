@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kozlowski.Slideshow.Shared;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -39,7 +40,6 @@ namespace Kozlowski.Slideshow.Background
             }
                         
             await TileMaker.CreateTiles(Constants.IndexList[index]);
-            Debug.WriteLine("Background task done");
             defferal.Complete();
         }
     }

@@ -9,6 +9,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
+using Windows.UI.ApplicationSettings;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -85,6 +86,24 @@ namespace Kozlowski.Slideshow
             }
             // Ensure the current window is active
             Window.Current.Activate();
+        }
+
+        protected override void OnWindowCreated(WindowCreatedEventArgs args)
+        {
+            SettingsPane.GetForCurrentView().CommandsRequested += OnCommandsRequested;
+        }
+
+        private void OnCommandsRequested(SettingsPane sender, SettingsPaneCommandsRequestedEventArgs args)
+        {
+
+            args.Request.ApplicationCommands.Add(new SettingsCommand(
+                "Custom Setting", "Custom Setting", (handler) => ShowSettingsFlyout()));
+        }
+
+        public void ShowSettingsFlyout()
+        {
+            SlideshowSettingsFlyout settings = new SlideshowSettingsFlyout();
+            settings.Show();
         }
 
         /// <summary>

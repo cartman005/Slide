@@ -1,5 +1,5 @@
 ﻿
-namespace Kozlowski.Slideshow.Background
+namespace Kozlowski.Slideshow.Shared
 {
     public static class Constants
     {
