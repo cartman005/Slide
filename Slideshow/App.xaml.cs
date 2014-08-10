@@ -95,9 +95,7 @@ namespace Kozlowski.Slideshow
 
         private void OnCommandsRequested(SettingsPane sender, SettingsPaneCommandsRequestedEventArgs args)
         {
-
-            args.Request.ApplicationCommands.Add(new SettingsCommand(
-                "Custom Setting", "Custom Setting", (handler) => ShowSettingsFlyout()));
+            args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Options", (handler) => ShowSettingsFlyout()));
         }
 
         public void ShowSettingsFlyout()

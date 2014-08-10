@@ -182,7 +182,7 @@ namespace Kozlowski.Slideshow.Background
         {
             return Task.Run(async () =>
             {
-                Settings settings = new Settings(); // ?? Do this HERE?
+                Settings settings = Settings.Instance(); // ?? Do this HERE?
 
                 var updater = TileUpdateManager.CreateTileUpdaterForApplication();
                 updater.EnableNotificationQueue(true);
@@ -220,7 +220,7 @@ namespace Kozlowski.Slideshow.Background
                         index = SingleRandom.Instance.Next(0, fileList.Count);
                         file = fileList[index];
                         fileList.RemoveAt(index);
-
+                        Debug.WriteLine("Schedule at " + startPlanning);
                         tile = await CreateTileUpdate(file);
                         if (tile != null)
                         {

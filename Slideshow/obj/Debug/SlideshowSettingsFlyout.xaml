@@ -7,37 +7,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     IconSource="Assets/SmallLogo.png"
-    Title="SettingsFlyout"
+    Title="Slide"
     d:DesignWidth="346">
 
-    <!-- This StackPanel acts as a root panel for vertical layout of the content sections -->
     <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
-
-        <!-- The StackPanel(s) below define individual content sections -->
-
-        <!-- Content Section 1-->
+        
+        <!-- Interval dropdown -->
         <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
-
-            <!-- Section 1 header -->
-            <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="Lorem ipsum" />
-
-            <!-- Section 1 body -->
-            <TextBlock Style="{StaticResource BodyTextBlockStyle}" Margin="0,0,0,25" TextWrapping="Wrap">
-                <TextBlock.Text>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit,
-                    sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                </TextBlock.Text>
-            </TextBlock>
-
-        </StackPanel>
-
-        <!-- Content Section 2-->
-        <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
-            <!-- Section 2 header -->
-            <!--<TextBlock Text="Interval" Style="{StaticResource TitleTextBlockStyle}"/>-->
- 
-            <!-- Section 2 body -->
-            <ComboBox x:ConnectionId='3' Name="Interval" Header="Interval:" Margin="0,7,0,0" HorizontalAlignment="Left"                                     PlaceholderText="Select Interval" SelectedIndex="{Binding Path=Increment}">
+            <TextBlock Text="Interval" Style="{StaticResource TitleTextBlockStyle}"/>
+            <ComboBox x:ConnectionId='3' Name="Interval" Margin="0,7,0,0" HorizontalAlignment="Left"                                     PlaceholderText="Select Interval" SelectedIndex="{Binding Path=Index, Mode=TwoWay}">
                 <x:String>5 seconds</x:String>
                 <x:String>10 seconds</x:String>
                 <x:String>30 seconds</x:String>
@@ -45,25 +23,17 @@
                 <x:String>3 minutes</x:String>
             </ComboBox>
         </StackPanel>
-
-        <!-- Content Section 3-->
+        
+        <!-- Root Folder -->
         <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
-            <!-- Section 3 header -->
-            <TextBlock Text="Root Folder" Style="{StaticResource TitleTextBlockStyle}"/>
-            <TextBox Text="{Binding Path=FilePathString}"/>
-            <!-- Section 3 body -->
-            <Button x:ConnectionId='2' Content="Browse"                     />
+            <TextBlock Text="Picture Location" Style="{StaticResource TitleTextBlockStyle}"/>
+            <StackPanel Margin="0,7,0,0" Orientation="Horizontal">
+                <TextBox Header="Root Folder" HorizontalAlignment="Left" Width="150" Text="{Binding Path=FolderPath, Mode=TwoWay}"/>
+                <Button x:ConnectionId='2' x:Name="Browse" Content="Browse" Margin="20,0,0,0"                      VerticalAlignment="Bottom"/>
+            </StackPanel>
+            <ToggleSwitch x:ConnectionId='1' Name="SubfoldersSwitch" Header="Include Sub-Folders" IsOn="{Binding Path=IncludeSubfolders, Mode=TwoWay}"                                />
         </StackPanel>
-
-        <!-- Content Section 3-->
-        <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
-            <!-- Section 3 header -->
-            <TextBlock Text="Include Sub-Folders?" Style="{StaticResource TitleTextBlockStyle}"/>
-
-            <!-- Section 3 body -->
-            <ToggleSwitch x:ConnectionId='1' IsOn="{Binding Path=IncludeSubfolders}"                                />
-        </StackPanel>
-
+        
     </StackPanel>
 </SettingsFlyout>
 

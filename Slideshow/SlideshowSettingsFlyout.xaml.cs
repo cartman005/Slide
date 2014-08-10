@@ -27,7 +27,7 @@ namespace Kozlowski.Slideshow
         public SlideshowSettingsFlyout()
         {
             this.InitializeComponent();
-            settings = new Settings();
+            settings = Settings.Instance();
             this.DataContext = settings;
         }
 
@@ -61,6 +61,11 @@ namespace Kozlowski.Slideshow
         }
 
         private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void TextBlock_SelectionChanged(object sender, RoutedEventArgs e)
         {
 
         }

@@ -71,7 +71,7 @@ namespace Kozlowski.Slideshow
             this.navigationHelper.LoadState += navigationHelper_LoadState;
             this.navigationHelper.SaveState += navigationHelper_SaveState;
 
-            settings = new Settings();
+            settings = Settings.Instance();
 
             Items = new ObservableCollection<ListItem>();
             FlipView.ItemsSource = Items;
@@ -115,7 +115,7 @@ namespace Kozlowski.Slideshow
 
             //((ComboBox)FindName("Interval")).SelectedIndexn = index;
             Debug.WriteLine("Setting " + settings.Interval);
-            settings.PropertyChanged += x_PropertyChanged;
+            settings.PropertyChanged += Settings_Changed;
             timer.Interval = TimeSpan.FromSeconds(settings.Interval);
 
             /* Register background task and create first tile updates */
@@ -132,14 +132,23 @@ namespace Kozlowski.Slideshow
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
         }
 
-        private async void x_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private async void Settings_Changed(object sender, PropertyChangedEventArgs e)
         {
+            Debug.WriteLine("Settings Changed");
             timer.Interval = TimeSpan.FromSeconds(settings.Interval);
 
             if (!timer.IsEnabled)
                 timer.Start();
 
             await TileMaker.CreateTiles(settings.Interval);
+
+            /* Change collection of images to use */
+            if (e.PropertyName == "FolderPath")
+            {
+                Items.Clear();
+                maxIndex = 0;
+                LoadMoreFiles(10);
+            }
         }
 
         private void LoadMoreFiles(int count)

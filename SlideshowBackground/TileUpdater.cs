@@ -40,6 +40,7 @@ namespace Kozlowski.Slideshow.Background
             }
                         
             await TileMaker.CreateTiles(Constants.IndexList[index]);
+            Debug.WriteLine("Finished the background task");
             defferal.Complete();
         }
     }
