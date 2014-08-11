@@ -158,7 +158,7 @@ namespace Kozlowski.Slideshow.Background
 
                     var tile3 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare310x310Image);
                     tileImageAttributes = (XmlElement)tile3.GetElementsByTagName("image").Item(0);
-                    tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/", file310x310.Name));
+                    tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}", file310x310.Name));
                     tileImageAttributes.SetAttribute("alt", file.DisplayName);
                     bindingElement = (XmlElement)tile3.GetElementsByTagName("binding").Item(0);
                     bindingElement.SetAttribute("branding", "none");

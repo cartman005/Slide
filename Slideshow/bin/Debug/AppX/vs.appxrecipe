@@ -8,7 +8,7 @@
     <PackageArchitecture>neutral</PackageArchitecture>
     <PackageIdentityName>09863c68-5f10-4ed6-853c-d466e1d1386e</PackageIdentityName>
     <IntermediateOutputPath>C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\obj\Debug\</IntermediateOutputPath>
-    <RegisteredManifestChecksum>E611CE946085FB5C5AEF0712B641D669C66013DCBF0191D8BE062F26E9CDD95E</RegisteredManifestChecksum>
+    <RegisteredManifestChecksum>8146DCF3891C0F95C388F2D4728EAE4E98F786EC499BCA605C535F64BDE9EFB8</RegisteredManifestChecksum>
     <RegisteredPackageMoniker>09863c68-5f10-4ed6-853c-d466e1d1386e_1.0.0.0_neutral__4rbkc058yf47p</RegisteredPackageMoniker>
     <RegisteredUserModeAppID>09863c68-5f10-4ed6-853c-d466e1d1386e_4rbkc058yf47p!App</RegisteredUserModeAppID>
     <RegisteredPackageID>09863c68-5f10-4ed6-853c-d466e1d1386e</RegisteredPackageID>
@@ -20,96 +20,166 @@
     <AppXManifest Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:55:57.914</Modified>
+      <Modified>2014-08-11T02:22:19.979</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\Kozlowski.Slideshow.exe">
       <PackagePath>Kozlowski.Slideshow.exe</PackagePath>
-      <Modified>2014-08-10T16:54:36.579</Modified>
+      <Modified>2014-08-11T02:22:17.873</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\SlideshowBackground\bin\Debug\Kozlowski.Slideshow.Background.winmd">
       <PackagePath>Kozlowski.Slideshow.Background.winmd</PackagePath>
-      <Modified>2014-08-10T16:53:10.748</Modified>
+      <Modified>2014-08-10T17:03:23.620</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Kozlowski.Slideshow.Shared\bin\Debug\Kozlowski.Slideshow.Shared.dll">
       <PackagePath>Kozlowski.Slideshow.Shared.dll</PackagePath>
-      <Modified>2014-08-10T15:14:23.037</Modified>
+      <Modified>2014-08-10T17:03:22.764</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\BadgeLogo.scale-100.png">
       <PackagePath>Assets\BadgeLogo.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-07-26T18:03:53.960</Modified>
+      <Modified>2014-08-11T02:14:01.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\BadgeLogo.scale-140.png">
+      <PackagePath>Assets\BadgeLogo.scale-140.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:13:48.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\BadgeLogo.scale-180.png">
+      <PackagePath>Assets\BadgeLogo.scale-180.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:13:37.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Logo.scale-100.png">
       <PackagePath>Assets\Logo.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:24:16.000</Modified>
+      <Modified>2014-08-11T02:11:32.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Logo.scale-140.png">
+      <PackagePath>Assets\Logo.scale-140.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:11:19.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Logo.scale-180.png">
+      <PackagePath>Assets\Logo.scale-180.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:11:05.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Logo.scale-80.png">
+      <PackagePath>Assets\Logo.scale-80.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:11:42.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\SmallLogo.scale-100.png">
       <PackagePath>Assets\SmallLogo.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:25:09.000</Modified>
+      <Modified>2014-08-11T02:15:12.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\SmallLogo.scale-140.png">
+      <PackagePath>Assets\SmallLogo.scale-140.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:14:58.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\SmallLogo.scale-180.png">
+      <PackagePath>Assets\SmallLogo.scale-180.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:14:41.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\SmallLogo.scale-80.png">
+      <PackagePath>Assets\SmallLogo.scale-80.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:14:18.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\SplashScreen.scale-100.png">
       <PackagePath>Assets\SplashScreen.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:17:55.000</Modified>
+      <Modified>2014-08-11T02:06:38.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\SplashScreen.scale-140.png">
       <PackagePath>Assets\SplashScreen.scale-140.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:17:37.000</Modified>
+      <Modified>2014-08-11T02:06:11.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\SplashScreen.scale-180.png">
       <PackagePath>Assets\SplashScreen.scale-180.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:14:59.000</Modified>
+      <Modified>2014-08-11T02:05:56.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Square310x310Logo.scale-100.png">
       <PackagePath>Assets\Square310x310Logo.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:21:02.000</Modified>
+      <Modified>2014-08-10T17:21:16.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Square310x310Logo.scale-140.png">
       <PackagePath>Assets\Square310x310Logo.scale-140.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:20:40.000</Modified>
+      <Modified>2014-08-10T17:21:02.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Square310x310Logo.scale-180.png">
       <PackagePath>Assets\Square310x310Logo.scale-180.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:20:25.000</Modified>
+      <Modified>2014-08-10T17:23:06.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Square310x310Logo.scale-80.png">
       <PackagePath>Assets\Square310x310Logo.scale-80.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:21:29.000</Modified>
+      <Modified>2014-08-10T17:21:31.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Square70x70Logo.scale-100.png">
+      <PackagePath>Assets\Square70x70Logo.scale-100.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:12:42.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Square70x70Logo.scale-140.png">
+      <PackagePath>Assets\Square70x70Logo.scale-140.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:12:32.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Square70x70Logo.scale-180.png">
+      <PackagePath>Assets\Square70x70Logo.scale-180.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:12:22.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Square70x70Logo.scale-80.png">
+      <PackagePath>Assets\Square70x70Logo.scale-80.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:12:51.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\StoreLogo.scale-100.png">
       <PackagePath>Assets\StoreLogo.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:24:44.000</Modified>
+      <Modified>2014-08-11T02:16:47.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\StoreLogo.scale-140.png">
+      <PackagePath>Assets\StoreLogo.scale-140.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:16:36.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\StoreLogo.scale-180.png">
+      <PackagePath>Assets\StoreLogo.scale-180.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2014-08-11T02:16:26.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Wide310x150Logo.scale-140.png">
       <PackagePath>Assets\Wide310x150Logo.scale-140.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:22:50.000</Modified>
+      <Modified>2014-08-10T17:23:37.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Wide310x150Logo.scale-180.png">
       <PackagePath>Assets\Wide310x150Logo.scale-180.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:22:37.000</Modified>
+      <Modified>2014-08-10T17:23:22.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Wide310x150Logo.scale-100.png">
       <PackagePath>Assets\Wide310x150Logo.scale-100.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:23:09.000</Modified>
+      <Modified>2014-08-10T17:23:50.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Assets\Wide310x150Logo.scale-80.png">
       <PackagePath>Assets\Wide310x150Logo.scale-80.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2014-08-10T16:23:24.000</Modified>
+      <Modified>2014-08-10T17:24:01.000</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\Common\ReadMe.txt">
       <PackagePath>Common\ReadMe.txt</PackagePath>
@@ -133,7 +203,7 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\Slideshow\bin\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
-      <Modified>2014-08-10T16:55:56.812</Modified>
+      <Modified>2014-08-11T02:22:18.148</Modified>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>

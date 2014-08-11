@@ -83,7 +83,13 @@ namespace Kozlowski.Slideshow
 
         public string FolderPath
         {
-            get { return RootFolder.Path; }
+            get
+            { 
+                var path = RootFolder.Path;
+                if (path == null)
+                    path = RootFolder.DisplayName;
+                return path;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
