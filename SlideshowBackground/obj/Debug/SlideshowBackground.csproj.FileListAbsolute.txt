@@ -1,3 +1,0 @@
-C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\SlideshowBackground\obj\Debug\SlideshowBackground.winmd
-C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\SlideshowBackground\obj\Debug\SlideshowBackground.winmdobj
-C:\Users\Dan Kozlowski\Documents\GitHub\Slideshow\SlideshowBackground\obj\Debug\SlideshowBackground.compile.pdb
