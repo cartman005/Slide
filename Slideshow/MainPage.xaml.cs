@@ -72,13 +72,16 @@ namespace Kozlowski.Slideshow
             this.navigationHelper.SaveState += navigationHelper_SaveState;
 
             settings = Settings.Instance();
+            settings.PropertyChanged += Settings_Changed;
 
             Items = new ObservableCollection<ListItem>();
             FlipView.ItemsSource = Items;
 
             timer = new DispatcherTimer();
             timer.Tick += Timer_Tick;
-            isPaused = false;
+            isPaused = true;
+
+            fileList = new List<StorageFile>();
         }
 
         public void Move_Forward()
@@ -109,16 +112,13 @@ namespace Kozlowski.Slideshow
         /// session. The state will be null the first time a page is visited.</param>
         private async void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
-            fileList = new List<StorageFile>();
             fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
             LoadMoreFiles(10);
 
-            //((ComboBox)FindName("Interval")).SelectedIndexn = index;
-            Debug.WriteLine("Setting " + settings.Interval);
-            settings.PropertyChanged += Settings_Changed;
+            isPaused = false;
             timer.Interval = TimeSpan.FromSeconds(settings.Interval);
 
-            /* Register background task and create first tile updates */
+            /* Register background task */
             var result = await BackgroundExecutionManager.RequestAccessAsync();
             if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity ||
                 result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
@@ -130,6 +130,10 @@ namespace Kozlowski.Slideshow
             // Set the input focus to ensure that keyboard events are raised.
             //this.Loaded += delegate { this.Focus(FocusState.Programmatic); };
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+
+            /* Create first tile updates */
+            Debug.WriteLine("Create updates");
+            await TileMaker.CreateTiles(settings.Interval, fileList);
         }
 
         private async void Settings_Changed(object sender, PropertyChangedEventArgs e)
@@ -140,15 +144,19 @@ namespace Kozlowski.Slideshow
             if (!timer.IsEnabled)
                 timer.Start();
 
-            await TileMaker.CreateTiles(settings.Interval);
-
             /* Change collection of images to use */
             if (e.PropertyName == "FolderPath")
             {
+                Debug.WriteLine("The selected index was " + FlipView.SelectedIndex);
                 Items.Clear();
                 maxIndex = 0;
+                fileList.Clear();
+                fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
                 LoadMoreFiles(10);
+                Debug.WriteLine("The selected index is now "+ FlipView.SelectedIndex);
             }
+            
+            await TileMaker.CreateTiles(settings.Interval, fileList);
         }
 
         private void LoadMoreFiles(int count)
@@ -253,7 +261,8 @@ namespace Kozlowski.Slideshow
         {
             Reset_Timer();
 
-            FileName.Text = ((ListItem)FlipView.SelectedItem).Name;
+            if (((ListItem)FlipView.SelectedItem) != null)
+                FileName.Text = ((ListItem)FlipView.SelectedItem).Name;
 
             if (maxIndex - FlipView.SelectedIndex < 3)
                 LoadMoreFiles(10);

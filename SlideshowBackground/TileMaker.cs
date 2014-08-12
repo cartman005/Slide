@@ -178,7 +178,7 @@ namespace Kozlowski.Slideshow.Background
             }).AsAsyncOperation<XmlDocument>();
         }
 
-        public static IAsyncAction CreateTiles(int seconds)
+        public static IAsyncAction CreateTiles(int seconds, IReadOnlyList<StorageFile> IFileList)
         {
             return Task.Run(async () =>
             {
@@ -195,8 +195,8 @@ namespace Kozlowski.Slideshow.Background
                 DateTime updateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0).AddMinutes(1);
 
                 List<StorageFile> fileList = new List<StorageFile>();
-                fileList.AddRange(await GetImageList(settings.RootFolder, settings.IncludeSubfolders));
-
+                fileList.AddRange(IFileList);
+                
                 /* First background tile */
                 int index = SingleRandom.Instance.Next(0, fileList.Count);
                 StorageFile file = fileList[index];

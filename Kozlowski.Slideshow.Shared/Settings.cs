@@ -35,8 +35,6 @@ namespace Kozlowski.Slideshow
             return instance;
         }
 
-        // Should be singleton?
-
         public int Index
         {
             get
@@ -86,7 +84,8 @@ namespace Kozlowski.Slideshow
             get
             { 
                 var path = RootFolder.Path;
-                if (path == null)
+                Debug.WriteLine("The path is " + path);
+                if (path == "")
                     path = RootFolder.DisplayName;
                 return path;
             }

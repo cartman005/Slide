@@ -742,10 +742,3 @@ namespace Kozlowski.Slideshow.Kozlowski_Slideshow_XamlTypeInfo
 }
 
 
-
-
-
-
-
-
-

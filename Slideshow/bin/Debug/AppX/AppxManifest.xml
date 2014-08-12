@@ -44,8 +44,8 @@
     <Extension Category="windows.activatableClass.inProcessServer">
       <InProcessServer>
         <Path>CLRHost.dll</Path>
-        <ActivatableClass ActivatableClassId="Kozlowski.Slideshow.Background.TileUpdater" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Kozlowski.Slideshow.Background.TileMaker" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Kozlowski.Slideshow.Background.TileUpdater" ThreadingModel="both" />
       </InProcessServer>
     </Extension>
   </Extensions>

@@ -27,9 +27,9 @@
         <!-- Root Folder -->
         <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
             <TextBlock Text="Picture Location" Style="{StaticResource TitleTextBlockStyle}"/>
-            <StackPanel Margin="0,7,0,0" Orientation="Horizontal">
-                <TextBox Header="Root Folder" HorizontalAlignment="Left" Width="150" Text="{Binding Path=FolderPath, Mode=TwoWay}"/>
-                <Button x:ConnectionId='2' x:Name="Browse" Content="Browse" Margin="20,0,0,0"                      VerticalAlignment="Bottom"/>
+            <StackPanel Margin="0,7,0,0" Orientation="Vertical">
+                <TextBox Header="Root Folder" HorizontalAlignment="Left" Width="250" IsEnabled="False" Text="{Binding FolderPath}"/>
+                <Button x:ConnectionId='2' x:Name="Browse" Content="Browse"                      VerticalAlignment="Bottom"/>
             </StackPanel>
             <ToggleSwitch x:ConnectionId='1' Name="SubfoldersSwitch" Header="Include Sub-Folders" IsOn="{Binding Path=IncludeSubfolders, Mode=TwoWay}"                                />
         </StackPanel>

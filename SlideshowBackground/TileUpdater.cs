@@ -18,30 +18,37 @@ namespace Kozlowski.Slideshow.Background
 {
     public sealed class TileUpdater : IBackgroundTask
     {
-        private ApplicationDataContainer settings = null;
+        private Settings settings;
+        private List<StorageFile> fileList;
 
         public TileUpdater()
         {
-            settings = ApplicationData.Current.RoamingSettings;
+            settings = Settings.Instance();
         }
 
         public async void Run(IBackgroundTaskInstance taskInstance)
         {            
             var defferal = taskInstance.GetDeferral();
-            int index;
-            settings = ApplicationData.Current.RoamingSettings;
-            if (settings.Values.ContainsKey(Constants.SettingsName))
-            {
-                index = (int)(settings.Values[Constants.SettingsName]);
-            }
-            else
-            {
-                index = Constants.DefaultIntervalIndex;
-            }
-                        
-            await TileMaker.CreateTiles(Constants.IndexList[index]);
+            fileList = new List<StorageFile>();
+            fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));            
+            await TileMaker.CreateTiles(settings.Interval, fileList);
             Debug.WriteLine("Finished the background task");
+            // settings.PropertyChanged += settings_PropertyChanged;
             defferal.Complete();
         }
+
+        /* This doesn't work in Windows Runtime?
+        private async void settings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            Debug.WriteLine("Running property changed from background");
+
+            if (e.PropertyName == "FolderPath")
+            {
+                fileList.Clear();
+                fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
+            }
+            await TileMaker.CreateTiles(settings.Interval, fileList);
+        }
+         */
     }
 }
