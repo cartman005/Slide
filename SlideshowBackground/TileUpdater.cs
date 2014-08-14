@@ -23,7 +23,7 @@ namespace Kozlowski.Slideshow.Background
 
         public TileUpdater()
         {
-            settings = Settings.Instance();
+            settings = Settings.Instance;
         }
 
         public async void Run(IBackgroundTaskInstance taskInstance)
@@ -37,7 +37,8 @@ namespace Kozlowski.Slideshow.Background
             defferal.Complete();
         }
 
-        /* This doesn't work in Windows Runtime?
+        // TODO Can this work in Windows Runtime?
+        /* 
         private async void settings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             Debug.WriteLine("Running property changed from background");

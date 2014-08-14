@@ -27,12 +27,15 @@ namespace Kozlowski.Slideshow
                  folder = KnownFolders.PicturesLibrary;
         }
 
-        public static Settings Instance()
+        public static Settings Instance
         {
-            if (instance == null)
-                instance = new Settings();
+            get
+            {
+                if (instance == null)
+                    instance = new Settings();
 
-            return instance;
+                return instance;
+            }
         }
 
         public int Index
@@ -115,6 +118,22 @@ namespace Kozlowski.Slideshow
             {
                 settings.Values["Subfolders"] = value;
                 NotifyPropertyChanged("IncludeSubfolders");
+            }
+        }
+
+        public bool ImagesFound
+        {
+            get
+            {
+                if (settings.Values["ImagesFound"] == null)
+                    settings.Values["ImagesFound"] = true;
+
+                return (bool)settings.Values["ImagesFound"];
+            }
+            set
+            {
+                settings.Values["ImagesFound"] = value;
+                NotifyPropertyChanged("ImagesFound");
             }
         }
     }

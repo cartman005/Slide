@@ -28,6 +28,7 @@ using Windows.System;
 using System.Collections.ObjectModel;
 using Kozlowski.Slideshow.Shared;
 using System.ComponentModel;
+using Windows.UI.Popups;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
@@ -71,7 +72,7 @@ namespace Kozlowski.Slideshow
             this.navigationHelper.LoadState += navigationHelper_LoadState;
             this.navigationHelper.SaveState += navigationHelper_SaveState;
 
-            settings = Settings.Instance();
+            settings = Settings.Instance;
             settings.PropertyChanged += Settings_Changed;
 
             Items = new ObservableCollection<ListItem>();
@@ -94,7 +95,6 @@ namespace Kozlowski.Slideshow
 
         public void Reset_Timer()
         {
-            // Reset the timer
             timer.Stop();
             timer.Start();
         }
@@ -113,9 +113,9 @@ namespace Kozlowski.Slideshow
         private async void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
             fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
+            isPaused = false; // May be changed by LoadMoreFiles so shouldn't be changed after
             LoadMoreFiles(10);
 
-            isPaused = false;
             timer.Interval = TimeSpan.FromSeconds(settings.Interval);
 
             /* Register background task */
@@ -145,7 +145,7 @@ namespace Kozlowski.Slideshow
                 timer.Start();
 
             /* Change collection of images to use */
-            if (e.PropertyName == "FolderPath")
+            if (e.PropertyName == "FolderPath" || e.PropertyName == "IncludeSubfolders")
             {
                 Debug.WriteLine("The selected index was " + FlipView.SelectedIndex);
                 Items.Clear();
@@ -159,15 +159,69 @@ namespace Kozlowski.Slideshow
             await TileMaker.CreateTiles(settings.Interval, fileList);
         }
 
-        private void LoadMoreFiles(int count)
+        private async void LoadMoreFiles(int count)
         {
+            int index;
             StorageFile file;
+
+            SingleRandom random = SingleRandom.Instance;
 
             for (int i = 0; i < count; i++)
             {
-                file = fileList[SingleRandom.Instance.Next(0, fileList.Count)]; // What if count is 0?
-                Items.Add(new ListItem { File = file });
-                maxIndex++;
+                if (fileList.Count < count)
+                    fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
+
+                index = random.Next(0, fileList.Count);
+
+                if (fileList.Count >= index + 1)
+                {
+                    file = fileList[index];
+                    Items.Add(new ListItem { File = file });
+                    fileList.RemoveAt(index);
+                    maxIndex++;
+                }
+                else
+                {
+                    Debug.WriteLine("No images found");
+                    Pause_Click(null, null);
+
+                    // Create the message dialog and set its content
+                    var messageDialog = new MessageDialog("No image files were found in the source folder.");
+
+                    // Add commands and set their callbacks; both buttons use the same callback function instead of inline event handlers
+                    messageDialog.Commands.Add(new UICommand(
+                        "Try again",
+                        new UICommandInvokedHandler(this.CommandInvokedHandler)));
+                    messageDialog.Commands.Add(new UICommand(
+                        "Close",
+                        new UICommandInvokedHandler(this.CommandInvokedHandler)));
+
+                    // Set the command that will be invoked by default
+                    messageDialog.DefaultCommandIndex = 0;
+
+                    // Set the command to be invoked when escape is pressed
+                    messageDialog.CancelCommandIndex = 1;
+
+                    // Show the message dialog
+                    await messageDialog.ShowAsync();
+
+                    return;
+                }
+            }
+        }
+
+        private void CommandInvokedHandler(IUICommand command)
+        {
+            switch(command.Label)
+            {
+                case "Try again":
+                    Move_Forward();
+                    Play_Click(null, null);
+                    break;
+
+                case "Close":
+                    // Do nothing
+                    break;
             }
         }
 

@@ -27,7 +27,7 @@ namespace Kozlowski.Slideshow
         public SlideshowSettingsFlyout()
         {
             this.InitializeComponent();
-            settings = Settings.Instance();
+            settings = Settings.Instance;
             this.DataContext = settings;
         }
 

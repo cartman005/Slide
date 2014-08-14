@@ -182,7 +182,9 @@ namespace Kozlowski.Slideshow.Background
         {
             return Task.Run(async () =>
             {
-                Settings settings = Settings.Instance(); // ?? Do this HERE?
+                // TODO Should the settings be created here?
+                Settings settings = Settings.Instance;
+                SingleRandom random = SingleRandom.Instance;
 
                 var updater = TileUpdateManager.CreateTileUpdaterForApplication();
                 updater.EnableNotificationQueue(true);
@@ -198,39 +200,56 @@ namespace Kozlowski.Slideshow.Background
                 fileList.AddRange(IFileList);
                 
                 /* First background tile */
-                int index = SingleRandom.Instance.Next(0, fileList.Count);
-                StorageFile file = fileList[index];
-                fileList.RemoveAt(index);
+                int index = random.Next(0, fileList.Count);
+                StorageFile file;
 
-                var tile = await CreateTileUpdate(file);
-                if (tile != null)
-                {
-                    updater.Update(new TileNotification(tile) { ExpirationTime = now.AddMinutes(1) });
-                }
+                if (fileList.Count >= index + 1)
+                {                
+                    file = fileList[index];
+                    fileList.RemoveAt(index);
 
-                Debug.WriteLine("Create updates from " + updateTime + " to " + planTill);
-                for (var startPlanning = updateTime; startPlanning < planTill; startPlanning = startPlanning.AddSeconds(seconds))
-                {
-                    try
+                    var tile = await CreateTileUpdate(file);
+                    if (tile != null)
                     {
-                        if (fileList.Count < 1)
-                        {
-                            fileList.AddRange(await GetImageList(settings.RootFolder, settings.IncludeSubfolders));
-                        }
-                        index = SingleRandom.Instance.Next(0, fileList.Count);
-                        file = fileList[index];
-                        fileList.RemoveAt(index);
-                        Debug.WriteLine("Schedule at " + startPlanning);
-                        tile = await CreateTileUpdate(file);
-                        if (tile != null)
-                        {
-                            ScheduledTileNotification scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddMinutes(1) };
-                            updater.AddToSchedule(scheduledNotification);
-                        }
+                        updater.Update(new TileNotification(tile) { ExpirationTime = now.AddMinutes(1) });
                     }
-                    catch (Exception e)
+
+                    Debug.WriteLine("Create updates from " + updateTime + " to " + planTill);
+                    for (var startPlanning = updateTime; startPlanning < planTill; startPlanning = startPlanning.AddSeconds(seconds))
                     {
-                        Debug.WriteLine("exception: " + e.Message);
+                        /*
+                        try
+                        {
+                        */
+                            if (fileList.Count < 1)
+                                fileList.AddRange(await GetImageList(settings.RootFolder, settings.IncludeSubfolders));
+                        
+                            index = random.Next(0, fileList.Count);
+                            if (fileList.Count >= index + 1)
+                            {
+                                file = fileList[index];
+                                fileList.RemoveAt(index);
+                                Debug.WriteLine("Schedule at " + startPlanning);
+                                tile = await CreateTileUpdate(file);
+                                if (tile != null)
+                                {
+                                    ScheduledTileNotification scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddMinutes(1) };
+                                    updater.AddToSchedule(scheduledNotification);
+                                }
+                            }
+                            else
+                            {
+                                Debug.WriteLine("No images found");
+                                return;
+                                // TODO This should be handled
+                            }
+                        /*
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.WriteLine("exception: " + e.Message);
+                        }
+                        */
                     }
                 }
             }).AsAsyncAction();
