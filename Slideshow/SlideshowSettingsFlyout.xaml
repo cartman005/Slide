@@ -15,7 +15,7 @@
         <!-- Interval dropdown -->
         <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
             <TextBlock Text="Interval" Style="{StaticResource TitleTextBlockStyle}"/>
-            <ComboBox Name="Interval" Margin="0,7,0,0" HorizontalAlignment="Left" SelectionChanged="Interval_Changed" PlaceholderText="Select Interval" SelectedIndex="{Binding Path=Index, Mode=TwoWay}">
+            <ComboBox Name="Interval" Margin="0,7,0,0" HorizontalAlignment="Left" PlaceholderText="Select Interval" SelectedIndex="{Binding Path=Index, Mode=TwoWay}">
                 <x:String>5 seconds</x:String>
                 <x:String>10 seconds</x:String>
                 <x:String>30 seconds</x:String>
@@ -29,9 +29,9 @@
             <TextBlock Text="Picture Location" Style="{StaticResource TitleTextBlockStyle}"/>
             <StackPanel Margin="0,7,0,0" Orientation="Vertical">
                 <TextBox Header="Root Folder" HorizontalAlignment="Left" Width="250" IsEnabled="False" Text="{Binding FolderPath}"/>
-                <Button x:Name="Browse" Content="Browse" Click="Button_Click" VerticalAlignment="Bottom"/>
+                <Button x:Name="Browse" Content="Browse" Click="BrowseForRootFolder" VerticalAlignment="Bottom"/>
             </StackPanel>
-            <ToggleSwitch Name="SubfoldersSwitch" Header="Include Sub-Folders" IsOn="{Binding Path=IncludeSubfolders, Mode=TwoWay}" Toggled="ToggleSwitch_Toggled" />
+            <ToggleSwitch Name="SubfoldersSwitch" Header="Include Sub-Folders" IsOn="{Binding Path=IncludeSubfolders, Mode=TwoWay}" />
         </StackPanel>
         
     </StackPanel>

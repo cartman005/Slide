@@ -31,16 +31,7 @@ namespace Kozlowski.Slideshow
             this.DataContext = settings;
         }
 
-        private void Interval_Changed(object sender, SelectionChangedEventArgs e)
-        {        
-            /*
-            int index = ((ComboBox)FindName("Interval")).SelectedIndex;
-
-            settings.Values[Constants.SettingsName] = index;
-             */
-        }
-
-        private async void Button_Click(object sender, RoutedEventArgs e)
+        private async void BrowseForRootFolder(object sender, RoutedEventArgs e)
         {
             var folderPicker = new FolderPicker();
 
@@ -60,17 +51,5 @@ namespace Kozlowski.Slideshow
                 settings.RootFolder = folder;
         }
 
-        private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void TextBlock_SelectionChanged(object sender, RoutedEventArgs e)
-        {
-
-        }
-
     }
-
-
 }

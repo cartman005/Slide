@@ -59,114 +59,123 @@ namespace Kozlowski.Slideshow.Background
                         return null;
 
                     // create a stream from the file and decode the image
-                    var fileStream = await file.OpenAsync(FileAccessMode.Read);
-                    BitmapDecoder decoder = await BitmapDecoder.CreateAsync(fileStream);
-                    uint height310x310, width310x310;
-                    double ratio;
+                    using(var fileStream = await file.OpenAsync(FileAccessMode.Read))
+                    {
+                        BitmapDecoder decoder = await BitmapDecoder.CreateAsync(fileStream);
+                        uint height310x310, width310x310;
+                        double ratio;
                 
-                    ratio = (double)decoder.PixelHeight / decoder.PixelWidth;
+                        ratio = (double)decoder.PixelHeight / decoder.PixelWidth;
 
-                    /* Landscape */
-                    if (ratio <= 1)
-                    {
-                        if (decoder.PixelWidth < 310)
+                        /* Landscape */
+                        if (ratio <= 1)
                         {
-                            Debug.WriteLine(file.Name + " is too small");
-                            return null;
+                            if (decoder.PixelWidth < 310)
+                            {
+                                Debug.WriteLine(file.Name + " is too small");
+                                //return null;
+                                width310x310 = decoder.PixelWidth;
+                                height310x310 = decoder.PixelHeight;
+                            }
+                            else
+                            {
+                                height310x310 = (uint)(310 * ratio);
+                                width310x310 = 310;
+                            }
+                        }
+                        /* Portrait */
+                        else
+                        {
+                            if (decoder.PixelHeight < 310)
+                            {
+                                Debug.WriteLine(file.Name + " is too small");
+                                //return null;
+                                width310x310 = decoder.PixelWidth;
+                                height310x310 = decoder.PixelHeight;
+                            }
+                            else
+                            {
+                                width310x310 = (uint)(310 * (1 / ratio));
+                                height310x310 = 310;
+                            }
                         }
 
-                        height310x310 = (uint)(310 * ratio);
-                        width310x310 = 310;
+                        /* 310 x 310 */
+                        BitmapTransform transform = new BitmapTransform() { ScaledHeight = height310x310, ScaledWidth = width310x310 };
+                        PixelDataProvider pixelData = await decoder.GetPixelDataAsync(
+                                BitmapPixelFormat.Rgba8,
+                                BitmapAlphaMode.Straight,
+                                transform,
+                                ExifOrientationMode.RespectExifOrientation,
+                                ColorManagementMode.DoNotColorManage);
 
-                    }
-                    /* Portrait */
-                    else
-                    {
-                        if (decoder.PixelHeight < 310)
+                        var file310x310 = await ApplicationData.Current.LocalFolder.CreateFileAsync(file.DisplayName + file.FileType, CreationCollisionOption.GenerateUniqueName);
+                        var destinationStream = await file310x310.OpenAsync(FileAccessMode.ReadWrite);
+
+                        BitmapEncoder encoder;
+                        switch (Path.GetExtension(file310x310.Path).ToLower())
                         {
-                            Debug.WriteLine(file.Name + " is too small");
-                            return null;
+                            case ".bmp":
+                                encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, destinationStream);
+                                break;
+
+                            case ".gif":
+                                encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.GifEncoderId, destinationStream);
+                                break;
+
+                            case ".jpg":
+                            case ".jpeg":
+                                encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, destinationStream);
+                                break;
+
+                            case ".png":
+                                encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, destinationStream);
+                                break;
+
+                            case ".tiff":
+                                encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.TiffEncoderId, destinationStream);
+                                break;
+
+                            default:
+                                return null;
                         }
 
-                        width310x310 = (uint)(310 * (1 / ratio));
-                        height310x310 = 310;
-                    }
+                        encoder.SetPixelData(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Premultiplied, width310x310, height310x310, 96, 96, pixelData.DetachPixelData());
+                        await encoder.FlushAsync();
+                        destinationStream.Dispose();
 
-                    /* 310 x 310 */
-                    BitmapTransform transform = new BitmapTransform() { ScaledHeight = height310x310, ScaledWidth = width310x310 };
-                    PixelDataProvider pixelData = await decoder.GetPixelDataAsync(
-                            BitmapPixelFormat.Rgba8,
-                            BitmapAlphaMode.Straight,
-                            transform,
-                            ExifOrientationMode.RespectExifOrientation,
-                            ColorManagementMode.DoNotColorManage);
+                        Debug.WriteLine(file310x310.Path);
 
-                    var file310x310 = await ApplicationData.Current.LocalFolder.CreateFileAsync(file.DisplayName + file.FileType, CreationCollisionOption.GenerateUniqueName);
-                    var destinationStream = await file310x310.OpenAsync(FileAccessMode.ReadWrite);
+                        /* Set tile update */
+                        var tile1 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Image);
+                        var tileImageAttributes = (XmlElement)tile1.GetElementsByTagName("image").Item(0);
+                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}", file310x310.Name));
+                        tileImageAttributes.SetAttribute("alt", file.DisplayName);
+                        var bindingElement = (XmlElement)tile1.GetElementsByTagName("binding").Item(0);
+                        bindingElement.SetAttribute("branding", "none");
 
-                    BitmapEncoder encoder;
-                    switch (Path.GetExtension(file310x310.Path).ToLower())
-                    {
-                        case ".bmp":
-                            encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, destinationStream);
-                            break;
+                        var tile2 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWide310x150Image);
+                        tileImageAttributes = (XmlElement)tile2.GetElementsByTagName("image").Item(0);
+                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}", file310x310.Name));
+                        tileImageAttributes.SetAttribute("alt", file.DisplayName);
+                        bindingElement = (XmlElement)tile2.GetElementsByTagName("binding").Item(0);
+                        bindingElement.SetAttribute("branding", "none");
 
-                        case ".gif":
-                            encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.GifEncoderId, destinationStream);
-                            break;
+                        IXmlNode node = tile1.ImportNode(tile2.GetElementsByTagName("binding").Item(0), true);
+                        tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
 
-                        case ".jpg":
-                        case ".jpeg":
-                            encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, destinationStream);
-                            break;
+                        var tile3 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare310x310Image);
+                        tileImageAttributes = (XmlElement)tile3.GetElementsByTagName("image").Item(0);
+                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}", file310x310.Name));
+                        tileImageAttributes.SetAttribute("alt", file.DisplayName);
+                        bindingElement = (XmlElement)tile3.GetElementsByTagName("binding").Item(0);
+                        bindingElement.SetAttribute("branding", "none");
 
-                        case ".png":
-                            encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, destinationStream);
-                            break;
-
-                        case ".tiff":
-                            encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.TiffEncoderId, destinationStream);
-                            break;
-
-                        default:
-                            return null;
-                    }
-
-                    encoder.SetPixelData(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Premultiplied, width310x310, height310x310, 96, 96, pixelData.DetachPixelData());
-                    await encoder.FlushAsync();
-                    destinationStream.Dispose();
-
-                    Debug.WriteLine(file310x310.Path);
-
-                    /* Set tile update */
-                    var tile1 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Image);
-                    var tileImageAttributes = (XmlElement)tile1.GetElementsByTagName("image").Item(0);
-                    tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}", file310x310.Name));
-                    tileImageAttributes.SetAttribute("alt", file.DisplayName);
-                    var bindingElement = (XmlElement)tile1.GetElementsByTagName("binding").Item(0);
-                    bindingElement.SetAttribute("branding", "none");
-
-                    var tile2 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWide310x150Image);
-                    tileImageAttributes = (XmlElement)tile2.GetElementsByTagName("image").Item(0);
-                    tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}", file310x310.Name));
-                    tileImageAttributes.SetAttribute("alt", file.DisplayName);
-                    bindingElement = (XmlElement)tile2.GetElementsByTagName("binding").Item(0);
-                    bindingElement.SetAttribute("branding", "none");
-
-                    IXmlNode node = tile1.ImportNode(tile2.GetElementsByTagName("binding").Item(0), true);
-                    tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
-
-                    var tile3 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare310x310Image);
-                    tileImageAttributes = (XmlElement)tile3.GetElementsByTagName("image").Item(0);
-                    tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}", file310x310.Name));
-                    tileImageAttributes.SetAttribute("alt", file.DisplayName);
-                    bindingElement = (XmlElement)tile3.GetElementsByTagName("binding").Item(0);
-                    bindingElement.SetAttribute("branding", "none");
-
-                    node = tile1.ImportNode(bindingElement, true);
-                    tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
+                        node = tile1.ImportNode(bindingElement, true);
+                        tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
                     
-                    return tile1;
+                        return tile1;
+                    }
                 }
                 catch (Exception e)
                 {

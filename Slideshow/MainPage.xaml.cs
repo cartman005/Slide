@@ -170,7 +170,7 @@ namespace Kozlowski.Slideshow
             {
                 if (fileList.Count < count)
                     fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
-
+                
                 index = random.Next(0, fileList.Count);
 
                 if (fileList.Count >= index + 1)
@@ -377,6 +377,11 @@ namespace Kozlowski.Slideshow
             builder.TaskEntryPoint = Constants.TaskEntry;
             builder.SetTrigger(new SystemTrigger(SystemTriggerType.UserPresent, false));
             var registration = builder.Register();
+        }
+
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var bounds = Window.Current.Bounds;
         }
     }
 }

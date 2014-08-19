@@ -22,7 +22,11 @@ namespace Kozlowski.Slideshow
              settings = ApplicationData.Current.RoamingSettings;
 
              if (StorageApplicationPermissions.FutureAccessList.ContainsItem("ImagesLocation"))
-                 folder = StorageApplicationPermissions.FutureAccessList.GetFolderAsync("ImagesLocation").GetResults();
+                 Task.Run(
+                    async() =>
+                    {
+                        folder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync("ImagesLocation");
+                    }).Wait();
              else
                  folder = KnownFolders.PicturesLibrary;
         }
@@ -50,25 +54,18 @@ namespace Kozlowski.Slideshow
             set
             {
                 settings.Values[Constants.SettingsName] = value;
-                // NotifyPropertyChanged("Index");
                 NotifyPropertyChanged("Interval");
             }
         }
 
         public int Interval
         {
-            get
-            {
-                return Constants.IndexList[this.Index];
-            }
+            get { return Constants.IndexList[this.Index]; }
         }
 
         public StorageFolder RootFolder
         {
-            get
-            {
-                return folder;
-            }
+            get { return folder; }
 
             set
             {
@@ -76,7 +73,6 @@ namespace Kozlowski.Slideshow
                 {
                     StorageApplicationPermissions.FutureAccessList.AddOrReplace("ImagesLocation", value);
                     folder = value;
-                    // NotifyPropertyChanged("RootFolder");
                     NotifyPropertyChanged("FolderPath");
                 }
             }

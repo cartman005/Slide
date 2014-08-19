@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
+using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml;
@@ -23,9 +25,11 @@ namespace Kozlowski.Slideshow
             {
                 var file = (StorageFile)value;
                 var bitmapImage = new BitmapImage();
+
 #pragma warning disable 4014
                 SetSource(bitmapImage, file.Path);
 #pragma warning restore 4014
+                
                 return bitmapImage;
             }
             return DependencyProperty.UnsetValue;
@@ -38,6 +42,9 @@ namespace Kozlowski.Slideshow
 
         public async Task SetSource(BitmapImage image, string path)
         {
+            double ratio;
+            BitmapDecoder decoder;
+            Rect bounds = Window.Current.Bounds;
             StorageFile imageFile = null;
             imageFile = await StorageFile.GetFileFromPathAsync(path);
             if (imageFile != null)
@@ -46,7 +53,36 @@ namespace Kozlowski.Slideshow
                 using (IRandomAccessStream fileStream = await imageFile.OpenReadAsync())
                 {
                     if (fileStream.CanRead)
+                    {
+                        decoder = await BitmapDecoder.CreateAsync(fileStream);
+
+                        if (decoder.PixelHeight >= bounds.Height && decoder.PixelHeight >= bounds.Width)
+                        {
+                            /* Resize */
+                            ratio = (double)decoder.PixelHeight / decoder.PixelWidth;
+
+                            /* Landscape */
+                            if (ratio <= 1)
+                            {
+                                image.DecodePixelHeight = (int)(bounds.Width * ratio);
+                                image.DecodePixelWidth = (int)bounds.Width;
+                            }
+                            /* Portrait */
+                            else
+                            {
+                                image.DecodePixelWidth = (int)(bounds.Height * (1 / ratio));
+                                image.DecodePixelHeight = (int)bounds.Height;
+                            }
+                        }
+                        else
+                        {
+                            /* Don't resize */
+                            image.DecodePixelHeight = (int)decoder.PixelHeight;
+                            image.DecodePixelWidth = (int)decoder.PixelWidth;
+                        }
+
                         await image.SetSourceAsync(fileStream);
+                    }
                 }
             }
         }
