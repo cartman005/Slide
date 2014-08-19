@@ -49,7 +49,7 @@ namespace Kozlowski.Slideshow.Background
             }).AsAsyncOperation<IReadOnlyList<StorageFile>>();
         }
 
-        public static IAsyncOperation<XmlDocument> CreateTileUpdate(StorageFile file)
+        public static IAsyncOperation<XmlDocument> CreateTileUpdate(StorageFile file, int tileWidth, int tileHeight)
         {
             return Task.Run<XmlDocument>(async () =>
             {
@@ -62,46 +62,11 @@ namespace Kozlowski.Slideshow.Background
                     using(var fileStream = await file.OpenAsync(FileAccessMode.Read))
                     {
                         BitmapDecoder decoder = await BitmapDecoder.CreateAsync(fileStream);
-                        uint height310x310, width310x310;
-                        double ratio;
-                
-                        ratio = (double)decoder.PixelHeight / decoder.PixelWidth;
 
-                        /* Landscape */
-                        if (ratio <= 1)
-                        {
-                            if (decoder.PixelWidth < 310)
-                            {
-                                Debug.WriteLine(file.Name + " is too small");
-                                //return null;
-                                width310x310 = decoder.PixelWidth;
-                                height310x310 = decoder.PixelHeight;
-                            }
-                            else
-                            {
-                                height310x310 = (uint)(310 * ratio);
-                                width310x310 = 310;
-                            }
-                        }
-                        /* Portrait */
-                        else
-                        {
-                            if (decoder.PixelHeight < 310)
-                            {
-                                Debug.WriteLine(file.Name + " is too small");
-                                //return null;
-                                width310x310 = decoder.PixelWidth;
-                                height310x310 = decoder.PixelHeight;
-                            }
-                            else
-                            {
-                                width310x310 = (uint)(310 * (1 / ratio));
-                                height310x310 = 310;
-                            }
-                        }
+                        Size dimensions = TileMaker.GetDimensions((int)decoder.PixelWidth, (int)decoder.PixelHeight, tileWidth, tileHeight);
 
                         /* 310 x 310 */
-                        BitmapTransform transform = new BitmapTransform() { ScaledHeight = height310x310, ScaledWidth = width310x310 };
+                        BitmapTransform transform = new BitmapTransform() { ScaledWidth = (uint)dimensions.Width, ScaledHeight = (uint)dimensions.Height };
                         PixelDataProvider pixelData = await decoder.GetPixelDataAsync(
                                 BitmapPixelFormat.Rgba8,
                                 BitmapAlphaMode.Straight,
@@ -140,7 +105,7 @@ namespace Kozlowski.Slideshow.Background
                                 return null;
                         }
 
-                        encoder.SetPixelData(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Premultiplied, width310x310, height310x310, 96, 96, pixelData.DetachPixelData());
+                        encoder.SetPixelData(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Premultiplied, (uint)dimensions.Width, (uint)dimensions.Height, 96, 96, pixelData.DetachPixelData());
                         await encoder.FlushAsync();
                         destinationStream.Dispose();
 
@@ -217,7 +182,7 @@ namespace Kozlowski.Slideshow.Background
                     file = fileList[index];
                     fileList.RemoveAt(index);
 
-                    var tile = await CreateTileUpdate(file);
+                    var tile = await CreateTileUpdate(file, 310, 310);
                     if (tile != null)
                     {
                         updater.Update(new TileNotification(tile) { ExpirationTime = now.AddMinutes(1) });
@@ -225,11 +190,7 @@ namespace Kozlowski.Slideshow.Background
 
                     Debug.WriteLine("Create updates from " + updateTime + " to " + planTill);
                     for (var startPlanning = updateTime; startPlanning < planTill; startPlanning = startPlanning.AddSeconds(seconds))
-                    {
-                        /*
-                        try
-                        {
-                        */
+                    {                        
                             if (fileList.Count < 1)
                                 fileList.AddRange(await GetImageList(settings.RootFolder, settings.IncludeSubfolders));
                         
@@ -239,7 +200,7 @@ namespace Kozlowski.Slideshow.Background
                                 file = fileList[index];
                                 fileList.RemoveAt(index);
                                 Debug.WriteLine("Schedule at " + startPlanning);
-                                tile = await CreateTileUpdate(file);
+                                tile = await CreateTileUpdate(file, 310, 310);
                                 if (tile != null)
                                 {
                                     ScheduledTileNotification scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddMinutes(1) };
@@ -252,16 +213,40 @@ namespace Kozlowski.Slideshow.Background
                                 return;
                                 // TODO This should be handled
                             }
-                        /*
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.WriteLine("exception: " + e.Message);
-                        }
-                        */
                     }
                 }
             }).AsAsyncAction();
+        }
+
+        public static Size GetDimensions(int originalWidth, int originalHeight, int targetWidth, int targetHeight)
+        {
+            Size newDimensions = new Size();
+
+            if (originalWidth >= targetWidth && originalHeight >= targetHeight)
+            {
+                /* Resize */
+                double ratio = (double)originalHeight / originalWidth;
+
+                /* Landscape */
+                if (ratio <= 1)
+                {
+                    newDimensions.Width = targetWidth;
+                    newDimensions.Height = (int)(targetWidth * ratio);
+                }
+                /* Portrait */
+                else
+                {
+                    newDimensions.Width = (int)(targetHeight * (1 / ratio));
+                    newDimensions.Height = targetHeight;
+                }
+            }
+            else
+            {
+                /* Don't resize */
+                newDimensions.Width = originalWidth;
+                newDimensions.Height = originalHeight;
+            }
+            return newDimensions;
         }
     }
 }

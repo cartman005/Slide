@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kozlowski.Slideshow.Background;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -56,31 +57,9 @@ namespace Kozlowski.Slideshow
                     {
                         decoder = await BitmapDecoder.CreateAsync(fileStream);
 
-                        if (decoder.PixelHeight >= bounds.Height && decoder.PixelHeight >= bounds.Width)
-                        {
-                            /* Resize */
-                            ratio = (double)decoder.PixelHeight / decoder.PixelWidth;
-
-                            /* Landscape */
-                            if (ratio <= 1)
-                            {
-                                image.DecodePixelHeight = (int)(bounds.Width * ratio);
-                                image.DecodePixelWidth = (int)bounds.Width;
-                            }
-                            /* Portrait */
-                            else
-                            {
-                                image.DecodePixelWidth = (int)(bounds.Height * (1 / ratio));
-                                image.DecodePixelHeight = (int)bounds.Height;
-                            }
-                        }
-                        else
-                        {
-                            /* Don't resize */
-                            image.DecodePixelHeight = (int)decoder.PixelHeight;
-                            image.DecodePixelWidth = (int)decoder.PixelWidth;
-                        }
-
+                        Size dimensions = TileMaker.GetDimensions((int)decoder.PixelWidth, (int)decoder.PixelHeight, (int)bounds.Width, (int)bounds.Height);
+                        image.DecodePixelWidth = (int)dimensions.Width;
+                        image.DecodePixelHeight = (int)dimensions.Height;
                         await image.SetSourceAsync(fileStream);
                     }
                 }
