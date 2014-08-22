@@ -42,11 +42,11 @@
 
     <!-- Image -->
     <Grid Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
-        <FlipView x:Name="FlipView" ItemsSource="{Binding Source={StaticResource ItemsViewSource}}" SelectionChanged="FlipView_SelectionChanged">
+        <FlipView x:Name="FlipView" SizeChanged="Grid_SizeChanged" ItemsSource="{Binding Source={StaticResource ItemsViewSource}}" SelectionChanged="FlipView_SelectionChanged">
             <FlipView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <Image Source="{Binding File, Converter={StaticResource ImageConverter}}" Stretch="None" />
+                        <Image Source="{Binding File, Converter={StaticResource ImageConverter}, UpdateSourceTrigger=PropertyChanged}" Stretch="None" />
                     </Grid>
                 </DataTemplate>
             </FlipView.ItemTemplate>

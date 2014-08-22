@@ -1,6 +1,7 @@
 ﻿using Kozlowski.Slideshow.Background;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,11 +23,12 @@ namespace Kozlowski.Slideshow
     {
         public object Convert(object value, Type targetType, object parameter, string culture)
         {
+            Debug.WriteLine("Convert");
             if (value != null)
             {
                 var file = (StorageFile)value;
                 var bitmapImage = new BitmapImage();
-
+                Debug.WriteLine(file.DisplayName);
 #pragma warning disable 4014
                 SetSource(bitmapImage, file.Path);
 #pragma warning restore 4014
@@ -43,9 +45,10 @@ namespace Kozlowski.Slideshow
 
         public async Task SetSource(BitmapImage image, string path)
         {
-            double ratio;
             BitmapDecoder decoder;
             Rect bounds = Window.Current.Bounds;
+            Debug.WriteLine("Size " + bounds.Width + " x " + bounds.Height);
+            
             StorageFile imageFile = null;
             imageFile = await StorageFile.GetFileFromPathAsync(path);
             if (imageFile != null)
@@ -58,9 +61,11 @@ namespace Kozlowski.Slideshow
                         decoder = await BitmapDecoder.CreateAsync(fileStream);
 
                         Size dimensions = TileMaker.GetDimensions((int)decoder.PixelWidth, (int)decoder.PixelHeight, (int)bounds.Width, (int)bounds.Height);
+                        Debug.WriteLine("Set image to " + dimensions.Width + " x " + dimensions.Height);
                         image.DecodePixelWidth = (int)dimensions.Width;
                         image.DecodePixelHeight = (int)dimensions.Height;
                         await image.SetSourceAsync(fileStream);
+                        Debug.WriteLine("Done");
                     }
                 }
             }

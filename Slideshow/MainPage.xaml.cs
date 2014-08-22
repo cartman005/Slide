@@ -153,9 +153,9 @@ namespace Kozlowski.Slideshow
                 fileList.Clear();
                 fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
                 LoadMoreFiles(10);
-                Debug.WriteLine("The selected index is now "+ FlipView.SelectedIndex);
+                Debug.WriteLine("The selected index is now " + FlipView.SelectedIndex);
             }
-            
+
             await TileMaker.CreateTiles(settings.Interval, fileList);
         }
 
@@ -170,7 +170,7 @@ namespace Kozlowski.Slideshow
             {
                 if (fileList.Count < count)
                     fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
-                
+
                 index = random.Next(0, fileList.Count);
 
                 if (fileList.Count >= index + 1)
@@ -212,7 +212,7 @@ namespace Kozlowski.Slideshow
 
         private void CommandInvokedHandler(IUICommand command)
         {
-            switch(command.Label)
+            switch (command.Label)
             {
                 case "Try again":
                     Move_Forward();
@@ -227,8 +227,8 @@ namespace Kozlowski.Slideshow
 
         private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
         {
-            switch(args.VirtualKey)
-            {                
+            switch (args.VirtualKey)
+            {
                 case VirtualKey.Left:
                     Reset_Timer();
                     break;
@@ -268,7 +268,6 @@ namespace Kozlowski.Slideshow
         /// and <see cref="GridCS.Common.NavigationHelper.SaveState"/>.
         /// The navigation parameter is available in the LoadState method 
         /// in addition to page state preserved during an earlier session.
-
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             navigationHelper.OnNavigatedTo(e);
@@ -288,7 +287,7 @@ namespace Kozlowski.Slideshow
             launcherOptions.DisplayApplicationPicker = true;
             await Launcher.LaunchFileAsync(file, launcherOptions);
         }
-        
+
         private void Play_Click(object sender, RoutedEventArgs e)
         {
             timer.Start();
@@ -301,7 +300,7 @@ namespace Kozlowski.Slideshow
         }
 
         private void Pause_Click(object sender, RoutedEventArgs e)
-        {            
+        {
             timer.Stop();
             isPaused = true;
             if (MainAppBar.IsOpen)
@@ -361,12 +360,12 @@ namespace Kozlowski.Slideshow
             builder.Name = Constants.TimerTaskName;
             builder.TaskEntryPoint = Constants.TaskEntry;
             builder.SetTrigger(new TimeTrigger(15, false));
-            var registration = builder.Register();              
+            var registration = builder.Register();
         }
 
         private void RegisterUserTask()
         {
-            /* Timer Task */
+            /* User Present Task */
             foreach (var task in BackgroundTaskRegistration.AllTasks)
             {
                 if (task.Value.Name == Constants.UserTaskName)
@@ -381,7 +380,25 @@ namespace Kozlowski.Slideshow
 
         private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            var bounds = Window.Current.Bounds;
+            /* FlipView keeps three items in memory at a time, so force the update the size of each of them */
+            int startingIndex;
+
+            if (FlipView.SelectedIndex >= 0)
+            {
+                if (FlipView.SelectedIndex > 0)
+                    startingIndex = FlipView.SelectedIndex - 1;
+                else
+                    startingIndex = FlipView.SelectedIndex;
+
+                for (int i = 0; i < 3; i++)
+                {
+                    if (startingIndex + i <= maxIndex)
+                    {
+                        Debug.WriteLine("Update the size of " + Items[startingIndex + i].Name);
+                        Items[startingIndex + i].File = Items[startingIndex + i].File;
+                    }
+                }
+            }
         }
     }
 }

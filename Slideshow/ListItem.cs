@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,9 +9,26 @@ using Windows.UI.Xaml.Media.Imaging;
 
 namespace Kozlowski.Slideshow
 {
-    public class ListItem
+    public class ListItem : INotifyPropertyChanged
     {
-        public StorageFile File { get; set; }
+        private StorageFile file;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public StorageFile File {
+            get
+            {
+                return file;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    file = value;
+                    NotifyPropertyChanged("File");
+                }
+            }
+        }
 
         public string Path { get { return File.Path; } }
 
@@ -19,6 +37,16 @@ namespace Kozlowski.Slideshow
         public override string ToString()
         {
             return Name;
+        }
+
+        private void NotifyPropertyChanged(string propertyName)
+        {
+            PropertyChangedEventHandler handler = this.PropertyChanged;
+            if (handler != null)
+            {
+                var e = new PropertyChangedEventArgs(propertyName);
+                handler(this, e);
+            }
         }
     }
 }
