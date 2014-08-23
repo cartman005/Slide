@@ -32,6 +32,7 @@
                 <Button x:Name="Browse" Content="Browse" Click="BrowseForRootFolder" VerticalAlignment="Bottom"/>
             </StackPanel>
             <ToggleSwitch Name="SubfoldersSwitch" Header="Include Sub-Folders" IsOn="{Binding Path=IncludeSubfolders, Mode=TwoWay}" />
+            <ToggleSwitch Name="ShuffleSwitch" Header="Shuffle" IsOn="{Binding Path=Shuffle, Mode=TwoWay}" />
         </StackPanel>
         
     </StackPanel>

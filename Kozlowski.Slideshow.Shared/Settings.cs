@@ -117,6 +117,22 @@ namespace Kozlowski.Slideshow
             }
         }
 
+        public bool Shuffle
+        {
+            get
+            {
+                if (settings.Values["Shuffle"] == null)
+                    settings.Values["Shuffle"] = true;
+
+                return (bool)settings.Values["Shuffle"];
+            }
+            set
+            {
+                settings.Values["Shuffle"] = value;
+                NotifyPropertyChanged("Shuffle");
+            }
+        }
+
         public bool ImagesFound
         {
             get

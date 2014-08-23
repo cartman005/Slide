@@ -46,7 +46,7 @@
             <FlipView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <Image Source="{Binding File, Converter={StaticResource ImageConverter}, UpdateSourceTrigger=PropertyChanged}" Stretch="None" />
+                        <Image Source="{Binding File, Converter={StaticResource ImageConverter}}" Stretch="None" />
                     </Grid>
                 </DataTemplate>
             </FlipView.ItemTemplate>

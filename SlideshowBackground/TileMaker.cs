@@ -28,11 +28,20 @@ namespace Kozlowski.Slideshow.Background
                 fileType.Add(".png");
                 fileType.Add(".tiff");
                 var queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileType);
+
+                //queryOptions.IndexerOption = IndexerOption.UseIndexerWhenAvailable;
+                    
                 if (includeSubfolders)
                     queryOptions.FolderDepth = FolderDepth.Deep;
                 else
                     queryOptions.FolderDepth = FolderDepth.Shallow;
 
+                var sortEntry = new SortEntry{
+                    PropertyName = "System.ItemNameDisplay",
+                    AscendingOrder = true
+                };
+                queryOptions.SortOrder.Add(sortEntry);
+ 
                 var query = folder.CreateFileQueryWithOptions(queryOptions);
 
                 var fileList = await query.GetFilesAsync();
@@ -46,6 +55,7 @@ namespace Kozlowski.Slideshow.Background
                 }
 
                 return fileList;
+
             }).AsAsyncOperation<IReadOnlyList<StorageFile>>();
         }
 
@@ -158,7 +168,6 @@ namespace Kozlowski.Slideshow.Background
             {
                 // TODO Should the settings be created here?
                 Settings settings = Settings.Instance;
-                SingleRandom random = SingleRandom.Instance;
 
                 var updater = TileUpdateManager.CreateTileUpdaterForApplication();
                 updater.EnableNotificationQueue(true);
@@ -174,8 +183,14 @@ namespace Kozlowski.Slideshow.Background
                 fileList.AddRange(IFileList);
                 
                 /* First background tile */
-                int index = random.Next(0, fileList.Count);
+                int index;
                 StorageFile file;
+
+                if (settings.Shuffle)
+                    index = SingleRandom.Instance.Next(0, fileList.Count);
+                else
+                    index = 0;
+                
 
                 if (fileList.Count >= index + 1)
                 {                
@@ -193,8 +208,17 @@ namespace Kozlowski.Slideshow.Background
                     {                        
                             if (fileList.Count < 1)
                                 fileList.AddRange(await GetImageList(settings.RootFolder, settings.IncludeSubfolders));
-                        
-                            index = random.Next(0, fileList.Count);
+
+                            if (settings.Shuffle)
+                                index = SingleRandom.Instance.Next(0, fileList.Count);
+                            else
+                            {
+                                index++;
+
+                                if (fileList.Count <= index)
+                                    index = 0;
+                            }
+
                             if (fileList.Count >= index + 1)
                             {
                                 file = fileList[index];

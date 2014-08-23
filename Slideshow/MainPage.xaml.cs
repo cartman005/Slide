@@ -85,16 +85,21 @@ namespace Kozlowski.Slideshow
             fileList = new List<StorageFile>();
         }
 
-        public void Move_Forward()
+        public async void Move_Forward()
         {
-            if (maxIndex - FlipView.SelectedIndex < 3)
+            Debug.WriteLine("Move forward--------------------------------");
+            if (maxIndex > 0)
             {
-                LoadMoreFiles(10);
+                if (maxIndex - FlipView.SelectedIndex < 3)
+                {
+                    await LoadMoreFiles(10);
+                }
             }
         }
 
-        public void Reset_Timer()
+        public void ResetTimer()
         {
+            Debug.WriteLine("Reset Timer");
             timer.Stop();
             timer.Start();
         }
@@ -112,11 +117,13 @@ namespace Kozlowski.Slideshow
         /// session. The state will be null the first time a page is visited.</param>
         private async void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
-            fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
-            isPaused = false; // May be changed by LoadMoreFiles so shouldn't be changed after
-            LoadMoreFiles(10);
-
+            /* Set up timer first in case it gets started */
             timer.Interval = TimeSpan.FromSeconds(settings.Interval);
+            Debug.WriteLine("Timer set to " + settings.Interval);
+
+            fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
+            isPaused = false; // Should be set before calling LoadMoreFiles
+            await LoadMoreFiles(10);
 
             /* Register background task */
             var result = await BackgroundExecutionManager.RequestAccessAsync();
@@ -131,9 +138,9 @@ namespace Kozlowski.Slideshow
             //this.Loaded += delegate { this.Focus(FocusState.Programmatic); };
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
 
-            /* Create first tile updates */
+            /* Create first set of tile updates */
             Debug.WriteLine("Create updates");
-            await TileMaker.CreateTiles(settings.Interval, fileList);
+            //await TileMaker.CreateTiles(settings.Interval, fileList);
         }
 
         private async void Settings_Changed(object sender, PropertyChangedEventArgs e)
@@ -152,31 +159,39 @@ namespace Kozlowski.Slideshow
                 maxIndex = 0;
                 fileList.Clear();
                 fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
-                LoadMoreFiles(10);
+                await LoadMoreFiles(10);
                 Debug.WriteLine("The selected index is now " + FlipView.SelectedIndex);
             }
 
             await TileMaker.CreateTiles(settings.Interval, fileList);
         }
 
-        private async void LoadMoreFiles(int count)
+        private async Task LoadMoreFiles(int count)
         {
             int index;
-            StorageFile file;
-
-            SingleRandom random = SingleRandom.Instance;
+            Debug.WriteLine("Load more files Start ------------------");
 
             for (int i = 0; i < count; i++)
             {
                 if (fileList.Count < count)
                     fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
 
-                index = random.Next(0, fileList.Count);
+                if (settings.Shuffle)
+                    index = SingleRandom.Instance.Next(0, fileList.Count);
+                else
+                {
+                    /*
+                    if (maxIndex + 1 >= fileList.Count)
+                        index = (maxIndex + 1) % fileList.Count;
+                    else
+                        index = maxIndex;
+                     */
+                    index = 0;
+                }
 
                 if (fileList.Count >= index + 1)
                 {
-                    file = fileList[index];
-                    Items.Add(new ListItem { File = file });
+                    Items.Add(new ListItem { File = fileList[index] });
                     fileList.RemoveAt(index);
                     maxIndex++;
                 }
@@ -208,6 +223,8 @@ namespace Kozlowski.Slideshow
                     return;
                 }
             }
+            Debug.WriteLine("LoadMoreFiles End--------------------");
+            return;
         }
 
         private void CommandInvokedHandler(IUICommand command)
@@ -230,11 +247,11 @@ namespace Kozlowski.Slideshow
             switch (args.VirtualKey)
             {
                 case VirtualKey.Left:
-                    Reset_Timer();
+                    ResetTimer();
                     break;
                 case VirtualKey.Right:
-                    Reset_Timer();
-                    Move_Forward();
+                    ResetTimer();
+                    //Move_Forward();
                     break;
                 case VirtualKey.Space:
                     if (timer.IsEnabled)
@@ -312,19 +329,20 @@ namespace Kozlowski.Slideshow
 
         private void FlipView_SelectionChanged(object sender, object e)
         {
-            Reset_Timer();
+            Debug.WriteLine("Selection changed");
+            ResetTimer();
 
             if (((ListItem)FlipView.SelectedItem) != null)
                 FileName.Text = ((ListItem)FlipView.SelectedItem).Name;
 
-            if (maxIndex - FlipView.SelectedIndex < 3)
-                LoadMoreFiles(10);
+            /* Load more files if necessary */
+            Move_Forward();
         }
 
         private void Timer_Tick(object sender, object e)
         {
+            Debug.WriteLine("Timer tick");
             FlipView.SelectedIndex++;
-            Move_Forward();
         }
 
         private void MainAppBar_Opened(object sender, object e)
