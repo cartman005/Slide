@@ -1,0 +1,55 @@
+﻿<Page
+    x:Name="pageRoot"
+    x:Class="Kozlowski.Slide.MainPage"
+    DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Kozlowski.Slide"
+    xmlns:common="using:Kozlowski.Slide.Common"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <!-- Collection of items displayed by this page -->
+        <CollectionViewSource x:Name="ItemsViewSource" Source="{Binding Items}"/>
+        <local:FileConverter x:Key="ImageConverter"/>
+    </Page.Resources>
+
+    <!-- App Bar -->
+    <Page.BottomAppBar>
+        <AppBar x:Name="MainAppBar" Opened="MainAppBar_Opened" Closed="MainAppBar_Closed">
+            <Grid>
+                
+                <!-- Play/Pause button -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <AppBarButton Name="PlayButton" Icon="Play" Label="Play" ToolTipService.ToolTip="Play" Click="Play_Click" Visibility="Collapsed" AutomationProperties.AccessKey="Space" TabIndex="1"/>
+                    <AppBarButton Name="PauseButton" Icon="Pause" Label="Pause" ToolTipService.ToolTip="Pause" Click="Pause_Click" AutomationProperties.AccessKey="Space" TabIndex="1"/>
+                </StackPanel>
+                
+                <!-- File name -->
+                <StackPanel VerticalAlignment="Center" Margin="150,0">
+                    <TextBlock Name="FileName" FontSize="20" TextAlignment="Center" />
+                </StackPanel>
+                
+                <!-- Open button -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <AppBarButton Name="OpenButton" Icon="OpenWith" Label="Open With" ToolTipService.ToolTip="Open File with Another Application" Click="OpenFile_Click" TabIndex="2"/>
+                </StackPanel>
+            </Grid>
+        </AppBar>
+    </Page.BottomAppBar>
+
+    <!-- Image -->
+    <Grid Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
+        <FlipView x:Name="FlipView" SizeChanged="Grid_SizeChanged" ItemsSource="{Binding Source={StaticResource ItemsViewSource}}" SelectionChanged="FlipView_SelectionChanged">
+            <FlipView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Image Source="{Binding File, Converter={StaticResource ImageConverter}}" Stretch="None" />
+                    </Grid>
+                </DataTemplate>
+            </FlipView.ItemTemplate>
+        </FlipView>
+    </Grid>
+</Page>
