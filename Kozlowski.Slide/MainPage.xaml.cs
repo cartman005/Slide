@@ -178,13 +178,7 @@ namespace Kozlowski.Slide
                 if (settings.Shuffle)
                     index = SingleRandom.Instance.Next(0, fileList.Count);
                 else
-                {
-                    /*
-                    if (maxIndex + 1 >= fileList.Count)
-                        index = (maxIndex + 1) % fileList.Count;
-                    else
-                        index = maxIndex;
-                     */
+                {                    
                     index = 0;
                 }
 
@@ -220,6 +214,15 @@ namespace Kozlowski.Slide
                     await messageDialog.ShowAsync();
 
                     return;
+                }
+            }
+
+            /* Ensure collection does not become too large. */
+            if (maxIndex > Constants.MaxCount)
+            {
+                for (; maxIndex > Constants.MaxCount - 10; maxIndex--)
+                {
+                    Items.RemoveAt(0);
                 }
             }
 
@@ -338,9 +341,12 @@ namespace Kozlowski.Slide
             Move_Forward();
         }
 
-        private void Timer_Tick(object sender, object e)
+        private async void Timer_Tick(object sender, object e)
         {
             Debug.WriteLine("Timer tick");
+            if (FlipView.SelectedIndex >= maxIndex)
+                await LoadMoreFiles(10);
+            
             FlipView.SelectedIndex++;
         }
 

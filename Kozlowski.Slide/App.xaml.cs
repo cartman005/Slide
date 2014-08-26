@@ -100,7 +100,7 @@ namespace Kozlowski.Slide
 
         public void ShowSettingsFlyout()
         {
-            SlideshowSettingsFlyout settings = new SlideshowSettingsFlyout();
+            SlideSettingsFlyout settings = new SlideSettingsFlyout();
             settings.Show();
         }
 

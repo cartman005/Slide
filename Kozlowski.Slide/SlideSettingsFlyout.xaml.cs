@@ -20,11 +20,11 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Kozlowski.Slide
 {
-    public sealed partial class SlideshowSettingsFlyout : SettingsFlyout
+    public sealed partial class SlideSettingsFlyout : SettingsFlyout
     {
         private Settings settings;
 
-        public SlideshowSettingsFlyout()
+        public SlideSettingsFlyout()
         {
             this.InitializeComponent();
             settings = Settings.Instance;
