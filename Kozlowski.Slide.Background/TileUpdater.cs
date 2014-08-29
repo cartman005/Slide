@@ -33,23 +33,7 @@ namespace Kozlowski.Slide.Background
             fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));            
             await TileMaker.CreateTiles(settings.Interval, fileList);
             Debug.WriteLine("Finished the background task");
-            // settings.PropertyChanged += settings_PropertyChanged;
             defferal.Complete();
-        }
-
-        // TODO Can this work in Windows Runtime?
-        /* 
-        private async void settings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            Debug.WriteLine("Running property changed from background");
-
-            if (e.PropertyName == "FolderPath")
-            {
-                fileList.Clear();
-                fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
-            }
-            await TileMaker.CreateTiles(settings.Interval, fileList);
-        }
-         */
+        }        
     }
 }

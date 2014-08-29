@@ -29,13 +29,14 @@ using System.Collections.ObjectModel;
 using Kozlowski.Slide.Shared;
 using System.ComponentModel;
 using Windows.UI.Popups;
+using System.Runtime.Serialization;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
 namespace Kozlowski.Slide
 {
     /// <summary>
-    /// A basic page that provides characteristics common to most applications.
+    /// The main and only page of Slide. Contains a FlipView which displays the selected images.
     /// </summary>
     public sealed partial class MainPage : Page
     {
@@ -44,9 +45,12 @@ namespace Kozlowski.Slide
         private List<StorageFile> fileList;
         private DispatcherTimer timer;
         private Settings settings;
-        private bool isPaused;
+        private bool isPaused;       
+
+        /// <summary>
+        /// The collection of images to be displayed for the slideshow.
+        /// </summary>
         public ObservableCollection<ListItem> Items { get; set; }
-        private int maxIndex;
 
         /// <summary>
         /// This can be changed to a strongly typed view model.
@@ -57,8 +61,7 @@ namespace Kozlowski.Slide
         }
 
         /// <summary>
-        /// NavigationHelper is used on each page to aid in navigation and 
-        /// process lifetime management
+        /// NavigationHelper is used on each page to aid in navigation and process lifetime management.
         /// </summary>
         public NavigationHelper NavigationHelper
         {
@@ -69,14 +72,14 @@ namespace Kozlowski.Slide
         {
             this.InitializeComponent();
             this.navigationHelper = new NavigationHelper(this);
-            this.navigationHelper.LoadState += navigationHelper_LoadState;
-            this.navigationHelper.SaveState += navigationHelper_SaveState;
+            this.navigationHelper.LoadState += NavigationHelper_LoadState;
+            this.navigationHelper.SaveState += NavigationHelper_SaveState;
 
             settings = Settings.Instance;
             settings.PropertyChanged += Settings_Changed;
 
-            Items = new ObservableCollection<ListItem>();
-            FlipView.ItemsSource = Items;
+            //Items = new ObservableCollection<ListItem>();
+            //FlipView.ItemsSource = Items;
 
             timer = new DispatcherTimer();
             timer.Tick += Timer_Tick;
@@ -85,19 +88,144 @@ namespace Kozlowski.Slide
             fileList = new List<StorageFile>();
         }
 
-        public async void Move_Forward()
+        /// <summary>
+        /// Populates the page with content passed during navigation. Any saved state is also provided when recreating
+        /// a page from a prior session.
+        /// </summary>
+        /// <param name="sender">
+        /// The source of the event; typically <see cref="NavigationHelper"/>.
+        /// </param>
+        /// <param name="e">
+        /// Event data that provides both the navigation parameter passed to <see cref="Frame.Navigate(Type, Object)"/>
+        /// when this page was initially requested and a dictionary of state preserved by this page during an earlier session.
+        /// The state will be null the first time a page is visited.
+        /// </param>
+        private async void NavigationHelper_LoadState(object sender, LoadStateEventArgs e)
         {
-            if (maxIndex > 0)
+            Debug.WriteLine("Loading state");
+
+            // Set up timer first in case it gets started
+            timer.Interval = TimeSpan.FromSeconds(settings.Interval);
+            Debug.WriteLine("Timer set to " + settings.Interval);
+
+            // TODO Load Items from saved state.
+
+            // Try to load previous Index and Items collection
+            int initialIndex = 1;
+            if (e.PageState != null && e.PageState.ContainsKey("SelectedIndex"))
             {
-                if (maxIndex - FlipView.SelectedIndex < 3)
+                object storedIndex = null;
+                if (e.PageState.TryGetValue("SelectedIndex", out storedIndex))
                 {
-                    // TODO Should this always be awaited?
-                    await LoadMoreFiles(10);
+                    try
+                    {
+                        StorageFile file = await ApplicationData.Current.LocalFolder.GetFileAsync(Constants.CollectionFileName);
+                        if (file != null)
+                        {
+                            using (IInputStream inStream = await file.OpenSequentialReadAsync())
+                            {
+                                DataContractSerializer serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
+                                var data = (ObservableCollection<ListItem>)serializer.ReadObject(inStream.AsStreamForRead());
+                                Items = data;
+
+                                Debug.WriteLine("Found serialized Items collection");
+                            }
+
+                            Debug.WriteLine("Set index to " + (int)storedIndex);
+                            initialIndex = (int)storedIndex;
+                        }
+                    }
+                    catch (FileNotFoundException ex)
+                    {
+                        Debug.WriteLine("File not found {0}", ex.Source);
+                    }
+                }
+            }
+           
+            if (Items == null)
+            {
+                Items = new ObservableCollection<ListItem>();
+            }
+
+            FlipView.ItemsSource = Items;
+            FlipView.SelectedIndex = initialIndex;
+                        
+            fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
+            isPaused = false; // Should be set before calling LoadMoreFiles
+            await LoadMoreFiles(Constants.ImagesToLoad);
+
+            // Register background task
+            var result = await BackgroundExecutionManager.RequestAccessAsync();
+            if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity ||
+                result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
+            {
+                RegisterTimerTask((uint)Constants.BackgroundTaskInterval);
+                RegisterUserTask();
+            }
+
+            // Set the input focus to ensure that keyboard events are raised
+            //this.Loaded += delegate { this.Focus(FocusState.Programmatic); };
+            Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+
+            // Create first set of tile updates
+            // TODO Don't generate tiles every time
+            await TileMaker.CreateTiles(settings.Interval, fileList);
+        }
+
+        /// <summary>
+        /// Preserves state associated with this page in case the application is suspended or the page is discarded
+        /// from the navigation cache. Values must conform to the serialization.
+        /// requirements of <see cref="SuspensionManager.SessionState"/>.
+        /// </summary>
+        /// <param name="sender">The source of the event; typically <see cref="NavigationHelper"/>.
+        /// </param>
+        /// <param name="e">Event data that provides an empty dictionary to be populated with serializable state.
+        /// </param>
+        private async void NavigationHelper_SaveState(object sender, SaveStateEventArgs e)
+        {
+            Debug.WriteLine("Saving state");
+
+            // TODO Serialize and save Items.
+
+            // Save the maxIndex variable
+            e.PageState.Add("SelectedIndex", FlipView.SelectedIndex);
+
+            // Save Items collection
+            MemoryStream sessionData = new MemoryStream();
+            DataContractSerializer serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
+            serializer.WriteObject(sessionData, Items);
+
+            StorageFile file = await ApplicationData.Current.LocalFolder.CreateFileAsync(Constants.CollectionFileName);
+            using (Stream fileStream = await file.OpenStreamForWriteAsync())
+            {
+                sessionData.Seek(0, SeekOrigin.Begin);
+                await sessionData.CopyToAsync(fileStream);
+                await fileStream.FlushAsync();
+            }
+
+            Debug.WriteLine("Finished saving state");
+        }
+
+        /// <summary>
+        /// Called whenever the FlipView selection moves forward.
+        /// Checks if more files need to be loaded into the collection.
+        /// </summary>
+        private async void MoveForward()
+        {
+            if (Items.Count > 0)
+            {
+                // Buffer of 3 images due to the asynchronous execution of this method
+                if (Items.Count - FlipView.SelectedIndex < 3)
+                {
+                    await LoadMoreFiles(Constants.ImagesToLoad);
                 }
             }
         }
 
-        public void ResetTimer()
+        /// <summary>
+        /// Resets the tick interval of the timer.
+        /// </summary>
+        private void ResetTimer()
         {
             Debug.WriteLine("Reset Timer");
             timer.Stop();
@@ -105,44 +233,10 @@ namespace Kozlowski.Slide
         }
 
         /// <summary>
-        /// Populates the page with content passed during navigation. Any saved state is also
-        /// provided when recreating a page from a prior session.
+        /// Updates the chosen images to match updated setting.
         /// </summary>
-        /// <param name="sender">
-        /// The source of the event; typically <see cref="NavigationHelper"/>
-        /// </param>
-        /// <param name="e">Event data that provides both the navigation parameter passed to
-        /// <see cref="Frame.Navigate(Type, Object)"/> when this page was initially requested and
-        /// a dictionary of state preserved by this page during an earlier
-        /// session. The state will be null the first time a page is visited.</param>
-        private async void navigationHelper_LoadState(object sender, LoadStateEventArgs e)
-        {
-            /* Set up timer first in case it gets started */
-            timer.Interval = TimeSpan.FromSeconds(settings.Interval);
-            Debug.WriteLine("Timer set to " + settings.Interval);
-
-            fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
-            isPaused = false; // Should be set before calling LoadMoreFiles
-            await LoadMoreFiles(10);
-
-            /* Register background task */
-            var result = await BackgroundExecutionManager.RequestAccessAsync();
-            if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity ||
-                result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
-            {
-                RegisterTimerTask(settings.Interval);
-                RegisterUserTask();
-            }
-
-            // Set the input focus to ensure that keyboard events are raised.
-            //this.Loaded += delegate { this.Focus(FocusState.Programmatic); };
-            Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
-
-            /* Create first set of tile updates */
-            Debug.WriteLine("Create updates");
-            await TileMaker.CreateTiles(settings.Interval, fileList);
-        }
-
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void Settings_Changed(object sender, PropertyChangedEventArgs e)
         {
             Debug.WriteLine("Settings Changed");
@@ -151,18 +245,18 @@ namespace Kozlowski.Slide
             if (!timer.IsEnabled)
                 timer.Start();
 
-            /* Change collection of images to use */
-            if (e.PropertyName == "FolderPath" || e.PropertyName == "IncludeSubfolders")
+            // Change collection of image files to use if the changed property affects it
+            if (e.PropertyName == "FolderPath" || e.PropertyName == "IncludeSubfolders" || e.PropertyName == "Shuffle")
             {
-                Debug.WriteLine("The selected index was " + FlipView.SelectedIndex);
-                Items.Clear();
-                maxIndex = 0;
+                // Don't clear out previous images
+                //Items.Clear();
+                //maxIndex = 0;
                 fileList.Clear();
                 fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
-                await LoadMoreFiles(10);
-                Debug.WriteLine("The selected index is now " + FlipView.SelectedIndex);
+                await LoadMoreFiles(Constants.ImagesToLoad);
             }
 
+            // Regenerate tile updates
             await TileMaker.CreateTiles(settings.Interval, fileList);
         }
 
@@ -184,9 +278,9 @@ namespace Kozlowski.Slide
 
                 if (fileList.Count >= index + 1)
                 {
-                    Items.Add(new ListItem { File = fileList[index] });
+                    Items.Add(new ListItem { FilePath = fileList[index].Path, Name = fileList[index].DisplayName });
                     fileList.RemoveAt(index);
-                    maxIndex++;
+                    //maxIndex++;
                 }
                 else
                 {
@@ -217,10 +311,11 @@ namespace Kozlowski.Slide
                 }
             }
 
-            /* Ensure collection does not become too large. */
-            if (maxIndex > Constants.MaxCount)
+            // Ensure collection does not become too large for memory
+            if (Items.Count > Constants.MaxCount)
             {
-                for (; maxIndex > Constants.MaxCount - 10; maxIndex--)
+                // If the collection reaches the maximum, remove three times the load amount
+                for (int currentCount = Items.Count; currentCount > Constants.MaxCount - (3 * Constants.ImagesToLoad); currentCount--)
                 {
                     Items.RemoveAt(0);
                 }
@@ -234,7 +329,7 @@ namespace Kozlowski.Slide
             switch (command.Label)
             {
                 case "Try again":
-                    Move_Forward();
+                    MoveForward();
                     Play_Click(null, null);
                     break;
 
@@ -253,7 +348,6 @@ namespace Kozlowski.Slide
                     break;
                 case VirtualKey.Right:
                     ResetTimer();
-                    //Move_Forward();
                     break;
                 case VirtualKey.Space:
                     if (timer.IsEnabled)
@@ -262,19 +356,6 @@ namespace Kozlowski.Slide
                         Play_Click(null, null);
                     break;
             }
-        }
-
-        /// <summary>
-        /// Preserves state associated with this page in case the application is suspended or the
-        /// page is discarded from the navigation cache.  Values must conform to the serialization
-        /// requirements of <see cref="SuspensionManager.SessionState"/>.
-        /// </summary>
-        /// <param name="sender">The source of the event; typically <see cref="NavigationHelper"/></param>
-        /// <param name="e">Event data that provides an empty dictionary to be populated with
-        /// serializable state.</param>
-        private void navigationHelper_SaveState(object sender, SaveStateEventArgs e)
-        {
-
         }
 
         #region NavigationHelper registration
@@ -332,21 +413,27 @@ namespace Kozlowski.Slide
         private void FlipView_SelectionChanged(object sender, object e)
         {
             Debug.WriteLine("Selection changed");
+
             ResetTimer();
 
+            // Update text with the name of the image
             if (((ListItem)FlipView.SelectedItem) != null)
                 FileName.Text = ((ListItem)FlipView.SelectedItem).Name;
 
-            /* Load more files if necessary */
-            Move_Forward();
+            // Check if more files need to be loaded
+            MoveForward();
         }
 
         private async void Timer_Tick(object sender, object e)
         {
             Debug.WriteLine("Timer tick");
-            if (FlipView.SelectedIndex >= maxIndex)
-                await LoadMoreFiles(10);
+
+            // Check that the next image is available
+            // Additional images will be loaded by the FlipView_SelectionChanged event
+            if (FlipView.SelectedIndex >= Items.Count)
+                await LoadMoreFiles(Constants.ImagesToLoad);
             
+            // Advance the flipview selection
             FlipView.SelectedIndex++;
         }
 
@@ -371,29 +458,40 @@ namespace Kozlowski.Slide
                 timer.Start();
         }
 
-        private void RegisterTimerTask(int seconds)
+        /// <summary>
+        /// Registers the timer background task that runs at the given frequency.
+        /// 15 minutes is the most frequent interval that a background event can be scheduled for.
+        /// </summary>
+        private void RegisterTimerTask(uint minutes)
         {
-            /* Timer Task */
+            // Check if the task already exists
             foreach (var task in BackgroundTaskRegistration.AllTasks)
             {
                 if (task.Value.Name == Constants.TimerTaskName)
                     return;
             }
+
+            // Create the task
             BackgroundTaskBuilder builder = new BackgroundTaskBuilder();
             builder.Name = Constants.TimerTaskName;
             builder.TaskEntryPoint = Constants.TaskEntry;
-            builder.SetTrigger(new TimeTrigger(15, false));
+            builder.SetTrigger(new TimeTrigger(minutes, false));
             var registration = builder.Register();
         }
 
+        /// <summary>
+        /// Registers the user present background task that runs when the user logs back onto the device.
+        /// </summary>
         private void RegisterUserTask()
         {
-            /* User Present Task */
+            // Check if the task already exists
             foreach (var task in BackgroundTaskRegistration.AllTasks)
             {
                 if (task.Value.Name == Constants.UserTaskName)
                     return;
             }
+            
+            // Create the task
             BackgroundTaskBuilder builder = new BackgroundTaskBuilder();
             builder.Name = Constants.UserTaskName;
             builder.TaskEntryPoint = Constants.TaskEntry;
@@ -403,9 +501,11 @@ namespace Kozlowski.Slide
 
         private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            /* FlipView keeps three items in memory at a time, so force the update the size of each of them */
+            // FlipView keeps three items in memory at a time, so force the update the size of each so they are resized
+            // Other items are not in memory and will be resized when they are loaded
             int startingIndex;
 
+            // Grid_SizeChanged is called on initialization, so make sure that the SelectedIndex is not negative
             if (FlipView.SelectedIndex >= 0)
             {
                 if (FlipView.SelectedIndex > 0)
@@ -415,10 +515,10 @@ namespace Kozlowski.Slide
 
                 for (int i = 0; i < 3; i++)
                 {
-                    if (startingIndex + i <= maxIndex)
+                    if (startingIndex + i <= Items.Count)
                     {
-                        Debug.WriteLine("Update the size of " + Items[startingIndex + i].Name);
-                        Items[startingIndex + i].File = Items[startingIndex + i].File;
+                        //Debug.WriteLine("Update the size of " + Items[startingIndex + i].Name);
+                        Items[startingIndex + i].FilePath = Items[startingIndex + i].FilePath;
                     }
                 }
             }

@@ -11,28 +11,29 @@ namespace Kozlowski.Slide
 {
     public class ListItem : INotifyPropertyChanged
     {
-        private StorageFile file;
+        private string filePath;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public StorageFile File {
+        public string FilePath
+        {
             get
             {
-                return file;
+                return filePath;
             }
             set
             {
                 if (value != null)
                 {
-                    file = value;
+                    filePath = value;
                     NotifyPropertyChanged("File");
                 }
             }
         }
 
-        public string Path { get { return File.Path; } }
+        public string Path { get { return filePath; } }
 
-        public string Name { get { return File.DisplayName; } }
+        public string Name { get; set; }
 
         public override string ToString()
         {

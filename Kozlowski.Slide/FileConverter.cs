@@ -26,11 +26,11 @@ namespace Kozlowski.Slide
             Debug.WriteLine("Convert");
             if (value != null)
             {
-                var file = (StorageFile)value;
+                var filePath = (string)value;
                 var bitmapImage = new BitmapImage();
-                Debug.WriteLine(file.DisplayName);
+                //Debug.WriteLine(file.DisplayName);
 #pragma warning disable 4014
-                SetSource(bitmapImage, file.Path);
+                SetSource(bitmapImage, filePath);
 #pragma warning restore 4014
                 
                 return bitmapImage;
