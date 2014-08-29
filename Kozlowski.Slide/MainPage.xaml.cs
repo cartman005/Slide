@@ -1,35 +1,22 @@
 ﻿using Kozlowski.Slide.Background;
 using Kozlowski.Slide.Common;
+using Kozlowski.Slide.Shared;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Background;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Streams;
+using Windows.System;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
-using Windows.UI.Notifications;
-using Windows.Data.Xml.Dom;
-using Windows.Graphics.Imaging;
-using System.Threading.Tasks;
-using Windows.Storage.Search;
-using Windows.System;
-using System.Collections.ObjectModel;
-using Kozlowski.Slide.Shared;
-using System.ComponentModel;
-using Windows.UI.Popups;
-using System.Runtime.Serialization;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
 
@@ -111,7 +98,7 @@ namespace Kozlowski.Slide
             // TODO Load Items from saved state.
 
             // Try to load previous Index and Items collection
-            int initialIndex = 1;
+            int initialIndex = -1;
             if (e.PageState != null && e.PageState.ContainsKey("SelectedIndex"))
             {
                 object storedIndex = null;
@@ -382,10 +369,17 @@ namespace Kozlowski.Slide
 
         private async void OpenFile_Click(object sender, RoutedEventArgs e)
         {
-            StorageFile file = await StorageFile.GetFileFromPathAsync(((ListItem)FlipView.SelectedItem).Path);
+            StorageFile file = await StorageFile.GetFileFromPathAsync(((ListItem)FlipView.SelectedItem).FilePath);
             LauncherOptions launcherOptions = new LauncherOptions();
             launcherOptions.DisplayApplicationPicker = true;
             await Launcher.LaunchFileAsync(file, launcherOptions);
+        }
+
+        private async void Clear_Click(object sender, RoutedEventArgs e)
+        {
+            fileList.Clear();
+            Items.Clear();
+            await LoadMoreFiles(Constants.ImagesToLoad);
         }
 
         private void Play_Click(object sender, RoutedEventArgs e)
@@ -418,7 +412,9 @@ namespace Kozlowski.Slide
 
             // Update text with the name of the image
             if (((ListItem)FlipView.SelectedItem) != null)
+            {
                 FileName.Text = ((ListItem)FlipView.SelectedItem).Name;
+            }
 
             // Check if more files need to be loaded
             MoveForward();

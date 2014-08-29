@@ -1,9 +1,6 @@
 ﻿using Kozlowski.Slide.Background;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
@@ -28,7 +25,6 @@ namespace Kozlowski.Slide
             {
                 var filePath = (string)value;
                 var bitmapImage = new BitmapImage();
-                //Debug.WriteLine(file.DisplayName);
 #pragma warning disable 4014
                 SetSource(bitmapImage, filePath);
 #pragma warning restore 4014

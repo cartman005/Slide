@@ -24,7 +24,7 @@
                 <!-- Play/Pause button -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                     <AppBarButton Name="PlayButton" Icon="Play" Label="Play" ToolTipService.ToolTip="Play" Click="Play_Click" Visibility="Collapsed" AutomationProperties.AccessKey="Space" TabIndex="1"/>
-                    <AppBarButton Name="PauseButton" Icon="Pause" Label="Pause" ToolTipService.ToolTip="Pause" Click="Pause_Click" AutomationProperties.AccessKey="Space" TabIndex="1"/>
+                    <AppBarButton Name="PauseButton" Icon="Pause" Label="Pause" ToolTipService.ToolTip="Pause" Click="Pause_Click" AutomationProperties.AccessKey="Space" TabIndex="2"/>
                 </StackPanel>
                 
                 <!-- File name -->
@@ -32,9 +32,10 @@
                     <TextBlock Name="FileName" FontSize="20" TextAlignment="Center" />
                 </StackPanel>
                 
-                <!-- Open button -->
+                <!-- Open and clear buttons -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <AppBarButton Name="OpenButton" Icon="OpenWith" Label="Open With" ToolTipService.ToolTip="Open File with Another Application" Click="OpenFile_Click" TabIndex="2"/>
+                    <AppBarButton Name="OpenButton" Icon="OpenWith" Label="Open With" ToolTipService.ToolTip="Open file with another application" Click="OpenFile_Click" TabIndex="3"/>
+                    <AppBarButton Name="ClearButton" Icon="Clear" Label="Clear" ToolTipService.ToolTip="Clear all images" Click="Clear_Click" TabIndex="4" />
                 </StackPanel>
             </Grid>
         </AppBar>

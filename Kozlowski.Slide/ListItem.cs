@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Storage;
-using Windows.UI.Xaml.Media.Imaging;
+﻿using System.ComponentModel;
 
 namespace Kozlowski.Slide
 {
@@ -26,13 +19,11 @@ namespace Kozlowski.Slide
                 if (value != null)
                 {
                     filePath = value;
-                    NotifyPropertyChanged("File");
+                    NotifyPropertyChanged("FilePath");
                 }
             }
         }
-
-        public string Path { get { return filePath; } }
-
+        
         public string Name { get; set; }
 
         public override string ToString()
