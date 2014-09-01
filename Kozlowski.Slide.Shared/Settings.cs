@@ -18,11 +18,11 @@ namespace Kozlowski.Slide
         {
              settings = ApplicationData.Current.RoamingSettings;
 
-             if (StorageApplicationPermissions.FutureAccessList.ContainsItem("ImagesLocation"))
+             if (StorageApplicationPermissions.FutureAccessList.ContainsItem(Constants.SettingsName_ImagesLocation))
                  Task.Run(
                     async() =>
                     {
-                        folder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync("ImagesLocation");
+                        folder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(Constants.SettingsName_ImagesLocation);
                     }).Wait();
              else
                  folder = KnownFolders.PicturesLibrary;
@@ -43,14 +43,14 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values["InitialUpdatesMade"] == null)
-                    settings.Values["InitialUpdatesMade"] = false;
+                if (settings.Values[Constants.SettingsName_InitialUpdatesMade] == null)
+                    settings.Values[Constants.SettingsName_InitialUpdatesMade] = false;
 
-                return (bool)settings.Values["InitialUpdatesMade"];
+                return (bool)settings.Values[Constants.SettingsName_InitialUpdatesMade];
             }
             set
             {
-                settings.Values["InitialUpdatesMade"] = value;
+                settings.Values[Constants.SettingsName_InitialUpdatesMade] = value;
             }
         }
 
@@ -58,14 +58,14 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values[Constants.SettingsName] == null)
-                    settings.Values[Constants.SettingsName] = Constants.DefaultIntervalIndex;
+                if (settings.Values[Constants.SettingsName_Interval] == null)
+                    settings.Values[Constants.SettingsName_Interval] = Constants.DefaultIntervalIndex;
 
-                return (int)settings.Values[Constants.SettingsName];
+                return (int)settings.Values[Constants.SettingsName_Interval];
             }
             set
             {
-                settings.Values[Constants.SettingsName] = value;
+                settings.Values[Constants.SettingsName_Interval] = value;
                 NotifyPropertyChanged("Interval");
             }
         }
@@ -83,7 +83,7 @@ namespace Kozlowski.Slide
             {
                 if (value != null)
                 {
-                    StorageApplicationPermissions.FutureAccessList.AddOrReplace("ImagesLocation", value);
+                    StorageApplicationPermissions.FutureAccessList.AddOrReplace(Constants.SettingsName_ImagesLocation, value);
                     folder = value;
                     NotifyPropertyChanged("FolderPath");
                 }
@@ -94,22 +94,10 @@ namespace Kozlowski.Slide
         {
             get
             { 
-                var path = RootFolder.Path;
-                Debug.WriteLine("The path is " + path);
+                string path = RootFolder.Path;
                 if (path == "")
                     path = RootFolder.DisplayName;
                 return path;
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void NotifyPropertyChanged(string propertyName)
-        {
-            Debug.WriteLine("NotifyPropertyChanged " + propertyName);
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
         }
 
@@ -117,14 +105,14 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values["Subfolders"] == null)
-                    settings.Values["Subfolders"] = true;
+                if (settings.Values[Constants.SettingsName_Subfolders] == null)
+                    settings.Values[Constants.SettingsName_Subfolders] = true;
 
-                return (bool)settings.Values["Subfolders"];
+                return (bool)settings.Values[Constants.SettingsName_Subfolders];
             }
             set
             {
-                settings.Values["Subfolders"] = value;
+                settings.Values[Constants.SettingsName_Subfolders] = value;
                 NotifyPropertyChanged("IncludeSubfolders");
             }
         }
@@ -133,31 +121,26 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values["Shuffle"] == null)
-                    settings.Values["Shuffle"] = true;
+                if (settings.Values[Constants.SettingsName_Shuffle] == null)
+                    settings.Values[Constants.SettingsName_Shuffle] = true;
 
-                return (bool)settings.Values["Shuffle"];
+                return (bool)settings.Values[Constants.SettingsName_Shuffle];
             }
             set
             {
-                settings.Values["Shuffle"] = value;
+                settings.Values[Constants.SettingsName_Shuffle] = value;
                 NotifyPropertyChanged("Shuffle");
             }
         }
+        
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        public bool ImagesFound
+        protected void NotifyPropertyChanged(string propertyName)
         {
-            get
+            Debug.WriteLine("NotifyPropertyChanged " + propertyName);
+            if (PropertyChanged != null)
             {
-                if (settings.Values["ImagesFound"] == null)
-                    settings.Values["ImagesFound"] = true;
-
-                return (bool)settings.Values["ImagesFound"];
-            }
-            set
-            {
-                settings.Values["ImagesFound"] = value;
-                NotifyPropertyChanged("ImagesFound");
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
         }
     }

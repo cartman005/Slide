@@ -21,7 +21,7 @@ namespace Kozlowski.Slide.Background
             var defferal = taskInstance.GetDeferral();
             fileList = new List<StorageFile>();
             fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));            
-            await TileMaker.CreateTiles(settings.Interval, fileList);
+            await TileMaker.GenerateTiles(settings.Interval, fileList);
             Debug.WriteLine("Finished the background task");
             defferal.Complete();
         }        

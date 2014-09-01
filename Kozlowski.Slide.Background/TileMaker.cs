@@ -29,18 +29,22 @@ namespace Kozlowski.Slide.Background
                 fileType.Add(".tiff");
                 var queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileType);
 
-                //queryOptions.IndexerOption = IndexerOption.UseIndexerWhenAvailable;
+                queryOptions.IndexerOption = IndexerOption.UseIndexerWhenAvailable;
                     
                 if (includeSubfolders)
                     queryOptions.FolderDepth = FolderDepth.Deep;
                 else
                     queryOptions.FolderDepth = FolderDepth.Shallow;
 
-                var sortEntry = new SortEntry{
-                    PropertyName = "System.ItemNameDisplay",
-                    AscendingOrder = true
-                };
-                queryOptions.SortOrder.Add(sortEntry);
+                // If not shuffled, sort by file name; otherwise, don't bother
+                if (!Settings.Instance.Shuffle)
+                {
+                    queryOptions.SortOrder.Add(new SortEntry
+                    {
+                        PropertyName = "System.ItemNameDisplay",
+                        AscendingOrder = true
+                    });
+                }
  
                 var query = folder.CreateFileQueryWithOptions(queryOptions);
 
@@ -68,14 +72,14 @@ namespace Kozlowski.Slide.Background
                     if (file == null)
                         return null;
 
-                    // create a stream from the file and decode the image
+                    // Create a stream from the file and decode the image
                     using(var fileStream = await file.OpenAsync(FileAccessMode.Read))
                     {
                         BitmapDecoder decoder = await BitmapDecoder.CreateAsync(fileStream);
 
                         Size dimensions = TileMaker.GetDimensions((int)decoder.PixelWidth, (int)decoder.PixelHeight, tileWidth, tileHeight);
 
-                        /* 310 x 310 */
+                        // Resize the image to 310x310 and save to Local AppData folder
                         BitmapTransform transform = new BitmapTransform() { ScaledWidth = (uint)dimensions.Width, ScaledHeight = (uint)dimensions.Height };
                         PixelDataProvider pixelData = await decoder.GetPixelDataAsync(
                                 BitmapPixelFormat.Rgba8,
@@ -119,50 +123,52 @@ namespace Kozlowski.Slide.Background
                         await encoder.FlushAsync();
                         destinationStream.Dispose();
 
-                        Debug.WriteLine(file310x310.Path);
-
-                        /* Set tile update */
+                        // Create the update
+                        // Parent, 150x150 tile
                         var tile1 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Image);
                         var tileImageAttributes = (XmlElement)tile1.GetElementsByTagName("image").Item(0);
-                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}", file310x310.Name));
+                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}", Constants.TileUpdatesFolder, file310x310.Name));
                         tileImageAttributes.SetAttribute("alt", file.DisplayName);
                         var bindingElement = (XmlElement)tile1.GetElementsByTagName("binding").Item(0);
                         bindingElement.SetAttribute("branding", "none");
 
+                        // 310x150 tile
                         var tile2 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWide310x150Image);
                         tileImageAttributes = (XmlElement)tile2.GetElementsByTagName("image").Item(0);
-                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}", file310x310.Name));
+                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}", Constants.TileUpdatesFolder, file310x310.Name));
                         tileImageAttributes.SetAttribute("alt", file.DisplayName);
                         bindingElement = (XmlElement)tile2.GetElementsByTagName("binding").Item(0);
                         bindingElement.SetAttribute("branding", "none");
 
+                        // Append to parent tile
                         IXmlNode node = tile1.ImportNode(tile2.GetElementsByTagName("binding").Item(0), true);
                         tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
 
+                        // 310x310 tile
                         var tile3 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare310x310Image);
                         tileImageAttributes = (XmlElement)tile3.GetElementsByTagName("image").Item(0);
-                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}", file310x310.Name));
+                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}", Constants.TileUpdatesFolder, file310x310.Name));
                         tileImageAttributes.SetAttribute("alt", file.DisplayName);
                         bindingElement = (XmlElement)tile3.GetElementsByTagName("binding").Item(0);
                         bindingElement.SetAttribute("branding", "none");
 
+                        // Append to parent tile
                         node = tile1.ImportNode(bindingElement, true);
                         tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
                     
                         return tile1;
                     }
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Debug.WriteLine("{0} Error ", e);
-                    Debug.WriteLine(e.StackTrace);
+                    Debug.WriteLine("{0} Error", ex);
                 }
 
                 return null;
             }).AsAsyncOperation<XmlDocument>();
         }
 
-        public static IAsyncAction CreateTiles(int seconds, IReadOnlyList<StorageFile> IFileList)
+        public static IAsyncAction GenerateTiles(int seconds, IReadOnlyList<StorageFile> IFileList)
         {
             return Task.Run(async () =>
             {
@@ -191,7 +197,7 @@ namespace Kozlowski.Slide.Background
                 List<StorageFile> fileList = new List<StorageFile>();
                 fileList.AddRange(IFileList);
                 
-                /* First background tile */
+                // Create the first tile
                 int index;
                 StorageFile file;
 
@@ -200,7 +206,6 @@ namespace Kozlowski.Slide.Background
                 else
                     index = 0;
                 
-
                 if (fileList.Count >= index + 1)
                 {                
                     file = fileList[index];
@@ -212,6 +217,7 @@ namespace Kozlowski.Slide.Background
                         updater.Update(new TileNotification(tile) { ExpirationTime = now.AddMinutes(1) });
                     }
 
+                    // Create the rest of the tiles
                     Debug.WriteLine("Create updates from " + updateTime + " to " + planTill);
                     for (var startPlanning = updateTime; startPlanning < planTill; startPlanning = startPlanning.AddSeconds(seconds))
                     {                        
@@ -257,16 +263,16 @@ namespace Kozlowski.Slide.Background
 
             if (originalWidth >= targetWidth && originalHeight >= targetHeight)
             {
-                /* Resize */
+                // Resize the image
                 double ratio = (double)originalHeight / originalWidth;
 
-                /* Landscape */
+                // Landscape
                 if (ratio <= 1)
                 {
                     newDimensions.Width = targetWidth;
                     newDimensions.Height = (int)(targetWidth * ratio);
                 }
-                /* Portrait */
+                // Portrait
                 else
                 {
                     newDimensions.Width = (int)(targetHeight * (1 / ratio));
@@ -275,7 +281,7 @@ namespace Kozlowski.Slide.Background
             }
             else
             {
-                /* Don't resize */
+                // Don't resize
                 newDimensions.Width = originalWidth;
                 newDimensions.Height = originalHeight;
             }

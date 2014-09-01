@@ -32,7 +32,7 @@ namespace Kozlowski.Slide
         private List<StorageFile> fileList;
         private DispatcherTimer timer;
         private Settings settings;
-        private bool isPaused;       
+        private bool isPaused;
 
         /// <summary>
         /// The collection of images to be displayed for the slideshow.
@@ -65,8 +65,6 @@ namespace Kozlowski.Slide
             settings = Settings.Instance;
             settings.PropertyChanged += Settings_Changed;
 
-            //Items = new ObservableCollection<ListItem>();
-            //FlipView.ItemsSource = Items;
 
             timer = new DispatcherTimer();
             timer.Tick += Timer_Tick;
@@ -128,13 +126,13 @@ namespace Kozlowski.Slide
                     }
                 }
             }
-           
+
             if (Items == null)
                 Items = new ObservableCollection<ListItem>();
 
             FlipView.ItemsSource = Items;
             FlipView.SelectedIndex = initialIndex;
-                        
+
             fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
             isPaused = false; // Should be set before calling LoadMoreFiles
             await LoadMoreFiles(Constants.ImagesToLoad);
@@ -151,14 +149,14 @@ namespace Kozlowski.Slide
             }
 
             // Set the input focus to ensure that keyboard events are raised
-            //this.Loaded += delegate { this.Focus(FocusState.Programmatic); };
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+            FlipView.Focus(Windows.UI.Xaml.FocusState.Programmatic);
 
             // Create first set of tile updates
             if (!settings.InitialUpdatesMade)
             {
                 Debug.WriteLine("Generate initial updates");
-                await TileMaker.CreateTiles(settings.Interval, fileList);
+                await TileMaker.GenerateTiles(settings.Interval, fileList);
                 settings.InitialUpdatesMade = true;
             }
         }
@@ -176,9 +174,7 @@ namespace Kozlowski.Slide
         {
             Debug.WriteLine("Saving state");
 
-            // TODO Serialize and save Items.
-
-            // Save the maxIndex variable
+            // Save the SelectedIndex
             e.PageState.Add("SelectedIndex", FlipView.SelectedIndex);
 
             // Save Items collection
@@ -204,14 +200,12 @@ namespace Kozlowski.Slide
         private async void MoveForward()
         {
             Debug.WriteLine("Move forward");
-            //if (Items.Count > 0)
-            //{
-                // Buffer of 3 images due to the asynchronous execution of this method
-                if (Items.Count - FlipView.SelectedIndex < 3)
-                {
-                    await LoadMoreFiles(Constants.ImagesToLoad);
-                }
-           // }
+
+            // Use a buffer of 3 images due to the asynchronous execution of this method
+            if (Items.Count - FlipView.SelectedIndex < 3)
+            {
+                await LoadMoreFiles(Constants.ImagesToLoad);
+            }
         }
 
         /// <summary>
@@ -243,16 +237,22 @@ namespace Kozlowski.Slide
             // Change collection of image files to use if the changed property affects it
             if (e.PropertyName == "FolderPath" || e.PropertyName == "IncludeSubfolders" || e.PropertyName == "Shuffle")
             {
-                // Don't clear out previous images
-                //Items.Clear();
-                //maxIndex = 0;
+                // Clear images following the current index
+                FlipView.SelectionChanged -= FlipView_SelectionChanged;
+                for (int i = FlipView.SelectedIndex + 1; i < Items.Count; )
+                {
+                    Items.RemoveAt(i);
+                }
+
+                // Clear file list, as files are missing
                 fileList.Clear();
                 fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
                 await LoadMoreFiles(Constants.ImagesToLoad);
+                FlipView.SelectionChanged += FlipView_SelectionChanged;
             }
 
             // Regenerate tile updates
-            await TileMaker.CreateTiles(settings.Interval, fileList);
+            await TileMaker.GenerateTiles(settings.Interval, fileList);
             settings.InitialUpdatesMade = true;
         }
 
@@ -391,7 +391,7 @@ namespace Kozlowski.Slide
         private async void Clear_Click(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("Clear images");
-          
+
             FlipView.SelectionChanged -= FlipView_SelectionChanged;
             fileList.Clear();
             Items.Clear();
@@ -401,7 +401,9 @@ namespace Kozlowski.Slide
             Debug.WriteLine("Selected index is " + FlipView.SelectedIndex);
             ResetTimer();
 
-            // TODO Reset tiles as well
+            // Regenerate tile updates
+            await TileMaker.GenerateTiles(settings.Interval, fileList);
+            settings.InitialUpdatesMade = true;
         }
 
         private void Play_Click(object sender, RoutedEventArgs e)
@@ -454,7 +456,7 @@ namespace Kozlowski.Slide
             // Additional images will be loaded by the FlipView_SelectionChanged event
             if (FlipView.SelectedIndex >= Items.Count)
                 await LoadMoreFiles(Constants.ImagesToLoad);
-            
+
             // Advance the flipview selection
             FlipView.SelectedIndex++;
         }
@@ -496,7 +498,7 @@ namespace Kozlowski.Slide
             // Create the task
             BackgroundTaskBuilder builder = new BackgroundTaskBuilder();
             builder.Name = Constants.TimerTaskName;
-            builder.TaskEntryPoint = Constants.TaskEntry;
+            builder.TaskEntryPoint = Constants.TaskEntryPoint;
             builder.SetTrigger(new TimeTrigger(minutes, false));
             var registration = builder.Register();
         }
@@ -512,11 +514,11 @@ namespace Kozlowski.Slide
                 if (task.Value.Name == Constants.UserTaskName)
                     return;
             }
-            
+
             // Create the task
             BackgroundTaskBuilder builder = new BackgroundTaskBuilder();
             builder.Name = Constants.UserTaskName;
-            builder.TaskEntryPoint = Constants.TaskEntry;
+            builder.TaskEntryPoint = Constants.TaskEntryPoint;
             builder.SetTrigger(new SystemTrigger(SystemTriggerType.UserPresent, false));
             var registration = builder.Register();
         }
@@ -539,7 +541,6 @@ namespace Kozlowski.Slide
                 {
                     if (startingIndex + i <= Items.Count)
                     {
-                        //Debug.WriteLine("Update the size of " + Items[startingIndex + i].Name);
                         Items[startingIndex + i].FilePath = Items[startingIndex + i].FilePath;
                     }
                 }
