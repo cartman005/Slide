@@ -39,6 +39,21 @@ namespace Kozlowski.Slide
             }
         }
 
+        public bool InitialUpdatesMade
+        {
+            get
+            {
+                if (settings.Values["InitialUpdatesMade"] == null)
+                    settings.Values["InitialUpdatesMade"] = false;
+
+                return (bool)settings.Values["InitialUpdatesMade"];
+            }
+            set
+            {
+                settings.Values["InitialUpdatesMade"] = value;
+            }
+        }
+
         public int Index
         {
             get

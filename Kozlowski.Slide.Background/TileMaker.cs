@@ -84,7 +84,7 @@ namespace Kozlowski.Slide.Background
                                 ExifOrientationMode.RespectExifOrientation,
                                 ColorManagementMode.DoNotColorManage);
 
-                        var file310x310 = await ApplicationData.Current.LocalFolder.CreateFileAsync(file.DisplayName + file.FileType, CreationCollisionOption.GenerateUniqueName);
+                        var file310x310 = await ApplicationData.Current.LocalFolder.CreateFileAsync(Constants.TileUpdatesFolder + "\\" + file.DisplayName + file.FileType, CreationCollisionOption.GenerateUniqueName);
                         var destinationStream = await file310x310.OpenAsync(FileAccessMode.ReadWrite);
 
                         BitmapEncoder encoder;
@@ -173,7 +173,16 @@ namespace Kozlowski.Slide.Background
                 updater.EnableNotificationQueue(true);
                 updater.Clear();
 
-                await ApplicationData.Current.ClearAsync(ApplicationDataLocality.Local);
+                // Clear existing images
+                try
+                {
+                    StorageFolder tileUpdateFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync(Constants.TileUpdatesFolder);
+                    await tileUpdateFolder.DeleteAsync();
+                }
+                catch(FileNotFoundException ex)
+                {
+                    Debug.WriteLine("Tile updates folder not found {0}", ex.Source);
+                }
 
                 DateTime now = DateTime.Now;
                 DateTime planTill = now.AddMinutes(30);

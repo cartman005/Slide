@@ -130,9 +130,7 @@ namespace Kozlowski.Slide
             }
            
             if (Items == null)
-            {
                 Items = new ObservableCollection<ListItem>();
-            }
 
             FlipView.ItemsSource = Items;
             FlipView.SelectedIndex = initialIndex;
@@ -140,6 +138,8 @@ namespace Kozlowski.Slide
             fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
             isPaused = false; // Should be set before calling LoadMoreFiles
             await LoadMoreFiles(Constants.ImagesToLoad);
+            UpdateName((ListItem)FlipView.SelectedItem);
+            FlipView.SelectionChanged += FlipView_SelectionChanged;
 
             // Register background task
             var result = await BackgroundExecutionManager.RequestAccessAsync();
@@ -155,8 +155,12 @@ namespace Kozlowski.Slide
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
 
             // Create first set of tile updates
-            // TODO Don't generate tiles every time
-            await TileMaker.CreateTiles(settings.Interval, fileList);
+            if (!settings.InitialUpdatesMade)
+            {
+                Debug.WriteLine("Generate initial updates");
+                await TileMaker.CreateTiles(settings.Interval, fileList);
+                settings.InitialUpdatesMade = true;
+            }
         }
 
         /// <summary>
@@ -182,7 +186,7 @@ namespace Kozlowski.Slide
             DataContractSerializer serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
             serializer.WriteObject(sessionData, Items);
 
-            StorageFile file = await ApplicationData.Current.LocalFolder.CreateFileAsync(Constants.CollectionFileName);
+            StorageFile file = await ApplicationData.Current.LocalFolder.CreateFileAsync(Constants.CollectionFileName, CreationCollisionOption.ReplaceExisting);
             using (Stream fileStream = await file.OpenStreamForWriteAsync())
             {
                 sessionData.Seek(0, SeekOrigin.Begin);
@@ -199,14 +203,15 @@ namespace Kozlowski.Slide
         /// </summary>
         private async void MoveForward()
         {
-            if (Items.Count > 0)
-            {
+            Debug.WriteLine("Move forward");
+            //if (Items.Count > 0)
+            //{
                 // Buffer of 3 images due to the asynchronous execution of this method
                 if (Items.Count - FlipView.SelectedIndex < 3)
                 {
                     await LoadMoreFiles(Constants.ImagesToLoad);
                 }
-            }
+           // }
         }
 
         /// <summary>
@@ -215,8 +220,11 @@ namespace Kozlowski.Slide
         private void ResetTimer()
         {
             Debug.WriteLine("Reset Timer");
-            timer.Stop();
-            timer.Start();
+            if (!isPaused)
+            {
+                timer.Stop();
+                timer.Start();
+            }
         }
 
         /// <summary>
@@ -245,24 +253,29 @@ namespace Kozlowski.Slide
 
             // Regenerate tile updates
             await TileMaker.CreateTiles(settings.Interval, fileList);
+            settings.InitialUpdatesMade = true;
         }
 
         private async Task LoadMoreFiles(int count)
         {
+            Debug.WriteLine("Load more files");
             int index;
 
-            for (int i = 0; i < count; i++)
+            for (; count > 0; count--)
             {
-                if (fileList.Count < count)
+                // Check if more files need to be loaded
+                if (fileList.Count <= 0)
                     fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
 
+                // Set index depending on shuffle setting
                 if (settings.Shuffle)
                     index = SingleRandom.Instance.Next(0, fileList.Count);
                 else
-                {                    
+                {
                     index = 0;
                 }
 
+                // Add to Items if enough files were found
                 if (fileList.Count >= index + 1)
                 {
                     Items.Add(new ListItem { FilePath = fileList[index].Path, Name = fileList[index].DisplayName });
@@ -377,9 +390,18 @@ namespace Kozlowski.Slide
 
         private async void Clear_Click(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine("Clear images");
+          
+            FlipView.SelectionChanged -= FlipView_SelectionChanged;
             fileList.Clear();
             Items.Clear();
             await LoadMoreFiles(Constants.ImagesToLoad);
+            UpdateName((ListItem)FlipView.SelectedItem);
+            FlipView.SelectionChanged += FlipView_SelectionChanged;
+            Debug.WriteLine("Selected index is " + FlipView.SelectedIndex);
+            ResetTimer();
+
+            // TODO Reset tiles as well
         }
 
         private void Play_Click(object sender, RoutedEventArgs e)
@@ -406,18 +428,22 @@ namespace Kozlowski.Slide
 
         private void FlipView_SelectionChanged(object sender, object e)
         {
-            Debug.WriteLine("Selection changed");
+            Debug.WriteLine("Selection changed, index " + FlipView.SelectedIndex);
+            //Debug.WriteLine("Change to " + Items[FlipView.SelectedIndex]);
 
             ResetTimer();
 
-            // Update text with the name of the image
-            if (((ListItem)FlipView.SelectedItem) != null)
-            {
-                FileName.Text = ((ListItem)FlipView.SelectedItem).Name;
-            }
-
             // Check if more files need to be loaded
             MoveForward();
+
+            // Update text with the name of the image
+            UpdateName((ListItem)FlipView.SelectedItem);
+        }
+
+        private void UpdateName(ListItem item)
+        {
+            if (item != null)
+                FileName.Text = item.Name;
         }
 
         private async void Timer_Tick(object sender, object e)

@@ -43,7 +43,7 @@
 
     <!-- Image -->
     <Grid Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
-        <FlipView x:Name="FlipView" SizeChanged="Grid_SizeChanged" ItemsSource="{Binding Source={StaticResource ItemsViewSource}}" SelectionChanged="FlipView_SelectionChanged">
+        <FlipView x:Name="FlipView" SizeChanged="Grid_SizeChanged" ItemsSource="{Binding Source={StaticResource ItemsViewSource}}" > <!--SelectionChanged="FlipView_SelectionChanged"-->
             <FlipView.ItemTemplate>
                 <DataTemplate>
                     <Grid>

@@ -8,6 +8,7 @@ namespace Kozlowski.Slide.Shared
         public static string TaskEntry { get { return "Kozlowski.Slide.Background.TileUpdater"; } }
         public static string SettingsName { get { return "Interval"; } }
         public static string CollectionFileName { get { return "SlideItemsCollection.xml"; } }
+        public static string TileUpdatesFolder { get { return "TileUpdates"; } }
         public static int ImagesToLoad { get { return 10; } }
         public static int MaxCount { get { return 200; } }
         public static int DefaultIntervalIndex { get { return 2; } }
