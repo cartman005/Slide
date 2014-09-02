@@ -11,9 +11,10 @@ namespace Kozlowski.Slide.Shared
         // Settings names
         public static string SettingsName_Interval { get { return "Interval"; } }
         public static string SettingsName_InitialUpdatesMade { get { return "InitialUpdatesMade"; } }
-        public static string SettingsName_ImagesLocation { get { return "ImagesLocation"; } }
+        public static string SettingsName_ImagesLocation { get { return "FolderPath"; } }
         public static string SettingsName_Shuffle { get { return "Shuffle"; } }
-        public static string SettingsName_Subfolders { get { return "Subfolders"; } }
+        public static string SettingsName_Subfolders { get { return "IncludeSubfolders"; } }
+        public static string SettingsName_Zoom { get { return "Zoom"; } }
 
         // File names
         public static string TileUpdatesFolder { get { return "TileUpdates"; } }

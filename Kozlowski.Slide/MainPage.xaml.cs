@@ -10,12 +10,15 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Background;
+using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
 // The Basic Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234237
@@ -33,6 +36,7 @@ namespace Kozlowski.Slide
         private DispatcherTimer timer;
         private Settings settings;
         private bool isPaused;
+        private Storyboard story;
 
         /// <summary>
         /// The collection of images to be displayed for the slideshow.
@@ -151,7 +155,8 @@ namespace Kozlowski.Slide
             // Set the input focus to ensure that keyboard events are raised
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
             FlipView.Focus(Windows.UI.Xaml.FocusState.Programmatic);
-
+            if (settings.Zoom)
+                Animate();
             // Create first set of tile updates
             if (!settings.InitialUpdatesMade)
             {
@@ -430,8 +435,17 @@ namespace Kozlowski.Slide
 
         private void FlipView_SelectionChanged(object sender, object e)
         {
+            if (story != null)
+                story.Stop();
+
             Debug.WriteLine("Selection changed, index " + FlipView.SelectedIndex);
             //Debug.WriteLine("Change to " + Items[FlipView.SelectedIndex]);
+
+            if (FlipView.SelectedItem == null)
+                return;
+
+            if (settings.Zoom)
+                Animate();
 
             ResetTimer();
 
@@ -440,6 +454,100 @@ namespace Kozlowski.Slide
 
             // Update text with the name of the image
             UpdateName((ListItem)FlipView.SelectedItem);
+        }
+
+        // Using code from http://irisclasson.com/2012/06/28/creating-a-scaletransform-animation-in-c-for-winrt-metro-apps/
+        private void Animate()
+        {
+            var container = FlipView.ContainerFromIndex(FlipView.SelectedIndex);
+            var children = Children(container);
+            var img = children.Find(x => x.Name.Equals("MainImage"));
+
+            img.RenderTransform = new ScaleTransform();
+            img.RenderTransformOrigin = RandomPoint();
+
+            story = new Storyboard();
+            story.AutoReverse = false;
+
+            var xAnim = new DoubleAnimation();
+            var yAnim = new DoubleAnimation();
+
+            xAnim.AutoReverse = true;
+            yAnim.AutoReverse = true;
+
+            xAnim.Duration = TimeSpan.FromSeconds(settings.Interval);
+            yAnim.Duration = TimeSpan.FromSeconds(settings.Interval);
+
+            xAnim.To = 1.5;
+            yAnim.To = 1.5;
+
+            story.Children.Add(xAnim);
+            story.Children.Add(yAnim);
+
+            Storyboard.SetTarget(xAnim, img);
+            Storyboard.SetTarget(yAnim, img);
+
+            Storyboard.SetTargetProperty(xAnim, "(UIElement.RenderTransform).(ScaleTransform.ScaleX)");
+            Storyboard.SetTargetProperty(yAnim, "(UIElement.RenderTransform).(ScaleTransform.ScaleY)");
+            story.Begin();
+        }
+
+        private Point RandomPoint()
+        {
+            var point = new Point();
+
+            var rand = SingleRandom.Instance;
+
+            int x = rand.Next(0, 3);
+            int y = rand.Next(0, 3);
+
+            // Set X
+            switch(x)
+            {
+                case 0:
+                    point.X = -0.5;
+                    break;
+                case 1:
+                    point.X = 0.0;
+                    break;
+                case 2:
+                    point.X = 0.5;
+                    break;
+                case 3:
+                    throw new Exception();
+            }
+
+            // Set Y
+            switch (y)
+            {
+                case 0:
+                    point.Y = -0.5;
+                    break;
+                case 1:
+                    point.Y = 0.0;
+                    break;
+                case 2:
+                    point.Y = 0.5;
+                    break;
+            }
+
+            Debug.WriteLine(point.X + " " + point.Y);
+
+            return point;
+        }
+
+        // Code from Jerry Nixon http://stackoverflow.com/questions/16375375/how-do-i-access-a-control-inside-a-xaml-datatemplate
+        private List<Image> Children(DependencyObject parent)
+        {
+            var list = new List<Image>();
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is Image)
+                    list.Add(child as Image);
+                list.AddRange(Children(child));
+            }
+            return list;
         }
 
         private void UpdateName(ListItem item)

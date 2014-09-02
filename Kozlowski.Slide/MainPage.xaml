@@ -19,8 +19,7 @@
     <!-- App Bar -->
     <Page.BottomAppBar>
         <AppBar x:Name="MainAppBar" Opened="MainAppBar_Opened" Closed="MainAppBar_Closed">
-            <Grid>
-                
+            <Grid>                
                 <!-- Play/Pause button -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                     <AppBarButton Name="PlayButton" Icon="Play" Label="Play" ToolTipService.ToolTip="Play" Click="Play_Click" Visibility="Collapsed" AutomationProperties.AccessKey="Space" TabIndex="1"/>
@@ -43,11 +42,11 @@
 
     <!-- Image -->
     <Grid Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
-        <FlipView x:Name="FlipView" SizeChanged="Grid_SizeChanged" ItemsSource="{Binding Source={StaticResource ItemsViewSource}}" > <!--SelectionChanged="FlipView_SelectionChanged"-->
+        <FlipView Name="FlipView" SizeChanged="Grid_SizeChanged" UseTouchAnimationsForAllNavigation="True" ItemsSource="{Binding Source={StaticResource ItemsViewSource}}" > <!--SelectionChanged="FlipView_SelectionChanged"-->
             <FlipView.ItemTemplate>
                 <DataTemplate>
-                    <Grid>
-                        <Image Source="{Binding FilePath, Converter={StaticResource ImageConverter}}" Stretch="None" />
+                    <Grid Name="MainGrid">
+                        <Image Name="MainImage" Source="{Binding FilePath, Converter={StaticResource ImageConverter}}" Stretch="None" />
                     </Grid>
                 </DataTemplate>
             </FlipView.ItemTemplate>

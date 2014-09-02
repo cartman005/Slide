@@ -66,7 +66,7 @@ namespace Kozlowski.Slide
             set
             {
                 settings.Values[Constants.SettingsName_Interval] = value;
-                NotifyPropertyChanged("Interval");
+                NotifyPropertyChanged(Constants.SettingsName_Interval);
             }
         }
 
@@ -85,7 +85,7 @@ namespace Kozlowski.Slide
                 {
                     StorageApplicationPermissions.FutureAccessList.AddOrReplace(Constants.SettingsName_ImagesLocation, value);
                     folder = value;
-                    NotifyPropertyChanged("FolderPath");
+                    NotifyPropertyChanged(Constants.SettingsName_ImagesLocation);
                 }
             }
         }
@@ -113,7 +113,7 @@ namespace Kozlowski.Slide
             set
             {
                 settings.Values[Constants.SettingsName_Subfolders] = value;
-                NotifyPropertyChanged("IncludeSubfolders");
+                NotifyPropertyChanged(Constants.SettingsName_Subfolders);
             }
         }
 
@@ -129,7 +129,23 @@ namespace Kozlowski.Slide
             set
             {
                 settings.Values[Constants.SettingsName_Shuffle] = value;
-                NotifyPropertyChanged("Shuffle");
+                NotifyPropertyChanged(Constants.SettingsName_Shuffle);
+            }
+        }
+
+        public bool Zoom
+        {
+            get
+            {
+                if (settings.Values[Constants.SettingsName_Zoom] == null)
+                    settings.Values[Constants.SettingsName_Zoom] = true;
+
+                return (bool)settings.Values[Constants.SettingsName_Zoom];
+            }
+            set
+            {
+                settings.Values[Constants.SettingsName_Zoom] = value;
+                NotifyPropertyChanged(Constants.SettingsName_Zoom);
             }
         }
         
