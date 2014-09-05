@@ -15,7 +15,14 @@
         <!-- Interval dropdown -->
         <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
             <TextBlock Text="Interval" Style="{StaticResource TitleTextBlockStyle}"/>
-            <ComboBox Name="Interval" Margin="0,7,0,0" HorizontalAlignment="Left" PlaceholderText="Select Interval" SelectedIndex="{Binding Path=Index, Mode=TwoWay}" ToolTipService.ToolTip="Select time between pictures" TabIndex="0">
+            <ComboBox
+                Name="Interval"
+                Margin="0,7,0,0"
+                HorizontalAlignment="Left"
+                PlaceholderText="Select Interval"
+                SelectedIndex="{Binding Path=Index, Mode=TwoWay}"
+                ToolTipService.ToolTip="Select time between pictures"
+                TabIndex="0">
                 <x:String>5 seconds</x:String>
                 <x:String>10 seconds</x:String>
                 <x:String>30 seconds</x:String>
@@ -28,17 +35,43 @@
         <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
             <TextBlock Text="Pictures Location" Style="{StaticResource TitleTextBlockStyle}"/>
             <StackPanel Margin="0,7,0,0" Orientation="Vertical">
-                <TextBox Header="Root Folder" HorizontalAlignment="Left" Width="250" IsEnabled="False" Text="{Binding FolderPath}"/>
-                <Button x:Name="Browse" Content="Browse" Click="BrowseForRootFolder" VerticalAlignment="Bottom" ToolTipService.ToolTip="Choose pictures source folder" TabIndex="1" />
+                <TextBox
+                    Header="Root Folder"
+                    HorizontalAlignment="Left"
+                    Width="250"
+                    IsEnabled="False"
+                    Text="{Binding FolderPath}"/>
+                <Button
+                    x:Name="Browse"
+                    Content="Browse"
+                    Click="BrowseForRootFolder"
+                    VerticalAlignment="Bottom"
+                    ToolTipService.ToolTip="Choose pictures source folder"
+                    TabIndex="1" />
             </StackPanel>
-            <ToggleSwitch Name="SubfoldersSwitch" Header="Include Sub-Folders" IsOn="{Binding Path=IncludeSubfolders, Mode=TwoWay}" ToolTipService.ToolTip="Include sub-folders inside of root folder?" TabIndex="2" />
-            <ToggleSwitch Name="ShuffleSwitch" Header="Shuffle" IsOn="{Binding Path=Shuffle, Mode=TwoWay}" ToolTipService.ToolTip="Shuffle picture order?" TabIndex="3"/>
+            <ToggleSwitch
+                Name="SubfoldersSwitch"
+                Header="Include Sub-Folders"
+                IsOn="{Binding Path=IncludeSubfolders, Mode=TwoWay}"
+                ToolTipService.ToolTip="Include sub-folders inside of root folder?"
+                TabIndex="2" />
+            <ToggleSwitch
+                Name="ShuffleSwitch"
+                Header="Shuffle"
+                IsOn="{Binding Path=Shuffle, Mode=TwoWay}"
+                ToolTipService.ToolTip="Shuffle picture order?"
+                TabIndex="3"/>
         </StackPanel>
 
         <!-- Animation -->
         <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
             <TextBlock Text="Animation" Style="{StaticResource TitleTextBlockStyle}"/>
-            <ToggleSwitch Name="ZoomSwitch" Header="Pan/Zoom" IsOn="{Binding Path=Zoom, Mode=TwoWay}" ToolTipService.ToolTip="Pan and zoom in on images?" TabIndex="4" />
+            <ToggleSwitch
+                Name="ZoomSwitch"
+                Header="Pan/Zoom"
+                IsOn="{Binding Path=Zoom, Mode=TwoWay}"
+                ToolTipService.ToolTip="Pan and zoom in on images?"
+                TabIndex="4" />
         </StackPanel>
 
     </StackPanel>

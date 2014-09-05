@@ -23,6 +23,10 @@ namespace Kozlowski.Slide.Shared
         // File names
         public static string TileUpdatesFolder { get { return "TileUpdates"; } }
         public static string CollectionFileName { get { return "SlideItemsCollection.xml"; } }
+
+        // Commands
+        public const string TRY_AGAIN = "Try again";
+        public const string CLOSE = "Close";
         
         // Image counts
         public static int ImagesToLoad { get { return 10; } }

@@ -166,6 +166,7 @@ namespace Kozlowski.Slide
             // Set the input focus to ensure that keyboard events are raised
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
             FlipView.Focus(Windows.UI.Xaml.FocusState.Programmatic);
+
             if (settings.Animate)
                 Animate(settings.Interval);
             // Create first set of tile updates
@@ -320,10 +321,10 @@ namespace Kozlowski.Slide
 
                     // Add commands and set their callbacks; both buttons use the same callback function instead of inline event handlers
                     messageDialog.Commands.Add(new UICommand(
-                        "Try again",
+                        Constants.TRY_AGAIN,
                         new UICommandInvokedHandler(this.CommandInvokedHandler)));
                     messageDialog.Commands.Add(new UICommand(
-                        "Close",
+                        Constants.CLOSE,
                         new UICommandInvokedHandler(this.CommandInvokedHandler)));
 
                     // Set the command that will be invoked by default
@@ -356,12 +357,12 @@ namespace Kozlowski.Slide
         {
             switch (command.Label)
             {
-                case "Try again":
+                case Constants.TRY_AGAIN:
                     MoveForward();
                     Play_Click(null, null);
                     break;
 
-                case "Close":
+                case Constants.CLOSE:
                     // Do nothing
                     break;
             }
@@ -492,6 +493,9 @@ namespace Kozlowski.Slide
             var children = Children(container);
             var img = children.Find(x => x.Name.Equals("MainImage"));
 
+            if (img == null)
+                return;
+
             img.RenderTransform = new ScaleTransform();
             img.RenderTransformOrigin = RandomPoint();
 
@@ -543,8 +547,6 @@ namespace Kozlowski.Slide
                 case 2:
                     point.X = 1.0;
                     break;
-                case 3:
-                    throw new Exception();
             }
 
             // Set Y
@@ -570,12 +572,16 @@ namespace Kozlowski.Slide
         private List<Image> Children(DependencyObject parent)
         {
             var list = new List<Image>();
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+
+            if (parent != null)
             {
-                var child = VisualTreeHelper.GetChild(parent, i);
-                if (child is Image)
-                    list.Add(child as Image);
-                list.AddRange(Children(child));
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+                {
+                    var child = VisualTreeHelper.GetChild(parent, i);
+                    if (child is Image)
+                        list.Add(child as Image);
+                    list.AddRange(Children(child));
+                }
             }
             return list;
         }
@@ -601,7 +607,7 @@ namespace Kozlowski.Slide
 
         private void MainAppBar_Opened(object sender, object e)
         {
-            timer.Stop();
+            //timer.Stop();
             if (isPaused)
             {
                 ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
@@ -616,8 +622,8 @@ namespace Kozlowski.Slide
 
         private void MainAppBar_Closed(object sender, object e)
         {
-            if (!isPaused)
-                timer.Start();
+            //if (!isPaused)
+              //  timer.Start();
         }
 
         /// <summary>
