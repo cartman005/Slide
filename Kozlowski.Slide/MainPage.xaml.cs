@@ -97,37 +97,48 @@ namespace Kozlowski.Slide
             timer.Interval = TimeSpan.FromSeconds(settings.Interval);
             Debug.WriteLine("Timer set to " + settings.Interval);
 
-            // TODO Load Items from saved state.
-
-            // Try to load previous Index and Items collection
+            // Try to load previous Index, Items collection and paused state
             int initialIndex = -1;
-            if (e.PageState != null && e.PageState.ContainsKey("SelectedIndex"))
+            bool wasPaused = false;
+            if (e.PageState != null)
             {
-                object storedIndex = null;
-                if (e.PageState.TryGetValue("SelectedIndex", out storedIndex))
+                // Items collection
+                if (e.PageState.ContainsKey(Constants.SettingsName_SelectedIndex))
                 {
-                    try
+                    object storedIndex = null;
+                    if (e.PageState.TryGetValue(Constants.SettingsName_SelectedIndex, out storedIndex))
                     {
-                        StorageFile file = await ApplicationData.Current.LocalFolder.GetFileAsync(Constants.CollectionFileName);
-                        if (file != null)
+                        try
                         {
-                            using (IInputStream inStream = await file.OpenSequentialReadAsync())
+                            StorageFile file = await ApplicationData.Current.LocalFolder.GetFileAsync(Constants.CollectionFileName);
+                            if (file != null)
                             {
-                                DataContractSerializer serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
-                                var data = (ObservableCollection<ListItem>)serializer.ReadObject(inStream.AsStreamForRead());
-                                Items = data;
+                                using (IInputStream inStream = await file.OpenSequentialReadAsync())
+                                {
+                                    DataContractSerializer serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
+                                    var data = (ObservableCollection<ListItem>)serializer.ReadObject(inStream.AsStreamForRead());
+                                    Items = data;
 
-                                Debug.WriteLine("Found serialized Items collection");
+                                    Debug.WriteLine("Found serialized Items collection");
+                                }
+
+                                Debug.WriteLine("Set index to " + (int)storedIndex);
+                                initialIndex = (int)storedIndex;
                             }
-
-                            Debug.WriteLine("Set index to " + (int)storedIndex);
-                            initialIndex = (int)storedIndex;
+                        }
+                        catch (FileNotFoundException ex)
+                        {
+                            Debug.WriteLine("File not found {0}", ex.Source);
                         }
                     }
-                    catch (FileNotFoundException ex)
-                    {
-                        Debug.WriteLine("File not found {0}", ex.Source);
-                    }
+                }
+
+                // Paused state
+                if (e.PageState.ContainsKey(Constants.SettingsName_IsPaused))
+                {
+                    object storedPaused = null;
+                    if (e.PageState.TryGetValue(Constants.SettingsName_IsPaused, out storedPaused))
+                        wasPaused = (bool)storedPaused;
                 }
             }
 
@@ -138,7 +149,7 @@ namespace Kozlowski.Slide
             FlipView.SelectedIndex = initialIndex;
 
             fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
-            isPaused = false; // Should be set before calling LoadMoreFiles
+            isPaused = wasPaused; // Should be set before calling LoadMoreFiles
             await LoadMoreFiles(Constants.ImagesToLoad);
             UpdateName((ListItem)FlipView.SelectedItem);
             FlipView.SelectionChanged += FlipView_SelectionChanged;
@@ -155,8 +166,8 @@ namespace Kozlowski.Slide
             // Set the input focus to ensure that keyboard events are raised
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
             FlipView.Focus(Windows.UI.Xaml.FocusState.Programmatic);
-            if (settings.Zoom)
-                Animate();
+            if (settings.Animate)
+                Animate(settings.Interval);
             // Create first set of tile updates
             if (!settings.InitialUpdatesMade)
             {
@@ -179,8 +190,9 @@ namespace Kozlowski.Slide
         {
             Debug.WriteLine("Saving state");
 
-            // Save the SelectedIndex
-            e.PageState.Add("SelectedIndex", FlipView.SelectedIndex);
+            // Save the SelectedIndex and IsPaused
+            e.PageState.Add(Constants.SettingsName_SelectedIndex, FlipView.SelectedIndex);
+            e.PageState.Add(Constants.SettingsName_IsPaused, isPaused);
 
             // Save Items collection
             MemoryStream sessionData = new MemoryStream();
@@ -234,13 +246,20 @@ namespace Kozlowski.Slide
         private async void Settings_Changed(object sender, PropertyChangedEventArgs e)
         {
             Debug.WriteLine("Settings Changed");
-            timer.Interval = TimeSpan.FromSeconds(settings.Interval);
 
-            if (!timer.IsEnabled)
-                timer.Start();
-
+            // Interval
+            if (e.PropertyName == Constants.SettingsName_Interval)
+                timer.Interval = TimeSpan.FromSeconds(settings.Interval);
+            
+            // Change storyboard if animation or interval settings change
+            if (e.PropertyName == Constants.SettingsName_Animate || e.PropertyName == Constants.SettingsName_Interval)
+            {
+                if (settings.Animate)
+                    Animate(settings.Interval);
+            }
+           
             // Change collection of image files to use if the changed property affects it
-            if (e.PropertyName == "FolderPath" || e.PropertyName == "IncludeSubfolders" || e.PropertyName == "Shuffle")
+            if (e.PropertyName == Constants.SettingsName_ImagesLocation || e.PropertyName == Constants.SettingsName_Subfolders || e.PropertyName == Constants.SettingsName_Shuffle)
             {
                 // Clear images following the current index
                 FlipView.SelectionChanged -= FlipView_SelectionChanged;
@@ -255,6 +274,10 @@ namespace Kozlowski.Slide
                 await LoadMoreFiles(Constants.ImagesToLoad);
                 FlipView.SelectionChanged += FlipView_SelectionChanged;
             }
+
+            // Start the timer if not paused
+            if (!isPaused && !timer.IsEnabled)
+                timer.Start();
 
             // Regenerate tile updates
             await TileMaker.GenerateTiles(settings.Interval, fileList);
@@ -420,6 +443,9 @@ namespace Kozlowski.Slide
                 ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
                 ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
             }
+
+            if (story != null)
+                story.Begin();
         }
 
         private void Pause_Click(object sender, RoutedEventArgs e)
@@ -431,6 +457,9 @@ namespace Kozlowski.Slide
                 ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
                 ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
             }
+
+            if (story != null)
+                story.Stop();
         }
 
         private void FlipView_SelectionChanged(object sender, object e)
@@ -444,8 +473,8 @@ namespace Kozlowski.Slide
             if (FlipView.SelectedItem == null)
                 return;
 
-            if (settings.Zoom)
-                Animate();
+            if (settings.Animate)
+                Animate(settings.Interval);
 
             ResetTimer();
 
@@ -457,7 +486,7 @@ namespace Kozlowski.Slide
         }
 
         // Using code from http://irisclasson.com/2012/06/28/creating-a-scaletransform-animation-in-c-for-winrt-metro-apps/
-        private void Animate()
+        private void Animate(int seconds)
         {
             var container = FlipView.ContainerFromIndex(FlipView.SelectedIndex);
             var children = Children(container);
@@ -467,19 +496,18 @@ namespace Kozlowski.Slide
             img.RenderTransformOrigin = RandomPoint();
 
             story = new Storyboard();
-            story.AutoReverse = false;
 
             var xAnim = new DoubleAnimation();
             var yAnim = new DoubleAnimation();
 
-            xAnim.AutoReverse = true;
-            yAnim.AutoReverse = true;
+            xAnim.AutoReverse = false;
+            yAnim.AutoReverse = false;
 
-            xAnim.Duration = TimeSpan.FromSeconds(settings.Interval);
-            yAnim.Duration = TimeSpan.FromSeconds(settings.Interval);
+            xAnim.Duration = TimeSpan.FromSeconds(seconds);
+            yAnim.Duration = TimeSpan.FromSeconds(seconds);
 
-            xAnim.To = 1.5;
-            yAnim.To = 1.5;
+            xAnim.To = Constants.Scale;
+            yAnim.To = Constants.Scale;
 
             story.Children.Add(xAnim);
             story.Children.Add(yAnim);
@@ -489,7 +517,9 @@ namespace Kozlowski.Slide
 
             Storyboard.SetTargetProperty(xAnim, "(UIElement.RenderTransform).(ScaleTransform.ScaleX)");
             Storyboard.SetTargetProperty(yAnim, "(UIElement.RenderTransform).(ScaleTransform.ScaleY)");
-            story.Begin();
+
+            if (!isPaused)
+                story.Begin();
         }
 
         private Point RandomPoint()
@@ -505,13 +535,13 @@ namespace Kozlowski.Slide
             switch(x)
             {
                 case 0:
-                    point.X = -0.5;
-                    break;
-                case 1:
                     point.X = 0.0;
                     break;
-                case 2:
+                case 1:
                     point.X = 0.5;
+                    break;
+                case 2:
+                    point.X = 1.0;
                     break;
                 case 3:
                     throw new Exception();
@@ -521,13 +551,13 @@ namespace Kozlowski.Slide
             switch (y)
             {
                 case 0:
-                    point.Y = -0.5;
-                    break;
-                case 1:
                     point.Y = 0.0;
                     break;
-                case 2:
+                case 1:
                     point.Y = 0.5;
+                    break;
+                case 2:
+                    point.Y = 1.0;
                     break;
             }
 

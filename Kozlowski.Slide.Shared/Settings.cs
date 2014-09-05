@@ -133,19 +133,19 @@ namespace Kozlowski.Slide
             }
         }
 
-        public bool Zoom
+        public bool Animate
         {
             get
             {
-                if (settings.Values[Constants.SettingsName_Zoom] == null)
-                    settings.Values[Constants.SettingsName_Zoom] = true;
+                if (settings.Values[Constants.SettingsName_Animate] == null)
+                    settings.Values[Constants.SettingsName_Animate] = true;
 
-                return (bool)settings.Values[Constants.SettingsName_Zoom];
+                return (bool)settings.Values[Constants.SettingsName_Animate];
             }
             set
             {
-                settings.Values[Constants.SettingsName_Zoom] = value;
-                NotifyPropertyChanged(Constants.SettingsName_Zoom);
+                settings.Values[Constants.SettingsName_Animate] = value;
+                NotifyPropertyChanged(Constants.SettingsName_Animate);
             }
         }
         
