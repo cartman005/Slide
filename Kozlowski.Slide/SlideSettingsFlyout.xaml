@@ -69,10 +69,9 @@
             <ToggleSwitch
                 Name="ZoomSwitch"
                 Header="Pan/Zoom"
-                IsOn="{Binding Path=Zoom, Mode=TwoWay}"
+                IsOn="{Binding Path=Animate, Mode=TwoWay}"
                 ToolTipService.ToolTip="Pan and zoom in on images?"
                 TabIndex="4" />
         </StackPanel>
-
     </StackPanel>
 </SettingsFlyout>

@@ -13,21 +13,31 @@ using Windows.UI.Notifications;
 
 namespace Kozlowski.Slide.Background
 {
-    // Uses code from http://code.msdn.microsoft.com/windowsapps/Tile-Update-every-minute-68dbbbff
+    /// <summary>
+    /// This class is responsible for creating tiles for the Start screen and scheduling the tile updates.
+    /// Its functions are defined staticly to provide shared access to them from both the background task and the main app page.
+    /// </summary>
     public sealed class TileMaker
     {        
-        public static IAsyncOperation<IReadOnlyList<StorageFile>> GetImageList(StorageFolder folder, bool includeSubfolders)
+        /// <summary>
+        /// Gets the 
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <param name="includeSubfolders"></param>
+        /// <param name="shuffle"></param>
+        /// <returns>A list of the image files to be used in the slideshow.</returns>
+        public static IAsyncOperation<IReadOnlyList<StorageFile>> GetImageList(StorageFolder folder, bool includeSubfolders, bool shuffle)
         {
             return Task.Run<IReadOnlyList<StorageFile>>(async () =>
             {
-                List<String> fileType = new List<String>();
-                fileType.Add(".bmp");
-                fileType.Add(".gif");
-                fileType.Add(".jpg");
-                fileType.Add(".jpeg");
-                fileType.Add(".png");
-                fileType.Add(".tiff");
-                var queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileType);
+                var fileTypes = new List<String>();
+                fileTypes.Add(".bmp");
+                fileTypes.Add(".gif");
+                fileTypes.Add(".jpg");
+                fileTypes.Add(".jpeg");
+                fileTypes.Add(".png");
+                fileTypes.Add(".tiff");
+                var queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileTypes);
 
                 queryOptions.IndexerOption = IndexerOption.UseIndexerWhenAvailable;
                     
@@ -37,7 +47,7 @@ namespace Kozlowski.Slide.Background
                     queryOptions.FolderDepth = FolderDepth.Shallow;
 
                 // If not shuffled, sort by file name; otherwise, don't bother
-                if (!Settings.Instance.Shuffle)
+                if (!shuffle)
                 {
                     queryOptions.SortOrder.Add(new SortEntry
                     {
@@ -75,13 +85,12 @@ namespace Kozlowski.Slide.Background
                     // Create a stream from the file and decode the image
                     using(var fileStream = await file.OpenAsync(FileAccessMode.Read))
                     {
-                        BitmapDecoder decoder = await BitmapDecoder.CreateAsync(fileStream);
-
-                        Size dimensions = TileMaker.GetDimensions((int)decoder.PixelWidth, (int)decoder.PixelHeight, tileWidth, tileHeight);
+                        var decoder = await BitmapDecoder.CreateAsync(fileStream);
+                        var dimensions = TileMaker.GetDimensions((int)decoder.PixelWidth, (int)decoder.PixelHeight, tileWidth, tileHeight);
 
                         // Resize the image to 310x310 and save to Local AppData folder
-                        BitmapTransform transform = new BitmapTransform() { ScaledWidth = (uint)dimensions.Width, ScaledHeight = (uint)dimensions.Height };
-                        PixelDataProvider pixelData = await decoder.GetPixelDataAsync(
+                        var transform = new BitmapTransform() { ScaledWidth = (uint)dimensions.Width, ScaledHeight = (uint)dimensions.Height };
+                        var pixelData = await decoder.GetPixelDataAsync(
                                 BitmapPixelFormat.Rgba8,
                                 BitmapAlphaMode.Straight,
                                 transform,
@@ -168,13 +177,20 @@ namespace Kozlowski.Slide.Background
             }).AsAsyncOperation<XmlDocument>();
         }
 
-        public static IAsyncAction GenerateTiles(int seconds, IReadOnlyList<StorageFile> IFileList)
+        /// <summary>
+        /// This method uses code adapted from an MSDN sample posted by Dave Smits on 12/03/2012 here:
+        /// http://code.msdn.microsoft.com/windowsapps/Tile-Update-every-minute-68dbbbff
+        /// </summary>
+        /// <param name="seconds"></param>
+        /// <param name="IFileList"></param>
+        /// <param name="folder"></param>
+        /// <param name="includeSubfolders"></param>
+        /// <param name="shuffle"></param>
+        /// <returns></returns>
+        public static IAsyncAction GenerateTiles(int seconds, IReadOnlyList<StorageFile> IFileList, StorageFolder folder, bool includeSubfolders, bool shuffle)
         {
             return Task.Run(async () =>
             {
-                // TODO Should the settings be created here?
-                Settings settings = Settings.Instance;
-
                 var updater = TileUpdateManager.CreateTileUpdaterForApplication();
                 updater.EnableNotificationQueue(true);
                 updater.Clear();
@@ -182,7 +198,7 @@ namespace Kozlowski.Slide.Background
                 // Clear existing images
                 try
                 {
-                    StorageFolder tileUpdateFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync(Constants.TileUpdatesFolder);
+                    var tileUpdateFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync(Constants.TileUpdatesFolder);
                     await tileUpdateFolder.DeleteAsync();
                 }
                 catch(FileNotFoundException ex)
@@ -190,18 +206,18 @@ namespace Kozlowski.Slide.Background
                     Debug.WriteLine("Tile updates folder not found {0}", ex.Source);
                 }
 
-                DateTime now = DateTime.Now;
-                DateTime planTill = now.AddMinutes(30);
-                DateTime updateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0).AddMinutes(1);
+                var now = DateTime.Now;
+                var planTill = now.AddMinutes(30);
+                var updateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0).AddMinutes(1);
 
-                List<StorageFile> fileList = new List<StorageFile>();
+                var fileList = new List<StorageFile>();
                 fileList.AddRange(IFileList);
                 
                 // Create the first tile
                 int index;
                 StorageFile file;
 
-                if (settings.Shuffle)
+                if (shuffle)
                     index = SingleRandom.Instance.Next(0, fileList.Count);
                 else
                     index = 0;
@@ -222,9 +238,9 @@ namespace Kozlowski.Slide.Background
                     for (var startPlanning = updateTime; startPlanning < planTill; startPlanning = startPlanning.AddSeconds(seconds))
                     {                        
                             if (fileList.Count < 1)
-                                fileList.AddRange(await GetImageList(settings.RootFolder, settings.IncludeSubfolders));
+                                fileList.AddRange(await GetImageList(folder, includeSubfolders, shuffle));
 
-                            if (settings.Shuffle)
+                            if (shuffle)
                                 index = SingleRandom.Instance.Next(0, fileList.Count);
                             else
                             {
@@ -242,7 +258,7 @@ namespace Kozlowski.Slide.Background
                                 tile = await CreateTileUpdate(file, 310, 310);
                                 if (tile != null)
                                 {
-                                    ScheduledTileNotification scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddMinutes(1) };
+                                    var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddMinutes(1) };
                                     updater.AddToSchedule(scheduledNotification);
                                 }
                             }
@@ -259,7 +275,7 @@ namespace Kozlowski.Slide.Background
 
         public static Size GetDimensions(int originalWidth, int originalHeight, int targetWidth, int targetHeight)
         {
-            Size newDimensions = new Size();
+            var newDimensions = new Size();
 
             if (originalWidth >= targetWidth && originalHeight >= targetHeight)
             {

@@ -34,7 +34,6 @@ namespace Kozlowski.Slide
         private ObservableDictionary defaultViewModel = new ObservableDictionary();
         private List<StorageFile> fileList;
         private DispatcherTimer timer;
-        private Settings settings;
         private bool isPaused;
         private Storyboard story;
 
@@ -66,9 +65,7 @@ namespace Kozlowski.Slide
             this.navigationHelper.LoadState += NavigationHelper_LoadState;
             this.navigationHelper.SaveState += NavigationHelper_SaveState;
 
-            settings = Settings.Instance;
-            settings.PropertyChanged += Settings_Changed;
-
+            Settings.Instance.PropertyChanged += Settings_Changed;
 
             timer = new DispatcherTimer();
             timer.Tick += Timer_Tick;
@@ -94,8 +91,8 @@ namespace Kozlowski.Slide
             Debug.WriteLine("Loading state");
 
             // Set up timer first in case it gets started
-            timer.Interval = TimeSpan.FromSeconds(settings.Interval);
-            Debug.WriteLine("Timer set to " + settings.Interval);
+            timer.Interval = TimeSpan.FromSeconds(Settings.Instance.Interval);
+            Debug.WriteLine("Timer set to " + Settings.Instance.Interval);
 
             // Try to load previous Index, Items collection and paused state
             int initialIndex = -1;
@@ -148,7 +145,7 @@ namespace Kozlowski.Slide
             FlipView.ItemsSource = Items;
             FlipView.SelectedIndex = initialIndex;
 
-            fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
+            fileList.AddRange(await TileMaker.GetImageList(Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle));
             isPaused = wasPaused; // Should be set before calling LoadMoreFiles
             await LoadMoreFiles(Constants.ImagesToLoad);
             UpdateName((ListItem)FlipView.SelectedItem);
@@ -167,14 +164,14 @@ namespace Kozlowski.Slide
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
             FlipView.Focus(Windows.UI.Xaml.FocusState.Programmatic);
 
-            if (settings.Animate)
-                Animate(settings.Interval);
+            if (Settings.Instance.Animate)
+                Animate(Settings.Instance.Interval);
             // Create first set of tile updates
-            if (!settings.InitialUpdatesMade)
+            if (!Settings.Instance.InitialUpdatesMade)
             {
                 Debug.WriteLine("Generate initial updates");
-                await TileMaker.GenerateTiles(settings.Interval, fileList);
-                settings.InitialUpdatesMade = true;
+                await TileMaker.GenerateTiles(Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
+                Settings.Instance.InitialUpdatesMade = true;
             }
         }
 
@@ -196,8 +193,8 @@ namespace Kozlowski.Slide
             e.PageState.Add(Constants.SettingsName_IsPaused, isPaused);
 
             // Save Items collection
-            MemoryStream sessionData = new MemoryStream();
-            DataContractSerializer serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
+            var sessionData = new MemoryStream();
+            var serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
             serializer.WriteObject(sessionData, Items);
 
             StorageFile file = await ApplicationData.Current.LocalFolder.CreateFileAsync(Constants.CollectionFileName, CreationCollisionOption.ReplaceExisting);
@@ -250,13 +247,13 @@ namespace Kozlowski.Slide
 
             // Interval
             if (e.PropertyName == Constants.SettingsName_Interval)
-                timer.Interval = TimeSpan.FromSeconds(settings.Interval);
+                timer.Interval = TimeSpan.FromSeconds(Settings.Instance.Interval);
             
             // Change storyboard if animation or interval settings change
             if (e.PropertyName == Constants.SettingsName_Animate || e.PropertyName == Constants.SettingsName_Interval)
             {
-                if (settings.Animate)
-                    Animate(settings.Interval);
+                if (Settings.Instance.Animate)
+                    Animate(Settings.Instance.Interval);
             }
            
             // Change collection of image files to use if the changed property affects it
@@ -271,7 +268,7 @@ namespace Kozlowski.Slide
 
                 // Clear file list, as files are missing
                 fileList.Clear();
-                fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
+                fileList.AddRange(await TileMaker.GetImageList(Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle));
                 await LoadMoreFiles(Constants.ImagesToLoad);
                 FlipView.SelectionChanged += FlipView_SelectionChanged;
             }
@@ -281,8 +278,8 @@ namespace Kozlowski.Slide
                 timer.Start();
 
             // Regenerate tile updates
-            await TileMaker.GenerateTiles(settings.Interval, fileList);
-            settings.InitialUpdatesMade = true;
+            await TileMaker.GenerateTiles(Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
+            Settings.Instance.InitialUpdatesMade = true;
         }
 
         private async Task LoadMoreFiles(int count)
@@ -294,10 +291,10 @@ namespace Kozlowski.Slide
             {
                 // Check if more files need to be loaded
                 if (fileList.Count <= 0)
-                    fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));
+                    fileList.AddRange(await TileMaker.GetImageList(Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle));
 
                 // Set index depending on shuffle setting
-                if (settings.Shuffle)
+                if (Settings.Instance.Shuffle)
                     index = SingleRandom.Instance.Next(0, fileList.Count);
                 else
                 {
@@ -309,7 +306,6 @@ namespace Kozlowski.Slide
                 {
                     Items.Add(new ListItem { FilePath = fileList[index].Path, Name = fileList[index].DisplayName });
                     fileList.RemoveAt(index);
-                    //maxIndex++;
                 }
                 else
                 {
@@ -411,82 +407,14 @@ namespace Kozlowski.Slide
 
         private async void OpenFile_Click(object sender, RoutedEventArgs e)
         {
-            StorageFile file = await StorageFile.GetFileFromPathAsync(((ListItem)FlipView.SelectedItem).FilePath);
-            LauncherOptions launcherOptions = new LauncherOptions();
+            var file = await StorageFile.GetFileFromPathAsync(((ListItem)FlipView.SelectedItem).FilePath);
+            var launcherOptions = new LauncherOptions();
             launcherOptions.DisplayApplicationPicker = true;
             await Launcher.LaunchFileAsync(file, launcherOptions);
         }
 
-        private async void Clear_Click(object sender, RoutedEventArgs e)
-        {
-            Debug.WriteLine("Clear images");
-
-            FlipView.SelectionChanged -= FlipView_SelectionChanged;
-            fileList.Clear();
-            Items.Clear();
-            await LoadMoreFiles(Constants.ImagesToLoad);
-            UpdateName((ListItem)FlipView.SelectedItem);
-            FlipView.SelectionChanged += FlipView_SelectionChanged;
-            Debug.WriteLine("Selected index is " + FlipView.SelectedIndex);
-            ResetTimer();
-
-            // Regenerate tile updates
-            await TileMaker.GenerateTiles(settings.Interval, fileList);
-            settings.InitialUpdatesMade = true;
-        }
-
-        private void Play_Click(object sender, RoutedEventArgs e)
-        {
-            timer.Start();
-            isPaused = false;
-            if (MainAppBar.IsOpen)
-            {
-                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
-                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
-            }
-
-            if (story != null)
-                story.Begin();
-        }
-
-        private void Pause_Click(object sender, RoutedEventArgs e)
-        {
-            timer.Stop();
-            isPaused = true;
-            if (MainAppBar.IsOpen)
-            {
-                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
-                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
-            }
-
-            if (story != null)
-                story.Stop();
-        }
-
-        private void FlipView_SelectionChanged(object sender, object e)
-        {
-            if (story != null)
-                story.Stop();
-
-            Debug.WriteLine("Selection changed, index " + FlipView.SelectedIndex);
-            //Debug.WriteLine("Change to " + Items[FlipView.SelectedIndex]);
-
-            if (FlipView.SelectedItem == null)
-                return;
-
-            if (settings.Animate)
-                Animate(settings.Interval);
-
-            ResetTimer();
-
-            // Check if more files need to be loaded
-            MoveForward();
-
-            // Update text with the name of the image
-            UpdateName((ListItem)FlipView.SelectedItem);
-        }
-
-        // Using code from http://irisclasson.com/2012/06/28/creating-a-scaletransform-animation-in-c-for-winrt-metro-apps/
+        // This function was adapted from a post by Iris Classon on 06/28/2012 on her blog "In Love With Code" here:
+        // http://irisclasson.com/2012/06/28/creating-a-scaletransform-animation-in-c-for-winrt-metro-apps/
         private void Animate(int seconds)
         {
             var container = FlipView.ContainerFromIndex(FlipView.SelectedIndex);
@@ -510,8 +438,8 @@ namespace Kozlowski.Slide
             xAnim.Duration = TimeSpan.FromSeconds(seconds);
             yAnim.Duration = TimeSpan.FromSeconds(seconds);
 
-            xAnim.To = Constants.Scale;
-            yAnim.To = Constants.Scale;
+            xAnim.To = Constants.ScaleDecimal;
+            yAnim.To = Constants.ScaleDecimal;
 
             story.Children.Add(xAnim);
             story.Children.Add(yAnim);
@@ -563,12 +491,16 @@ namespace Kozlowski.Slide
                     break;
             }
 
-            Debug.WriteLine(point.X + " " + point.Y);
-
             return point;
         }
-
-        // Code from Jerry Nixon http://stackoverflow.com/questions/16375375/how-do-i-access-a-control-inside-a-xaml-datatemplate
+               
+        /// <summary>
+        /// Recursively locates all child Image elements of the given XAML parent object.
+        /// This function was adapted from a post by Jerry Nixon on 05/08/2013 on StackOverflow here:
+        /// http://stackoverflow.com/questions/16375375/how-do-i-access-a-control-inside-a-xaml-datatemplate
+        /// </summary>
+        /// <param name="parent">The parent XAML element.</param>
+        /// <returns>A list containing the children Image elements of the given parent.</returns>
         private List<Image> Children(DependencyObject parent)
         {
             var list = new List<Image>();
@@ -592,6 +524,76 @@ namespace Kozlowski.Slide
                 FileName.Text = item.Name;
         }
 
+        #region Event handlers
+        private async void Clear_Click(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine("Clear images");
+
+            FlipView.SelectionChanged -= FlipView_SelectionChanged;
+            fileList.Clear();
+            Items.Clear();
+            await LoadMoreFiles(Constants.ImagesToLoad);
+            UpdateName((ListItem)FlipView.SelectedItem);
+            FlipView.SelectionChanged += FlipView_SelectionChanged;
+            Debug.WriteLine("Selected index is " + FlipView.SelectedIndex);
+            ResetTimer();
+
+            // Regenerate tile updates
+            await TileMaker.GenerateTiles(Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
+            Settings.Instance.InitialUpdatesMade = true;
+        }
+
+        private void Play_Click(object sender, RoutedEventArgs e)
+        {
+            timer.Start();
+            isPaused = false;
+            if (MainAppBar.IsOpen)
+            {
+                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
+                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
+            }
+
+            if (story != null)
+                story.Begin();
+        }
+
+        private void Pause_Click(object sender, RoutedEventArgs e)
+        {
+            timer.Stop();
+            isPaused = true;
+            if (MainAppBar.IsOpen)
+            {
+                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
+                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
+            }
+
+            if (story != null)
+                story.Stop();
+        }
+
+        private void FlipView_SelectionChanged(object sender, object e)
+        {
+            if (story != null)
+                story.Stop();
+
+            Debug.WriteLine("Selection changed, index " + FlipView.SelectedIndex);
+            //Debug.WriteLine("Change to " + Items[FlipView.SelectedIndex]);
+
+            if (FlipView.SelectedItem == null)
+                return;
+
+            if (Settings.Instance.Animate)
+                Animate(Settings.Instance.Interval);
+
+            ResetTimer();
+
+            // Check if more files need to be loaded
+            MoveForward();
+
+            // Update text with the name of the image
+            UpdateName((ListItem)FlipView.SelectedItem);
+        }
+
         private async void Timer_Tick(object sender, object e)
         {
             Debug.WriteLine("Timer tick");
@@ -603,68 +605,6 @@ namespace Kozlowski.Slide
 
             // Advance the flipview selection
             FlipView.SelectedIndex++;
-        }
-
-        private void MainAppBar_Opened(object sender, object e)
-        {
-            //timer.Stop();
-            if (isPaused)
-            {
-                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
-                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
-            }
-            else
-            {
-                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
-                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void MainAppBar_Closed(object sender, object e)
-        {
-            //if (!isPaused)
-              //  timer.Start();
-        }
-
-        /// <summary>
-        /// Registers the timer background task that runs at the given frequency.
-        /// 15 minutes is the most frequent interval that a background event can be scheduled for.
-        /// </summary>
-        private void RegisterTimerTask(uint minutes)
-        {
-            // Check if the task already exists
-            foreach (var task in BackgroundTaskRegistration.AllTasks)
-            {
-                if (task.Value.Name == Constants.TimerTaskName)
-                    return;
-            }
-
-            // Create the task
-            BackgroundTaskBuilder builder = new BackgroundTaskBuilder();
-            builder.Name = Constants.TimerTaskName;
-            builder.TaskEntryPoint = Constants.TaskEntryPoint;
-            builder.SetTrigger(new TimeTrigger(minutes, false));
-            var registration = builder.Register();
-        }
-
-        /// <summary>
-        /// Registers the user present background task that runs when the user logs back onto the device.
-        /// </summary>
-        private void RegisterUserTask()
-        {
-            // Check if the task already exists
-            foreach (var task in BackgroundTaskRegistration.AllTasks)
-            {
-                if (task.Value.Name == Constants.UserTaskName)
-                    return;
-            }
-
-            // Create the task
-            BackgroundTaskBuilder builder = new BackgroundTaskBuilder();
-            builder.Name = Constants.UserTaskName;
-            builder.TaskEntryPoint = Constants.TaskEntryPoint;
-            builder.SetTrigger(new SystemTrigger(SystemTriggerType.UserPresent, false));
-            var registration = builder.Register();
         }
 
         private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -689,6 +629,68 @@ namespace Kozlowski.Slide
                     }
                 }
             }
+        }
+
+        private void MainAppBar_Opened(object sender, object e)
+        {
+            // Hide and show the appropriate Play/Pause button
+            if (isPaused)
+            {
+                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
+                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
+            }
+            else
+            {
+                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
+                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void MainAppBar_Closed(object sender, object e)
+        {
+            // Do nothing
+        }
+        #endregion
+
+        /// <summary>
+        /// Registers the timer background task that runs at the given frequency.
+        /// 15 minutes is the most frequent interval that a background event can be scheduled for.
+        /// </summary>
+        private void RegisterTimerTask(uint minutes)
+        {
+            // Check if the task already exists
+            foreach (var task in BackgroundTaskRegistration.AllTasks)
+            {
+                if (task.Value.Name == Constants.TimerTaskName)
+                    return;
+            }
+
+            // Create the task
+            var builder = new BackgroundTaskBuilder();
+            builder.Name = Constants.TimerTaskName;
+            builder.TaskEntryPoint = Constants.TaskEntryPoint;
+            builder.SetTrigger(new TimeTrigger(minutes, false));
+            var registration = builder.Register();
+        }
+
+        /// <summary>
+        /// Registers the user present background task that runs when the user logs back onto the device.
+        /// </summary>
+        private void RegisterUserTask()
+        {
+            // Check if the task already exists
+            foreach (var task in BackgroundTaskRegistration.AllTasks)
+            {
+                if (task.Value.Name == Constants.UserTaskName)
+                    return;
+            }
+
+            // Create the task
+            var builder = new BackgroundTaskBuilder();
+            builder.Name = Constants.UserTaskName;
+            builder.TaskEntryPoint = Constants.TaskEntryPoint;
+            builder.SetTrigger(new SystemTrigger(SystemTriggerType.UserPresent, false));
+            var registration = builder.Register();
         }
     }
 }

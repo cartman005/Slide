@@ -8,37 +8,42 @@ using Windows.Storage.AccessCache;
 
 namespace Kozlowski.Slide
 {
+    /// <summary>
+    /// This class is used to provide a singleton, central access point to the app's settings.
+    /// </summary>
     public class Settings : INotifyPropertyChanged
     {
-        private static Settings instance;
+        // The single instance of the class
+        private static readonly Settings instance = new Settings();
         private ApplicationDataContainer settings;
-        private StorageFolder folder;
-
+        private StorageFolder rootFolder;
+        
+        /// <summary>
+        /// Gets the app's thread-safe instance of the Settings classed.
+        /// </summary>
+        public static Settings Instance { get { return instance; } }
+        
+        /// <summary>
+        /// Private constructor that opens the app's Roaming Settings and the FutureAccessList to find the current root folder.
+        /// </summary>
         private Settings()
         {
-             settings = ApplicationData.Current.RoamingSettings;
+            Debug.WriteLine("Settings constructor called.");
+            settings = ApplicationData.Current.RoamingSettings;
 
-             if (StorageApplicationPermissions.FutureAccessList.ContainsItem(Constants.SettingsName_ImagesLocation))
-                 Task.Run(
-                    async() =>
-                    {
-                        folder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(Constants.SettingsName_ImagesLocation);
-                    }).Wait();
-             else
-                 folder = KnownFolders.PicturesLibrary;
+            if (StorageApplicationPermissions.FutureAccessList.ContainsItem(Constants.SettingsName_ImagesLocation))
+                Task.Run(
+                   async () =>
+                   {
+                       rootFolder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(Constants.SettingsName_ImagesLocation);
+                   }).Wait();
+            else
+                rootFolder = KnownFolders.PicturesLibrary;
         }
 
-        public static Settings Instance
-        {
-            get
-            {
-                if (instance == null)
-                    instance = new Settings();
-
-                return instance;
-            }
-        }
-
+        /// <summary>
+        /// Gets or sets whether or not the first set of tile updates have been created by the app.
+        /// </summary>
         public bool InitialUpdatesMade
         {
             get
@@ -54,6 +59,9 @@ namespace Kozlowski.Slide
             }
         }
 
+        /// <summary>
+        /// Gets or sets the index of the selected interval in the settings flyout combo box.
+        /// </summary>
         public int Index
         {
             get
@@ -70,43 +78,57 @@ namespace Kozlowski.Slide
             }
         }
 
+        /// <summary>
+        /// Gets the time interval selected in the settings flyout in seconds.
+        /// </summary>
         public int Interval
         {
             get { return Constants.IndexList[this.Index]; }
         }
 
+        /// <summary>
+        /// Gets or sets the root folder for the image files.
+        /// </summary>
         public StorageFolder RootFolder
         {
-            get { return folder; }
+            get { return rootFolder; }
 
             set
             {
                 if (value != null)
                 {
                     StorageApplicationPermissions.FutureAccessList.AddOrReplace(Constants.SettingsName_ImagesLocation, value);
-                    folder = value;
+                    rootFolder = value;
                     NotifyPropertyChanged(Constants.SettingsName_ImagesLocation);
                 }
             }
         }
 
+        /// <summary>
+        /// Gets the path of the folder selected as the root folder; or if the path is blank due to the folder being a virtual folder, gets the display name of the folder.
+        /// </summary>
         public string FolderPath
         {
             get
             { 
                 string path = RootFolder.Path;
+
+                // Paths for virtual folders like Libraries are blank
                 if (path == "")
                     path = RootFolder.DisplayName;
                 return path;
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether subfolders of the selected image folder should be included in the slideshow.
+        /// </summary>
         public bool IncludeSubfolders
         {
             get
             {
                 if (settings.Values[Constants.SettingsName_Subfolders] == null)
-                    settings.Values[Constants.SettingsName_Subfolders] = true;
+                    settings.Values[Constants.SettingsName_Subfolders] = Constants.DefaultSubfoldersSetting;
 
                 return (bool)settings.Values[Constants.SettingsName_Subfolders];
             }
@@ -117,12 +139,15 @@ namespace Kozlowski.Slide
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether the order that images are displayed should be randomized (shuffled).
+        /// </summary>
         public bool Shuffle
         {
             get
             {
                 if (settings.Values[Constants.SettingsName_Shuffle] == null)
-                    settings.Values[Constants.SettingsName_Shuffle] = true;
+                    settings.Values[Constants.SettingsName_Shuffle] = Constants.DefaultShuffleSetting;
 
                 return (bool)settings.Values[Constants.SettingsName_Shuffle];
             }
@@ -132,13 +157,16 @@ namespace Kozlowski.Slide
                 NotifyPropertyChanged(Constants.SettingsName_Shuffle);
             }
         }
-
+        
+        /// <summary>
+        /// Gets or sets whether the images displayed should be animated.
+        /// </summary>
         public bool Animate
         {
             get
             {
                 if (settings.Values[Constants.SettingsName_Animate] == null)
-                    settings.Values[Constants.SettingsName_Animate] = true;
+                    settings.Values[Constants.SettingsName_Animate] = Constants.DefaultAnimateSetting;
 
                 return (bool)settings.Values[Constants.SettingsName_Animate];
             }

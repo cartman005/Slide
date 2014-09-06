@@ -15,7 +15,9 @@
         <CollectionViewSource x:Name="ItemsViewSource" Source="{Binding Items}"/>
         <local:FileConverter x:Key="ImageConverter"/>
         <!-- Custom FlipView without dashed line border -->
-        <Style x:Key="FlipViewStyle1" TargetType="FlipView">
+        <!-- Source: Post by BenBtg on 11/02/2012 on StackOverflow -->
+        <!-- http://stackoverflow.com/questions/13103520/remove-keyboard-focus-rect-from-flipview-control-in-windows-store-app -->
+        <Style x:Key="NoFocusFlipViewStyle" TargetType="FlipView">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="TabNavigation" Value="Once"/>
@@ -269,7 +271,8 @@
             Name="FlipView"
             SizeChanged="Grid_SizeChanged"
             UseTouchAnimationsForAllNavigation="True"
-            ItemsSource="{Binding Source={StaticResource ItemsViewSource}}" Style="{StaticResource FlipViewStyle1}">
+            ItemsSource="{Binding Source={StaticResource ItemsViewSource}}"
+            Style="{StaticResource NoFocusFlipViewStyle}">
             <FlipView.ItemTemplate>
                 <DataTemplate>
                     <Grid Name="MainGrid">

@@ -6,22 +6,19 @@ using Windows.Storage;
 
 namespace Kozlowski.Slide.Background
 {
+    /// <summary>
+    /// This class is used to run the background task which creates and schedules the Start screen tile updates.
+    /// </summary>
     public sealed class TileUpdater : IBackgroundTask
     {
-        private Settings settings;
-        private List<StorageFile> fileList;
-
-        public TileUpdater()
-        {
-            settings = Settings.Instance;
-        }
-
         public async void Run(IBackgroundTaskInstance taskInstance)
         {            
             var defferal = taskInstance.GetDeferral();
-            fileList = new List<StorageFile>();
-            fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders));            
-            await TileMaker.GenerateTiles(settings.Interval, fileList);
+            Debug.WriteLine("Startd the background task");
+            var fileList = new List<StorageFile>();
+            var settings = Settings.Instance;
+            fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle));            
+            await TileMaker.GenerateTiles(settings.Interval, fileList, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle);
             Debug.WriteLine("Finished the background task");
             defferal.Complete();
         }        
