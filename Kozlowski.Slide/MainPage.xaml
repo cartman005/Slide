@@ -14,7 +14,7 @@
         <!-- Collection of items displayed by this page -->
         <CollectionViewSource x:Name="ItemsViewSource" Source="{Binding Items}"/>
         <local:FileConverter x:Key="ImageConverter"/>
-        <!-- Custom FlipView without dashed line border when focused -->
+        <!-- Custom FlipView without dashed line border -->
         <Style x:Key="FlipViewStyle1" TargetType="FlipView">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -41,12 +41,7 @@
                         <Grid>
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="FocusStates">
-                                    <VisualState x:Name="Focused">
-                                        <Storyboard>
-                                            <DoubleAnimation Duration="0" To="1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="FocusVisualWhite"/>
-                                            <DoubleAnimation Duration="0" To="1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="FocusVisualBlack"/>
-                                        </Storyboard>
-                                    </VisualState>
+                                    <VisualState x:Name="Focused"/>
                                     <VisualState x:Name="Unfocused"/>
                                     <VisualState x:Name="PointerFocused"/>
                                 </VisualStateGroup>
@@ -208,8 +203,8 @@
                                     <Button x:Name="NextButtonVertical" HorizontalAlignment="Center" Height="40" IsTabStop="False" Template="{StaticResource VerticalNextTemplate}" VerticalAlignment="Bottom" Width="70"/>
                                 </Grid>
                             </Border>
-                            <Rectangle x:Name="FocusVisualWhite" IsHitTestVisible="False" Opacity="0" StrokeDashOffset="1" StrokeEndLineCap="Square" Stroke="{x:Null}" StrokeDashArray="1,1"/>
-                            <Rectangle x:Name="FocusVisualBlack" IsHitTestVisible="False" Opacity="0" StrokeDashOffset="0.5" StrokeEndLineCap="Square" Stroke="{x:Null}" StrokeDashArray="1,1"/>
+                            <Rectangle x:Name="FocusVisualWhite" IsHitTestVisible="False" Opacity="0" StrokeDashOffset="1" StrokeEndLineCap="Square" Stroke="{ThemeResource FocusVisualWhiteStrokeThemeBrush}" StrokeDashArray="1,1"/>
+                            <Rectangle x:Name="FocusVisualBlack" IsHitTestVisible="False" Opacity="0" StrokeDashOffset="0.5" StrokeEndLineCap="Square" Stroke="{ThemeResource FocusVisualWhiteStrokeThemeBrush}" StrokeDashArray="1,1"/>
                         </Grid>
                     </ControlTemplate>
                 </Setter.Value>
