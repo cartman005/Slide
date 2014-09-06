@@ -221,22 +221,10 @@
                 <!-- Play/Pause button -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                     <AppBarButton
-                        Name="PlayButton"
-                        Icon="Play"
-                        Label="Play"
-                        ToolTipService.ToolTip="Play"
-                        Click="Play_Click"
-                        Visibility="Collapsed"
+                        Name="PlayPauseButton"
+                        Click="PlayPause_Click"
                         AutomationProperties.AccessKey="Space"
                         TabIndex="0"/>
-                    <AppBarButton
-                        Name="PauseButton"
-                        Icon="Pause"
-                        Label="Pause"
-                        ToolTipService.ToolTip="Pause"
-                        Click="Pause_Click"
-                        AutomationProperties.AccessKey="Space"
-                        TabIndex="1"/>
                 </StackPanel>
 
                 <!-- File name -->
@@ -244,7 +232,7 @@
                     <TextBlock Name="FileName" FontSize="20" TextAlignment="Center" />
                 </StackPanel>
 
-                <!-- Open and clear buttons -->
+                <!-- Open, clear and pin buttons -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <AppBarButton
                         Name="OpenButton"
@@ -252,14 +240,18 @@
                         Label="Open With"
                         ToolTipService.ToolTip="Open file with another application"
                         Click="OpenFile_Click"
-                        TabIndex="2"/>
+                        TabIndex="1"/>
                     <AppBarButton
                         Name="ClearButton"
                         Icon="Clear"
                         Label="Clear"
                         ToolTipService.ToolTip="Clear all images"
                         Click="Clear_Click"
-                        TabIndex="3" />
+                        TabIndex="2"/>
+                    <AppBarButton
+                        Name="PinButton"
+                        Click="Pin_Click"
+                        TabIndex="3"/>
                 </StackPanel>
             </Grid>
         </AppBar>

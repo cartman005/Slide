@@ -15,6 +15,7 @@ using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI.Popups;
+using Windows.UI.StartScreen;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -92,7 +93,7 @@ namespace Kozlowski.Slide
 
             // Set up timer first in case it gets started
             timer.Interval = TimeSpan.FromSeconds(Settings.Instance.Interval);
-            Debug.WriteLine("Timer set to " + Settings.Instance.Interval);
+            Debug.WriteLine("Timer set to {0}", Settings.Instance.Interval);
 
             // Try to load previous Index, Items collection and paused state
             int initialIndex = -1;
@@ -115,17 +116,16 @@ namespace Kozlowski.Slide
                                     DataContractSerializer serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
                                     var data = (ObservableCollection<ListItem>)serializer.ReadObject(inStream.AsStreamForRead());
                                     Items = data;
-
                                     Debug.WriteLine("Found serialized Items collection");
                                 }
 
-                                Debug.WriteLine("Set index to " + (int)storedIndex);
+                                Debug.WriteLine("Start at index {0}", (int)storedIndex);
                                 initialIndex = (int)storedIndex;
                             }
                         }
                         catch (FileNotFoundException ex)
                         {
-                            Debug.WriteLine("File not found {0}", ex.Source);
+                            Debug.WriteLine("File not found: '{0}'", ex);
                         }
                     }
                 }
@@ -164,13 +164,17 @@ namespace Kozlowski.Slide
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
             FlipView.Focus(Windows.UI.Xaml.FocusState.Programmatic);
 
+            // Hide and show the appropriate AppBar buttons
+            TogglePlayPauseButton(isPaused);
+            TogglePinButton(!SecondaryTile.Exists(Constants.SecondaryTileId1));
+
             if (Settings.Instance.Animate)
                 Animate(Settings.Instance.Interval);
             // Create first set of tile updates
             if (!Settings.Instance.InitialUpdatesMade)
             {
                 Debug.WriteLine("Generate initial updates");
-                await TileMaker.GenerateTiles(Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
+                await TileMaker.GenerateTiles("", Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
                 Settings.Instance.InitialUpdatesMade = true;
             }
         }
@@ -278,7 +282,7 @@ namespace Kozlowski.Slide
                 timer.Start();
 
             // Regenerate tile updates
-            await TileMaker.GenerateTiles(Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
+            await TileMaker.GenerateTiles("", Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
             Settings.Instance.InitialUpdatesMade = true;
         }
 
@@ -310,7 +314,7 @@ namespace Kozlowski.Slide
                 else
                 {
                     Debug.WriteLine("No images found");
-                    Pause_Click(null, null);
+                    Pause();
 
                     // Create the message dialog and set its content
                     var messageDialog = new MessageDialog("No image files were found in the source folder.");
@@ -355,7 +359,7 @@ namespace Kozlowski.Slide
             {
                 case Constants.TRY_AGAIN:
                     MoveForward();
-                    Play_Click(null, null);
+                    Play();
                     break;
 
                 case Constants.CLOSE:
@@ -376,9 +380,9 @@ namespace Kozlowski.Slide
                     break;
                 case VirtualKey.Space:
                     if (timer.IsEnabled)
-                        Pause_Click(null, null);
+                        Pause();
                     else
-                        Play_Click(null, null);
+                        Play();
                     break;
             }
         }
@@ -524,7 +528,88 @@ namespace Kozlowski.Slide
                 FileName.Text = item.Name;
         }
 
+        private void Play()
+        {
+            timer.Start();
+            isPaused = false;
+
+            if (story != null)
+                story.Begin();
+        }
+
+        private void Pause()
+        {
+            timer.Stop();
+            isPaused = true;
+
+            if (story != null)
+                story.Stop();
+        }
+
+        private void TogglePlayPauseButton(bool showPlayButton)
+        {
+            var toolTip = new ToolTip();
+
+            if (showPlayButton)
+            {
+                PlayPauseButton.Label = "Play";
+                PlayPauseButton.Icon = new SymbolIcon(Symbol.Play);
+                toolTip.Content = "Resume the slideshow";
+            }
+            else
+            {
+                PlayPauseButton.Label = "Pause";
+                PlayPauseButton.Icon = new SymbolIcon(Symbol.Pause);
+                toolTip.Content = "Pause the slideshow";
+            }
+
+            ToolTipService.SetToolTip(PlayPauseButton, toolTip);
+
+            MainAppBar.UpdateLayout();
+        }
+
+        private void TogglePinButton(bool showPinButton)
+        {
+            var toolTip = new ToolTip();
+
+            if (showPinButton)
+            {
+                PinButton.Label = "Pin";
+                PinButton.Icon = new SymbolIcon(Symbol.Pin);
+                toolTip.Content = "Pin a secondary tile to the Start screen";
+            }
+            else
+            {
+                PinButton.Label = "Unpin";
+                PinButton.Icon = new SymbolIcon(Symbol.UnPin);
+                toolTip.Content = "Remove the secondary tile from the Start screen";
+            }
+
+            ToolTipService.SetToolTip(PinButton, toolTip);
+
+            MainAppBar.UpdateLayout();
+        }
+
+        private Rect GetElementRect(FrameworkElement element)
+        {
+            GeneralTransform buttonTransform = element.TransformToVisual(null);
+            Point point = buttonTransform.TransformPoint(new Point());
+
+
+            return new Rect(point, new Size(element.ActualWidth, element.ActualHeight));
+        }
+
         #region Event handlers
+        private void PlayPause_Click(object sender, RoutedEventArgs e)
+        {
+            if (isPaused)
+                Play();
+            else
+                Pause();
+
+            TogglePlayPauseButton(isPaused);
+        }
+
         private async void Clear_Click(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("Clear images");
@@ -535,40 +620,67 @@ namespace Kozlowski.Slide
             await LoadMoreFiles(Constants.ImagesToLoad);
             UpdateName((ListItem)FlipView.SelectedItem);
             FlipView.SelectionChanged += FlipView_SelectionChanged;
-            Debug.WriteLine("Selected index is " + FlipView.SelectedIndex);
+            Debug.WriteLine("Selected index is {0}", FlipView.SelectedIndex);
             ResetTimer();
 
             // Regenerate tile updates
-            await TileMaker.GenerateTiles(Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
+            await TileMaker.GenerateTiles("", Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
             Settings.Instance.InitialUpdatesMade = true;
         }
 
-        private void Play_Click(object sender, RoutedEventArgs e)
+        private async void Pin_Click(object sender, RoutedEventArgs e)
         {
-            timer.Start();
-            isPaused = false;
-            if (MainAppBar.IsOpen)
+            Debug.WriteLine("Pin click");
+            MainAppBar.IsSticky = true;
+            if (SecondaryTile.Exists(Constants.SecondaryTileId1))
             {
-                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
-                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
+                // Unpin
+                SecondaryTile secondaryTile = new SecondaryTile(Constants.SecondaryTileId1);
+
+                Windows.Foundation.Rect rect = GetElementRect((FrameworkElement)sender);
+                Windows.UI.Popups.Placement placement = Windows.UI.Popups.Placement.Above;
+
+                bool isUnpinned = await secondaryTile.RequestDeleteForSelectionAsync(rect, placement);
+
+                TogglePinButton(!isUnpinned);
+                MainAppBar.IsSticky = false;
             }
-
-            if (story != null)
-                story.Begin();
-        }
-
-        private void Pause_Click(object sender, RoutedEventArgs e)
-        {
-            timer.Stop();
-            isPaused = true;
-            if (MainAppBar.IsOpen)
+            else
             {
-                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
-                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
-            }
+                // Pin
+                Uri logo = new Uri("ms-appx:///Assets/Logo.png");
+                string tileActivationArguments = Constants.SecondaryTileId1 + " was pinned at = " + DateTime.Now.ToLocalTime().ToString();
 
-            if (story != null)
-                story.Stop();
+                TileSize newTileDesiredSize = TileSize.Square150x150;
+
+                SecondaryTile secondaryTile = new SecondaryTile(Constants.SecondaryTileId1,
+                                                                "Secondary Tile 1",
+                                                                tileActivationArguments,
+                                                                logo,
+                                                                newTileDesiredSize);
+
+                secondaryTile.VisualElements.Square150x150Logo = new Uri("ms-appx:///Assets/Logo.png");
+                secondaryTile.VisualElements.Wide310x150Logo = new Uri("ms-appx:///Assets/Wide310x150Logo.png");
+                secondaryTile.VisualElements.Square310x310Logo = new Uri("ms-appx:///Assets/Square310x310Logo.png");
+
+                /*
+                Uri square30x30Logo = new Uri("ms-appx:///images/square30x30Tile-sdk.png");
+                secondaryTile.VisualElements.Square30x30Logo = new Uri("ms-appx:///images/square30x30Tile-sdk.png");
+                secondaryTile.VisualElements.ShowNameOnSquare150x150Logo = true;
+                secondaryTile.VisualElements.ForegroundText = ForegroundText.Dark;
+                 */
+                /*
+                Windows.Foundation.Rect rect = GetElementRect((FrameworkElement)sender);
+                Windows.UI.Popups.Placement placement = Windows.UI.Popups.Placement.Above;
+                 */
+                bool isPinned = await secondaryTile.RequestCreateAsync();
+
+                TogglePinButton(!isPinned);
+                MainAppBar.IsSticky = false;
+                await secondaryTile.RequestCreateAsync();
+                await TileMaker.GenerateTiles(Constants.SecondaryTileId1, Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
+            }
+            
         }
 
         private void FlipView_SelectionChanged(object sender, object e)
@@ -576,8 +688,7 @@ namespace Kozlowski.Slide
             if (story != null)
                 story.Stop();
 
-            Debug.WriteLine("Selection changed, index " + FlipView.SelectedIndex);
-            //Debug.WriteLine("Change to " + Items[FlipView.SelectedIndex]);
+            Debug.WriteLine("Selection changed, index {0}", FlipView.SelectedIndex);
 
             if (FlipView.SelectedItem == null)
                 return;
@@ -634,16 +745,9 @@ namespace Kozlowski.Slide
         private void MainAppBar_Opened(object sender, object e)
         {
             // Hide and show the appropriate Play/Pause button
-            if (isPaused)
-            {
-                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Collapsed;
-                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Visible;
-            }
-            else
-            {
-                ((Button)MainAppBar.FindName("PauseButton")).Visibility = Visibility.Visible;
-                ((Button)MainAppBar.FindName("PlayButton")).Visibility = Visibility.Collapsed;
-            }
+            TogglePlayPauseButton(isPaused);
+            // Hide and show the appropritae Pin/Unpin button
+            TogglePinButton(!SecondaryTile.Exists(Constants.SecondaryTileId1));
         }
 
         private void MainAppBar_Closed(object sender, object e)

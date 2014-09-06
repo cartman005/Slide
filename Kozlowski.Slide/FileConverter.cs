@@ -9,12 +9,12 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 
-// This class was adapted from a post by StormOli on 02/01/2013 to an MSDN forum here:
-// http://social.msdn.microsoft.com/Forums/windowsapps/en-US/1f75d1ea-66dd-44ca-a06d-5070643967f2/xaml-image-from-path
 namespace Kozlowski.Slide
 {
     /// <summary> 
     /// The converter class used to display images by opening the stream and resizing them.
+    /// This class was adapted from a post by StormOli on 02/01/2013 to an MSDN forum here:
+    /// http://social.msdn.microsoft.com/Forums/windowsapps/en-US/1f75d1ea-66dd-44ca-a06d-5070643967f2/xaml-image-from-path
     /// </summary> 
     public class FileConverter : IValueConverter
     {
@@ -33,6 +33,7 @@ namespace Kozlowski.Slide
             {
                 var filePath = (string)value;
                 var bitmapImage = new BitmapImage();
+// Hide await warning
 #pragma warning disable 4014
                 SetSource(bitmapImage, filePath);
 #pragma warning restore 4014

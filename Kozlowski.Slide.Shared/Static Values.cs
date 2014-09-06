@@ -1,6 +1,9 @@
 ﻿
 namespace Kozlowski.Slide.Shared
 {
+    /// <summary>
+    /// This class represents all of the static values used in the app.
+    /// </summary>
     public static class Constants
     {
         // Background tasks
@@ -18,6 +21,26 @@ namespace Kozlowski.Slide.Shared
         /// Gets the entry point of the background tasks.
         /// </summary>
         public static string TaskEntryPoint { get { return "Kozlowski.Slide.Background.TileUpdater"; } }
+
+        /// <summary>
+        /// Gets the ID of the first secondary tile.
+        /// </summary>
+        public static string SecondaryTileId1 { get { return "SlideSecondaryTile1"; } }
+
+        /// <summary>
+        /// Gets the ID of the second secondary tile.
+        /// </summary>
+        public static string SecondaryTileId2 { get { return "SlideSecondaryTile2"; } }
+
+        /// <summary>
+        /// Gets the ID of the third secondary tile.
+        /// </summary>
+        public static string SecondaryTileId3 { get { return "SlideSecondaryTile3"; } }
+
+        /// <summary>
+        /// Gets the ID of the fourth secondary tile.
+        /// </summary>
+        public static string SecondaryTileId4 { get { return "SlideSecondaryTile4"; } }
 
         /// <summary>
         /// Gets the interval for scheduling the timer background task.

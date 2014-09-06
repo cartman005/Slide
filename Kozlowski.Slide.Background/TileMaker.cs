@@ -65,7 +65,7 @@ namespace Kozlowski.Slide.Background
                 }
                 else
                 {
-                    Debug.WriteLine(fileList.Count + " pictures found");
+                    Debug.WriteLine("{0} pictures found", fileList.Count);
                 }
 
                 return fileList;
@@ -83,7 +83,7 @@ namespace Kozlowski.Slide.Background
                         return null;
 
                     // Create a stream from the file and decode the image
-                    using(var fileStream = await file.OpenAsync(FileAccessMode.Read))
+                    using (var fileStream = await file.OpenAsync(FileAccessMode.Read))
                     {
                         var decoder = await BitmapDecoder.CreateAsync(fileStream);
                         var dimensions = TileMaker.GetDimensions((int)decoder.PixelWidth, (int)decoder.PixelHeight, tileWidth, tileHeight);
@@ -97,11 +97,12 @@ namespace Kozlowski.Slide.Background
                                 ExifOrientationMode.RespectExifOrientation,
                                 ColorManagementMode.DoNotColorManage);
 
-                        var file310x310 = await ApplicationData.Current.LocalFolder.CreateFileAsync(Constants.TileUpdatesFolder + "\\" + file.DisplayName + file.FileType, CreationCollisionOption.GenerateUniqueName);
-                        var destinationStream = await file310x310.OpenAsync(FileAccessMode.ReadWrite);
+                        var cachedFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(string.Format("{0}\\{1}{2}", Constants.TileUpdatesFolder, file.DisplayName, file.FileType), CreationCollisionOption.GenerateUniqueName);
+                        var destinationStream = await cachedFile.OpenAsync(FileAccessMode.ReadWrite);
 
+                        // Find the correct encoder for the image file
                         BitmapEncoder encoder;
-                        switch (Path.GetExtension(file310x310.Path).ToLower())
+                        switch (Path.GetExtension(cachedFile.Path).ToLower())
                         {
                             case ".bmp":
                                 encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, destinationStream);
@@ -130,47 +131,46 @@ namespace Kozlowski.Slide.Background
 
                         encoder.SetPixelData(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Premultiplied, (uint)dimensions.Width, (uint)dimensions.Height, 96, 96, pixelData.DetachPixelData());
                         await encoder.FlushAsync();
-                        destinationStream.Dispose();
 
                         // Create the update
                         // Parent, 150x150 tile
-                        var tile1 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Image);
-                        var tileImageAttributes = (XmlElement)tile1.GetElementsByTagName("image").Item(0);
-                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}", Constants.TileUpdatesFolder, file310x310.Name));
+                        var parentTile = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Image);
+                        var tileImageAttributes = (XmlElement)parentTile.GetElementsByTagName("image").Item(0);
+                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}", Constants.TileUpdatesFolder, cachedFile.Name));
                         tileImageAttributes.SetAttribute("alt", file.DisplayName);
-                        var bindingElement = (XmlElement)tile1.GetElementsByTagName("binding").Item(0);
+                        var bindingElement = (XmlElement)parentTile.GetElementsByTagName("binding").Item(0);
                         bindingElement.SetAttribute("branding", "none");
 
                         // 310x150 tile
-                        var tile2 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWide310x150Image);
-                        tileImageAttributes = (XmlElement)tile2.GetElementsByTagName("image").Item(0);
-                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}", Constants.TileUpdatesFolder, file310x310.Name));
+                        var wideTile = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWide310x150Image);
+                        tileImageAttributes = (XmlElement)wideTile.GetElementsByTagName("image").Item(0);
+                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}", Constants.TileUpdatesFolder, cachedFile.Name));
                         tileImageAttributes.SetAttribute("alt", file.DisplayName);
-                        bindingElement = (XmlElement)tile2.GetElementsByTagName("binding").Item(0);
+                        bindingElement = (XmlElement)wideTile.GetElementsByTagName("binding").Item(0);
                         bindingElement.SetAttribute("branding", "none");
 
                         // Append to parent tile
-                        IXmlNode node = tile1.ImportNode(tile2.GetElementsByTagName("binding").Item(0), true);
-                        tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
+                        IXmlNode node = parentTile.ImportNode(wideTile.GetElementsByTagName("binding").Item(0), true);
+                        parentTile.GetElementsByTagName("visual").Item(0).AppendChild(node);
 
                         // 310x310 tile
-                        var tile3 = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare310x310Image);
-                        tileImageAttributes = (XmlElement)tile3.GetElementsByTagName("image").Item(0);
-                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}", Constants.TileUpdatesFolder, file310x310.Name));
+                        var largeTile = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare310x310Image);
+                        tileImageAttributes = (XmlElement)largeTile.GetElementsByTagName("image").Item(0);
+                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}", Constants.TileUpdatesFolder, cachedFile.Name));
                         tileImageAttributes.SetAttribute("alt", file.DisplayName);
-                        bindingElement = (XmlElement)tile3.GetElementsByTagName("binding").Item(0);
+                        bindingElement = (XmlElement)largeTile.GetElementsByTagName("binding").Item(0);
                         bindingElement.SetAttribute("branding", "none");
 
                         // Append to parent tile
-                        node = tile1.ImportNode(bindingElement, true);
-                        tile1.GetElementsByTagName("visual").Item(0).AppendChild(node);
+                        node = parentTile.ImportNode(bindingElement, true);
+                        parentTile.GetElementsByTagName("visual").Item(0).AppendChild(node);
                     
-                        return tile1;
+                        return parentTile;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine("{0} Error", ex);
+                    Debug.WriteLine("An error occurred: '{0}'", ex);
                 }
 
                 return null;
@@ -181,29 +181,36 @@ namespace Kozlowski.Slide.Background
         /// This method uses code adapted from an MSDN sample posted by Dave Smits on 12/03/2012 here:
         /// http://code.msdn.microsoft.com/windowsapps/Tile-Update-every-minute-68dbbbff
         /// </summary>
+        /// <param name="tileId">The ID of the tile to create updates for. Will be null for the main app tile.</param>
         /// <param name="seconds"></param>
         /// <param name="IFileList"></param>
         /// <param name="folder"></param>
         /// <param name="includeSubfolders"></param>
         /// <param name="shuffle"></param>
         /// <returns></returns>
-        public static IAsyncAction GenerateTiles(int seconds, IReadOnlyList<StorageFile> IFileList, StorageFolder folder, bool includeSubfolders, bool shuffle)
+        public static IAsyncAction GenerateTiles(string tileId, int seconds, IReadOnlyList<StorageFile> IFileList, StorageFolder folder, bool includeSubfolders, bool shuffle)
         {
             return Task.Run(async () =>
             {
-                var updater = TileUpdateManager.CreateTileUpdaterForApplication();
+                TileUpdater updater;
+
+                if (tileId == "")
+                    updater = TileUpdateManager.CreateTileUpdaterForApplication();
+                else
+                    updater = TileUpdateManager.CreateTileUpdaterForSecondaryTile(tileId);
+
                 updater.EnableNotificationQueue(true);
                 updater.Clear();
 
-                // Clear existing images
+                // Clear existing images by deleting the Tile Updates folder in AppData
                 try
                 {
                     var tileUpdateFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync(Constants.TileUpdatesFolder);
                     await tileUpdateFolder.DeleteAsync();
                 }
-                catch(FileNotFoundException ex)
+                catch (FileNotFoundException ex)
                 {
-                    Debug.WriteLine("Tile updates folder not found {0}", ex.Source);
+                    Debug.WriteLine("Tile updates folder not found: '{0}'", ex);
                 }
 
                 var now = DateTime.Now;
@@ -234,7 +241,7 @@ namespace Kozlowski.Slide.Background
                     }
 
                     // Create the rest of the tiles
-                    Debug.WriteLine("Create updates from " + updateTime + " to " + planTill);
+                    Debug.WriteLine("Create updates from {0} to {1}", updateTime, planTill);
                     for (var startPlanning = updateTime; startPlanning < planTill; startPlanning = startPlanning.AddSeconds(seconds))
                     {                        
                             if (fileList.Count < 1)
@@ -254,7 +261,7 @@ namespace Kozlowski.Slide.Background
                             {
                                 file = fileList[index];
                                 fileList.RemoveAt(index);
-                                Debug.WriteLine("Schedule at " + startPlanning);
+                                Debug.WriteLine("Schedule at {0}", startPlanning);
                                 tile = await CreateTileUpdate(file, 310, 310);
                                 if (tile != null)
                                 {
