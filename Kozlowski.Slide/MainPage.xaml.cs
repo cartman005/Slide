@@ -65,8 +65,8 @@ namespace Kozlowski.Slide
             this.navigationHelper = new NavigationHelper(this);
             this.navigationHelper.LoadState += NavigationHelper_LoadState;
             this.navigationHelper.SaveState += NavigationHelper_SaveState;
-
-            MainSettings.Instance.PropertyChanged += Settings_Changed;
+            
+            GetSettings().PropertyChanged += Settings_Changed;
 
             timer = new DispatcherTimer();
             timer.Tick += Timer_Tick;
@@ -92,8 +92,8 @@ namespace Kozlowski.Slide
             Debug.WriteLine("Loading state");
 
             // Set up timer first in case it gets started
-            timer.Interval = TimeSpan.FromSeconds(MainSettings.Instance.Interval);
-            Debug.WriteLine("Timer set to {0}", MainSettings.Instance.Interval);
+            timer.Interval = TimeSpan.FromSeconds(GetSettings().Interval);
+            Debug.WriteLine("Timer set to {0}", GetSettings().Interval);
 
             // Try to load previous Index, Items collection and paused state
             int initialIndex = -1;
@@ -101,27 +101,31 @@ namespace Kozlowski.Slide
             if (e.PageState != null)
             {
                 // Items collection
-                if (e.PageState.ContainsKey(Constants.SettingsName_SelectedIndex))
+                if (e.PageState.ContainsKey(Constants.SettingsName_SelectedIndex + GetSettings().TileId))
                 {
                     object storedIndex = null;
-                    if (e.PageState.TryGetValue(Constants.SettingsName_SelectedIndex, out storedIndex))
+                    if (e.PageState.TryGetValue(Constants.SettingsName_SelectedIndex + GetSettings().TileId, out storedIndex))
                     {
                         try
                         {
-                            StorageFile file = await ApplicationData.Current.LocalFolder.GetFileAsync(Constants.CollectionFileName);
-                            if (file != null)
+                            var folder = await ApplicationData.Current.LocalFolder.GetFolderAsync(GetSettings().SaveFolder);
+                            if (folder != null)
                             {
-                                using (IInputStream inStream = await file.OpenSequentialReadAsync())
+                                var file = await folder.GetFileAsync(Constants.CollectionFileName);
+                                if (file != null)
                                 {
-                                    DataContractSerializer serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
-                                    var data = (ObservableCollection<ListItem>)serializer.ReadObject(inStream.AsStreamForRead());
-                                    Items = data;
-                                    Debug.WriteLine("Found serialized Items collection");
-                                }
+                                    using (IInputStream inStream = await file.OpenSequentialReadAsync())
+                                    {
+                                        DataContractSerializer serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
+                                        var data = (ObservableCollection<ListItem>)serializer.ReadObject(inStream.AsStreamForRead());
+                                        Items = data;
+                                        Debug.WriteLine("Found serialized Items collection");
+                                    }
 
-                                Debug.WriteLine("Start at index {0}", (int)storedIndex);
-                                initialIndex = (int)storedIndex;
-                            }
+                                    Debug.WriteLine("Start at index {0}", (int)storedIndex);
+                                    initialIndex = (int)storedIndex;
+                                }
+                                }
                         }
                         catch (FileNotFoundException ex)
                         {
@@ -131,10 +135,10 @@ namespace Kozlowski.Slide
                 }
 
                 // Paused state
-                if (e.PageState.ContainsKey(Constants.SettingsName_IsPaused))
+                if (e.PageState.ContainsKey(Constants.SettingsName_IsPaused + GetSettings().TileId))
                 {
                     object storedPaused = null;
-                    if (e.PageState.TryGetValue(Constants.SettingsName_IsPaused, out storedPaused))
+                    if (e.PageState.TryGetValue(Constants.SettingsName_IsPaused + GetSettings().TileId, out storedPaused))
                         wasPaused = (bool)storedPaused;
                 }
             }
@@ -145,7 +149,7 @@ namespace Kozlowski.Slide
             FlipView.ItemsSource = Items;
             FlipView.SelectedIndex = initialIndex;
 
-            fileList.AddRange(await TileMaker.GetImageList(MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle));
+            fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
             isPaused = wasPaused; // Should be set before calling LoadMoreFiles
             await LoadMoreFiles(Constants.ImagesToLoad);
             UpdateName((ListItem)FlipView.SelectedItem);
@@ -167,14 +171,15 @@ namespace Kozlowski.Slide
             // Hide and show the appropriate AppBar buttons
             TogglePlayPauseButton(isPaused);
 
-            if (MainSettings.Instance.Animate)
-                Animate(MainSettings.Instance.Interval);
+            if (GetSettings().Animate)
+                Animate(GetSettings().Interval);
+
             // Create first set of tile updates
-            if (!MainSettings.Instance.InitialUpdatesMade)
+            if (!GetSettings().InitialUpdatesMade)
             {
                 Debug.WriteLine("Generate initial updates");
-                await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", MainSettings.Instance.Interval, fileList, MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle);
-                MainSettings.Instance.InitialUpdatesMade = true;
+                await TileMaker.GenerateTiles(GetSettings().SaveFolder, GetSettings().TileId, GetSettings().Interval, fileList, GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle);
+                GetSettings().InitialUpdatesMade = true;
             }
         }
 
@@ -192,15 +197,16 @@ namespace Kozlowski.Slide
             Debug.WriteLine("Saving state");
 
             // Save the SelectedIndex and IsPaused
-            e.PageState.Add(Constants.SettingsName_SelectedIndex, FlipView.SelectedIndex);
-            e.PageState.Add(Constants.SettingsName_IsPaused, isPaused);
+            e.PageState.Add(Constants.SettingsName_SelectedIndex + GetSettings().TileId, FlipView.SelectedIndex);
+            e.PageState.Add(Constants.SettingsName_IsPaused + GetSettings().TileId, isPaused);
 
             // Save Items collection
             var sessionData = new MemoryStream();
             var serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
             serializer.WriteObject(sessionData, Items);
 
-            StorageFile file = await ApplicationData.Current.LocalFolder.CreateFileAsync(Constants.CollectionFileName, CreationCollisionOption.ReplaceExisting);
+            var folder = await ApplicationData.Current.LocalFolder.CreateFolderAsync(GetSettings().SaveFolder, CreationCollisionOption.OpenIfExists);
+            var file = await folder.CreateFileAsync(Constants.CollectionFileName, CreationCollisionOption.ReplaceExisting);
             using (Stream fileStream = await file.OpenStreamForWriteAsync())
             {
                 sessionData.Seek(0, SeekOrigin.Begin);
@@ -250,13 +256,13 @@ namespace Kozlowski.Slide
 
             // Interval
             if (e.PropertyName == Constants.SettingsName_Interval)
-                timer.Interval = TimeSpan.FromSeconds(MainSettings.Instance.Interval);
+                timer.Interval = TimeSpan.FromSeconds(GetSettings().Interval);
             
             // Change storyboard if animation or interval settings change
             if (e.PropertyName == Constants.SettingsName_Animate || e.PropertyName == Constants.SettingsName_Interval)
             {
-                if (MainSettings.Instance.Animate)
-                    Animate(MainSettings.Instance.Interval);
+                if (GetSettings().Animate)
+                    Animate(GetSettings().Interval);
             }
            
             // Change collection of image files to use if the changed property affects it
@@ -271,7 +277,7 @@ namespace Kozlowski.Slide
 
                 // Clear file list, as files are missing
                 fileList.Clear();
-                fileList.AddRange(await TileMaker.GetImageList(MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle));
+                fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
                 await LoadMoreFiles(Constants.ImagesToLoad);
                 FlipView.SelectionChanged += FlipView_SelectionChanged;
             }
@@ -279,10 +285,6 @@ namespace Kozlowski.Slide
             // Start the timer if not paused
             if (!isPaused && !timer.IsEnabled)
                 timer.Start();
-
-            // Regenerate tile updates
-            await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", MainSettings.Instance.Interval, fileList, MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle);
-            MainSettings.Instance.InitialUpdatesMade = true;
         }
 
         private async Task LoadMoreFiles(int count)
@@ -294,10 +296,10 @@ namespace Kozlowski.Slide
             {
                 // Check if more files need to be loaded
                 if (fileList.Count <= 0)
-                    fileList.AddRange(await TileMaker.GetImageList(MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle));
+                    fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
 
                 // Set index depending on shuffle setting
-                if (MainSettings.Instance.Shuffle)
+                if (GetSettings().Shuffle)
                     index = SingleRandom.Instance.Next(0, fileList.Count);
                 else
                 {
@@ -592,8 +594,9 @@ namespace Kozlowski.Slide
             ResetTimer();
 
             // Regenerate tile updates
-            await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", MainSettings.Instance.Interval, fileList, MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle);
-            MainSettings.Instance.InitialUpdatesMade = true;
+            // TODO Generate secondary tile updates as well?
+            await TileMaker.GenerateTiles(GetSettings().SaveFolder, GetSettings().TileId, GetSettings().Interval, fileList, GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle);
+            GetSettings().InitialUpdatesMade = true;
         }     
 
         private void FlipView_SelectionChanged(object sender, object e)
@@ -606,8 +609,8 @@ namespace Kozlowski.Slide
             if (FlipView.SelectedItem == null)
                 return;
 
-            if (MainSettings.Instance.Animate)
-                Animate(MainSettings.Instance.Interval);
+            if (GetSettings().Animate)
+                Animate(GetSettings().Interval);
 
             ResetTimer();
 
@@ -706,6 +709,11 @@ namespace Kozlowski.Slide
             builder.TaskEntryPoint = Constants.TaskEntryPoint;
             builder.SetTrigger(new SystemTrigger(SystemTriggerType.UserPresent, false));
             var registration = builder.Register();
+        }
+
+        private Settings GetSettings()
+        {
+            return ((App)App.Current).Settings;
         }
     }
 }

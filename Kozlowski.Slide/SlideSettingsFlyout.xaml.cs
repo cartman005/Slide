@@ -15,22 +15,25 @@ using Windows.UI.Xaml.Controls;
 
 namespace Kozlowski.Slide
 {
-    public sealed partial class SecondarySettingsFlyout : SettingsFlyout
+    public sealed partial class SlideSettingsFlyout : SettingsFlyout
     {
-        private int secondaryNumber;
+        private int tileNumber;
         private string tileId;
 
         /// <summary>
         /// Create the Settings flyout.
         /// </summary>
-        public SecondarySettingsFlyout(int number)
+        public SlideSettingsFlyout(int number)
         {
-            secondaryNumber = number;
+            tileNumber = number;
 
             this.InitializeComponent();
-            this.Title = string.Format("Secondary Tile {0}", number);
+            this.Title = string.Format("Slide Tile {0}", number + 1);
 
-            switch(secondaryNumber)
+            if (number == 0)
+                PinPanel.Visibility = Visibility.Collapsed;
+
+            switch(tileNumber)
             {
                 case 1:
                     tileId = Constants.Secondary1TileId;
@@ -68,7 +71,7 @@ namespace Kozlowski.Slide
 
             if (SecondaryTile.Exists(tileId))
             {
-                switch (secondaryNumber)
+                switch (tileNumber)
                 {
                     case 1:
                         fileList.AddRange(await TileMaker.GetImageList(Secondary1Settings.Instance.RootFolder, Secondary1Settings.Instance.IncludeSubfolders, Secondary1Settings.Instance.Shuffle));
@@ -97,12 +100,12 @@ namespace Kozlowski.Slide
             if (showPinButton)
             {
                 Pin.Content = "Pin to Start";
-                toolTip.Content = "Pin a secondary tile to the Start screen";
+                toolTip.Content = "Pin this tile to the Start screen";
             }
             else
             {
                 Pin.Content = "Unpin from Start";
-                toolTip.Content = "Remove the secondary tile from the Start screen";
+                toolTip.Content = "Remove this tile from the Start screen";
             }
 
             ToolTipService.SetToolTip(Pin, toolTip);
@@ -131,7 +134,7 @@ namespace Kozlowski.Slide
 
             if (folder != null)
             {
-                switch (secondaryNumber)
+                switch (tileNumber)
                 {
                     case 1:
                         Secondary1Settings.Instance.RootFolder = folder;
@@ -171,7 +174,7 @@ namespace Kozlowski.Slide
                 var newTileDesiredSize = TileSize.Square150x150;
 
                 var secondaryTile = new SecondaryTile(tileId,
-                                                        "Slide Secondary " + secondaryNumber,
+                                                        "Slide Secondary " + tileNumber,
                                                         tileActivationArguments,
                                                         logo,
                                                         newTileDesiredSize);

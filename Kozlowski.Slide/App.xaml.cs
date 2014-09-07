@@ -1,4 +1,5 @@
 ﻿using Kozlowski.Slide.Common;
+using Kozlowski.Slide.Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,6 +29,9 @@ namespace Kozlowski.Slide
     /// </summary>
     sealed partial class App : Application
     {
+        private Settings settingsInstance;
+        private int id;
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -37,6 +41,9 @@ namespace Kozlowski.Slide
             this.InitializeComponent();
             this.Suspending += OnSuspending;
         }
+
+        public Settings Settings { get { return settingsInstance; } }
+        public int Id { get { return id; } }
 
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
@@ -54,6 +61,33 @@ namespace Kozlowski.Slide
             }
             */
 #endif
+            // Set up settings class
+            if (string.IsNullOrEmpty(e.Arguments))
+            {
+                settingsInstance = MainSettings.Instance;
+                id = 0;
+            }
+            else
+            {
+                switch (e.TileId)
+                {
+                    case "SlideSecondaryTile1":
+                        settingsInstance = Secondary1Settings.Instance;
+                        id = 1;
+                        break;
+                    case "SlideSecondaryTile2":
+                        settingsInstance = Secondary2Settings.Instance;
+                        id = 2;
+                        break;
+                    case "SlideSecondaryTile3":
+                        settingsInstance = Secondary3Settings.Instance;
+                        id = 3;
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
  
             Frame rootFrame = Window.Current.Content as Frame;
 
@@ -96,26 +130,20 @@ namespace Kozlowski.Slide
 
         private void OnCommandsRequested(SettingsPane sender, SettingsPaneCommandsRequestedEventArgs args)
         {
-            args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Main App Options", (handler) => ShowMainSettingsFlyout()));
+            args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Main Tile Options", (handler) => ShowSettingsFlyout(0)));
 
             var result = BackgroundExecutionManager.GetAccessStatus();
             if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity || result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
             {
-                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Secondary 1 Options", (handler) => ShowSecondarySettingsFlyout(1)));
-                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Secondary 2 Options", (handler) => ShowSecondarySettingsFlyout(2)));
-                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Secondary 3 Options", (handler) => ShowSecondarySettingsFlyout(3)));
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Tile 2 Options", (handler) => ShowSettingsFlyout(1)));
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Tile 3 Options", (handler) => ShowSettingsFlyout(2)));
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Tile 4 Options", (handler) => ShowSettingsFlyout(3)));
             }
         }
 
-        public void ShowMainSettingsFlyout()
+        public void ShowSettingsFlyout(int number)
         {
-            var settings = new MainSettingsFlyout();
-            settings.Show();
-        }
-
-        public void ShowSecondarySettingsFlyout(int number)
-        {
-            var settings = new SecondarySettingsFlyout(number);
+            var settings = new SlideSettingsFlyout(number);
             settings.Show();
         }
 

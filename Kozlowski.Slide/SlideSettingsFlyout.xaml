@@ -1,5 +1,5 @@
 ﻿<SettingsFlyout
-    x:Class="Kozlowski.Slide.SecondarySettingsFlyout"
+    x:Class="Kozlowski.Slide.SlideSettingsFlyout"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Kozlowski.Slide"
@@ -7,10 +7,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     IconSource="Assets/SmallLogo.png"
+    Title="Main App"
     d:DesignWidth="346">
 
     <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
-                
+
         <!-- Pictures Location -->
         <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
             <TextBlock Text="Pictures Location" Style="{StaticResource TitleTextBlockStyle}"/>
@@ -64,10 +65,16 @@
                     <x:String>3 minutes</x:String>
                 </ComboBox>
             </StackPanel>
+            <!-- Zoom -->
+            <ToggleSwitch
+                Name="ZoomSwitch"
+                Header="Pan/Zoom"
+                IsOn="{Binding Path=Animate, Mode=TwoWay}"
+                ToolTipService.ToolTip="Pan and zoom in on images when open in full screen?"
+                TabIndex="4" />
         </StackPanel>
-        
         <!-- Pin -->
-        <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
+        <StackPanel Name="PinPanel" Style="{StaticResource SettingsFlyoutSectionStyle}">
             <TextBlock Text="Show on Start Screen" Style="{StaticResource TitleTextBlockStyle}"/>
             <Button
                 x:Name="Pin"

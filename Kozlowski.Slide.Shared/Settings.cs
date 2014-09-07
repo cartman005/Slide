@@ -171,6 +171,10 @@ namespace Kozlowski.Slide
                 NotifyPropertyChanged(Constants.SettingsName_Animate);
             }
         }
+
+        public string TileId { get { return Id; } }
+
+        public abstract string SaveFolder { get; }
         
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -201,6 +205,8 @@ namespace Kozlowski.Slide
             : base(Id)
         {
         }
+
+        public override string SaveFolder { get { return Constants.MainTileUpdatesFolder; } }
     }
 
     /// <summary>
@@ -209,7 +215,7 @@ namespace Kozlowski.Slide
     public class Secondary1Settings : Settings
     {
         // The single instance of the class
-        private static readonly Secondary1Settings instance = new Secondary1Settings("1");
+        private static readonly Secondary1Settings instance = new Secondary1Settings(Constants.Secondary1TileId);
 
         /// <summary>
         /// Gets the app's thread-safe instance of the Settings classed.
@@ -220,6 +226,8 @@ namespace Kozlowski.Slide
             : base(Id)
         {
         }
+
+        public override string SaveFolder { get { return Constants.Secondary1TileUpdatesFolder; } }
     }
 
     /// <summary>
@@ -228,7 +236,7 @@ namespace Kozlowski.Slide
     public class Secondary2Settings : Settings
     {
         // The single instance of the class
-        private static readonly Secondary2Settings instance = new Secondary2Settings("2");
+        private static readonly Secondary2Settings instance = new Secondary2Settings(Constants.Secondary2TileId);
 
         /// <summary>
         /// Gets the app's thread-safe instance of the Settings classed.
@@ -239,6 +247,8 @@ namespace Kozlowski.Slide
             : base(Id)
         {
         }
+
+        public override string SaveFolder { get { return Constants.Secondary2TileUpdatesFolder; } }
     }
 
     /// <summary>
@@ -247,7 +257,7 @@ namespace Kozlowski.Slide
     public class Secondary3Settings : Settings
     {
         // The single instance of the class
-        private static readonly Secondary3Settings instance = new Secondary3Settings("3");
+        private static readonly Secondary3Settings instance = new Secondary3Settings(Constants.Secondary3TileId);
 
         /// <summary>
         /// Gets the app's thread-safe instance of the Settings classed.
@@ -258,5 +268,7 @@ namespace Kozlowski.Slide
             : base(Id)
         {
         }
+
+        public override string SaveFolder { get { return Constants.Secondary3TileUpdatesFolder; } }
     }
 }
