@@ -101,10 +101,10 @@ namespace Kozlowski.Slide
             if (e.PageState != null)
             {
                 // Items collection
-                if (e.PageState.ContainsKey(Constants.SettingsName_SelectedIndex + GetSettings().TileId))
+                if (e.PageState.ContainsKey(Constants.SettingsName_SelectedIndex))
                 {
                     object storedIndex = null;
-                    if (e.PageState.TryGetValue(Constants.SettingsName_SelectedIndex + GetSettings().TileId, out storedIndex))
+                    if (e.PageState.TryGetValue(Constants.SettingsName_SelectedIndex, out storedIndex))
                     {
                         try
                         {
@@ -135,10 +135,10 @@ namespace Kozlowski.Slide
                 }
 
                 // Paused state
-                if (e.PageState.ContainsKey(Constants.SettingsName_IsPaused + GetSettings().TileId))
+                if (e.PageState.ContainsKey(Constants.SettingsName_IsPaused))
                 {
                     object storedPaused = null;
-                    if (e.PageState.TryGetValue(Constants.SettingsName_IsPaused + GetSettings().TileId, out storedPaused))
+                    if (e.PageState.TryGetValue(Constants.SettingsName_IsPaused, out storedPaused))
                         wasPaused = (bool)storedPaused;
                 }
             }
@@ -178,7 +178,7 @@ namespace Kozlowski.Slide
             if (!GetSettings().InitialUpdatesMade)
             {
                 Debug.WriteLine("Generate initial updates");
-                await TileMaker.GenerateTiles(GetSettings().SaveFolder, GetSettings().TileId, GetSettings().Interval, fileList, GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle);
+                await TileMaker.GenerateTiles(GetSettings().SaveFolder, GetSettings().TileId, GetSettings().Interval, GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle);
                 GetSettings().InitialUpdatesMade = true;
             }
         }
@@ -197,8 +197,8 @@ namespace Kozlowski.Slide
             Debug.WriteLine("Saving state");
 
             // Save the SelectedIndex and IsPaused
-            e.PageState.Add(Constants.SettingsName_SelectedIndex + GetSettings().TileId, FlipView.SelectedIndex);
-            e.PageState.Add(Constants.SettingsName_IsPaused + GetSettings().TileId, isPaused);
+            e.PageState.Add(Constants.SettingsName_SelectedIndex, FlipView.SelectedIndex);
+            e.PageState.Add(Constants.SettingsName_IsPaused, isPaused);
 
             // Save Items collection
             var sessionData = new MemoryStream();
@@ -594,8 +594,7 @@ namespace Kozlowski.Slide
             ResetTimer();
 
             // Regenerate tile updates
-            // TODO Generate secondary tile updates as well?
-            await TileMaker.GenerateTiles(GetSettings().SaveFolder, GetSettings().TileId, GetSettings().Interval, fileList, GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle);
+            await TileMaker.GenerateTiles(GetSettings().SaveFolder, GetSettings().TileId, GetSettings().Interval, GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle);
             GetSettings().InitialUpdatesMade = true;
         }     
 

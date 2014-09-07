@@ -22,7 +22,7 @@
         <m2:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#660066" />
       </m2:VisualElements>
       <Extensions>
-        <Extension Category="windows.backgroundTasks" EntryPoint="Kozlowski.Slide.Background.TileUpdater">
+        <Extension Category="windows.backgroundTasks" EntryPoint="Kozlowski.Slide.Background.BackgroundTileMaker">
           <BackgroundTasks>
             <Task Type="systemEvent" />
             <Task Type="timer" />

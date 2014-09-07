@@ -62,35 +62,39 @@ namespace Kozlowski.Slide
         {
             Debug.WriteLine("Settings Changed");
 
-            CreateUpdates();
+            CreateUpdates(tileNumber);
         }
 
-        private async void CreateUpdates()
+        private async void CreateUpdates(int number)
         {
             var fileList = new List<StorageFile>();
 
-            if (SecondaryTile.Exists(tileId))
+            if (number == 0)
             {
-                switch (tileNumber)
+                await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", MainSettings.Instance.Interval, MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle);
+                MainSettings.Instance.InitialUpdatesMade = true;
+            }
+            else
+            {
+                if (SecondaryTile.Exists(tileId))
                 {
-                    case 1:
-                        fileList.AddRange(await TileMaker.GetImageList(Secondary1Settings.Instance.RootFolder, Secondary1Settings.Instance.IncludeSubfolders, Secondary1Settings.Instance.Shuffle));
-                        await TileMaker.GenerateTiles(Constants.Secondary1TileUpdatesFolder, Constants.Secondary1TileId, Secondary1Settings.Instance.Interval, fileList, Secondary1Settings.Instance.RootFolder, Secondary1Settings.Instance.IncludeSubfolders, Secondary1Settings.Instance.Shuffle);
-                        Secondary1Settings.Instance.InitialUpdatesMade = true;
-                        break;
-                    case 2:
-                        fileList.AddRange(await TileMaker.GetImageList(Secondary2Settings.Instance.RootFolder, Secondary2Settings.Instance.IncludeSubfolders, Secondary2Settings.Instance.Shuffle));
-                        await TileMaker.GenerateTiles(Constants.Secondary2TileUpdatesFolder, Constants.Secondary2TileId, Secondary2Settings.Instance.Interval, fileList, Secondary2Settings.Instance.RootFolder, Secondary2Settings.Instance.IncludeSubfolders, Secondary2Settings.Instance.Shuffle);
-                        Secondary2Settings.Instance.InitialUpdatesMade = true;
-                        break;
-                    case 3:
-                        fileList.AddRange(await TileMaker.GetImageList(Secondary3Settings.Instance.RootFolder, Secondary3Settings.Instance.IncludeSubfolders, Secondary3Settings.Instance.Shuffle));
-                        await TileMaker.GenerateTiles(Constants.Secondary3TileUpdatesFolder, Constants.Secondary3TileId, Secondary3Settings.Instance.Interval, fileList, Secondary3Settings.Instance.RootFolder, Secondary3Settings.Instance.IncludeSubfolders, Secondary3Settings.Instance.Shuffle);
-                        Secondary3Settings.Instance.InitialUpdatesMade = true;
-                        break;
+                    switch (tileNumber)
+                    {
+                        case 1:
+                            await TileMaker.GenerateTiles(Constants.Secondary1TileUpdatesFolder, Constants.Secondary1TileId, Secondary1Settings.Instance.Interval, Secondary1Settings.Instance.RootFolder, Secondary1Settings.Instance.IncludeSubfolders, Secondary1Settings.Instance.Shuffle);
+                            Secondary1Settings.Instance.InitialUpdatesMade = true;
+                            break;
+                        case 2:
+                            await TileMaker.GenerateTiles(Constants.Secondary2TileUpdatesFolder, Constants.Secondary2TileId, Secondary2Settings.Instance.Interval, Secondary2Settings.Instance.RootFolder, Secondary2Settings.Instance.IncludeSubfolders, Secondary2Settings.Instance.Shuffle);
+                            Secondary2Settings.Instance.InitialUpdatesMade = true;
+                            break;
+                        case 3:
+                            await TileMaker.GenerateTiles(Constants.Secondary3TileUpdatesFolder, Constants.Secondary3TileId, Secondary3Settings.Instance.Interval, Secondary3Settings.Instance.RootFolder, Secondary3Settings.Instance.IncludeSubfolders, Secondary3Settings.Instance.Shuffle);
+                            Secondary3Settings.Instance.InitialUpdatesMade = true;
+                            break;
+                    }
                 }
             }
-            
         }
 
         private void TogglePinButton(bool showPinButton)
@@ -174,7 +178,7 @@ namespace Kozlowski.Slide
                 var newTileDesiredSize = TileSize.Square150x150;
 
                 var secondaryTile = new SecondaryTile(tileId,
-                                                        "Slide Secondary " + tileNumber,
+                                                        string.Format("Slide {0}", tileNumber + 1),
                                                         tileActivationArguments,
                                                         logo,
                                                         newTileDesiredSize);
@@ -190,7 +194,7 @@ namespace Kozlowski.Slide
 
                 if (pinned)
                 {
-                    CreateUpdates();
+                    CreateUpdates(tileNumber);
                 }
             }
         }

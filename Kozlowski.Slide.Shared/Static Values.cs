@@ -20,7 +20,7 @@ namespace Kozlowski.Slide.Shared
         /// <summary>
         /// Gets the entry point of the background tasks.
         /// </summary>
-        public static string TaskEntryPoint { get { return "Kozlowski.Slide.Background.TileUpdater"; } }
+        public static string TaskEntryPoint { get { return "Kozlowski.Slide.Background.BackgroundTileMaker"; } }
 
         /// <summary>
         /// Gets the ID of the first secondary tile.

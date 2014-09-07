@@ -188,7 +188,7 @@ namespace Kozlowski.Slide.Background
         /// <param name="includeSubfolders"></param>
         /// <param name="shuffle"></param>
         /// <returns></returns>
-        public static IAsyncAction GenerateTiles(string subfolder, string tileId, int seconds, IReadOnlyList<StorageFile> IFileList, StorageFolder sourceFolder, bool includeSubfolders, bool shuffle)
+        public static IAsyncAction GenerateTiles(string subfolder, string tileId, int seconds, StorageFolder sourceFolder, bool includeSubfolders, bool shuffle)
         {
             return Task.Run(async () =>
             {
@@ -219,8 +219,8 @@ namespace Kozlowski.Slide.Background
                 var updateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0).AddMinutes(1);
 
                 var fileList = new List<StorageFile>();
-                fileList.AddRange(IFileList);
-                
+                fileList.AddRange(await GetImageList(sourceFolder, includeSubfolders, shuffle));
+
                 // Create the first tile
                 int index;
                 StorageFile file;
