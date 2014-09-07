@@ -248,10 +248,6 @@
                         ToolTipService.ToolTip="Clear all images"
                         Click="Clear_Click"
                         TabIndex="2"/>
-                    <AppBarButton
-                        Name="PinButton"
-                        Click="Pin_Click"
-                        TabIndex="3"/>
                 </StackPanel>
             </Grid>
         </AppBar>

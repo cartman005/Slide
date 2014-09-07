@@ -66,7 +66,7 @@ namespace Kozlowski.Slide
             this.navigationHelper.LoadState += NavigationHelper_LoadState;
             this.navigationHelper.SaveState += NavigationHelper_SaveState;
 
-            Settings.Instance.PropertyChanged += Settings_Changed;
+            MainSettings.Instance.PropertyChanged += Settings_Changed;
 
             timer = new DispatcherTimer();
             timer.Tick += Timer_Tick;
@@ -92,8 +92,8 @@ namespace Kozlowski.Slide
             Debug.WriteLine("Loading state");
 
             // Set up timer first in case it gets started
-            timer.Interval = TimeSpan.FromSeconds(Settings.Instance.Interval);
-            Debug.WriteLine("Timer set to {0}", Settings.Instance.Interval);
+            timer.Interval = TimeSpan.FromSeconds(MainSettings.Instance.Interval);
+            Debug.WriteLine("Timer set to {0}", MainSettings.Instance.Interval);
 
             // Try to load previous Index, Items collection and paused state
             int initialIndex = -1;
@@ -145,7 +145,7 @@ namespace Kozlowski.Slide
             FlipView.ItemsSource = Items;
             FlipView.SelectedIndex = initialIndex;
 
-            fileList.AddRange(await TileMaker.GetImageList(Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle));
+            fileList.AddRange(await TileMaker.GetImageList(MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle));
             isPaused = wasPaused; // Should be set before calling LoadMoreFiles
             await LoadMoreFiles(Constants.ImagesToLoad);
             UpdateName((ListItem)FlipView.SelectedItem);
@@ -166,16 +166,15 @@ namespace Kozlowski.Slide
 
             // Hide and show the appropriate AppBar buttons
             TogglePlayPauseButton(isPaused);
-            TogglePinButton(!SecondaryTile.Exists(Constants.SecondaryTileId1));
 
-            if (Settings.Instance.Animate)
-                Animate(Settings.Instance.Interval);
+            if (MainSettings.Instance.Animate)
+                Animate(MainSettings.Instance.Interval);
             // Create first set of tile updates
-            if (!Settings.Instance.InitialUpdatesMade)
+            if (!MainSettings.Instance.InitialUpdatesMade)
             {
                 Debug.WriteLine("Generate initial updates");
-                await TileMaker.GenerateTiles("", Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
-                Settings.Instance.InitialUpdatesMade = true;
+                await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", MainSettings.Instance.Interval, fileList, MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle);
+                MainSettings.Instance.InitialUpdatesMade = true;
             }
         }
 
@@ -251,13 +250,13 @@ namespace Kozlowski.Slide
 
             // Interval
             if (e.PropertyName == Constants.SettingsName_Interval)
-                timer.Interval = TimeSpan.FromSeconds(Settings.Instance.Interval);
+                timer.Interval = TimeSpan.FromSeconds(MainSettings.Instance.Interval);
             
             // Change storyboard if animation or interval settings change
             if (e.PropertyName == Constants.SettingsName_Animate || e.PropertyName == Constants.SettingsName_Interval)
             {
-                if (Settings.Instance.Animate)
-                    Animate(Settings.Instance.Interval);
+                if (MainSettings.Instance.Animate)
+                    Animate(MainSettings.Instance.Interval);
             }
            
             // Change collection of image files to use if the changed property affects it
@@ -272,7 +271,7 @@ namespace Kozlowski.Slide
 
                 // Clear file list, as files are missing
                 fileList.Clear();
-                fileList.AddRange(await TileMaker.GetImageList(Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle));
+                fileList.AddRange(await TileMaker.GetImageList(MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle));
                 await LoadMoreFiles(Constants.ImagesToLoad);
                 FlipView.SelectionChanged += FlipView_SelectionChanged;
             }
@@ -282,8 +281,8 @@ namespace Kozlowski.Slide
                 timer.Start();
 
             // Regenerate tile updates
-            await TileMaker.GenerateTiles("", Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
-            Settings.Instance.InitialUpdatesMade = true;
+            await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", MainSettings.Instance.Interval, fileList, MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle);
+            MainSettings.Instance.InitialUpdatesMade = true;
         }
 
         private async Task LoadMoreFiles(int count)
@@ -295,10 +294,10 @@ namespace Kozlowski.Slide
             {
                 // Check if more files need to be loaded
                 if (fileList.Count <= 0)
-                    fileList.AddRange(await TileMaker.GetImageList(Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle));
+                    fileList.AddRange(await TileMaker.GetImageList(MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle));
 
                 // Set index depending on shuffle setting
-                if (Settings.Instance.Shuffle)
+                if (MainSettings.Instance.Shuffle)
                     index = SingleRandom.Instance.Next(0, fileList.Count);
                 else
                 {
@@ -567,38 +566,7 @@ namespace Kozlowski.Slide
 
             MainAppBar.UpdateLayout();
         }
-
-        private void TogglePinButton(bool showPinButton)
-        {
-            var toolTip = new ToolTip();
-
-            if (showPinButton)
-            {
-                PinButton.Label = "Pin";
-                PinButton.Icon = new SymbolIcon(Symbol.Pin);
-                toolTip.Content = "Pin a secondary tile to the Start screen";
-            }
-            else
-            {
-                PinButton.Label = "Unpin";
-                PinButton.Icon = new SymbolIcon(Symbol.UnPin);
-                toolTip.Content = "Remove the secondary tile from the Start screen";
-            }
-
-            ToolTipService.SetToolTip(PinButton, toolTip);
-
-            MainAppBar.UpdateLayout();
-        }
-
-        private Rect GetElementRect(FrameworkElement element)
-        {
-            GeneralTransform buttonTransform = element.TransformToVisual(null);
-            Point point = buttonTransform.TransformPoint(new Point());
-
-
-            return new Rect(point, new Size(element.ActualWidth, element.ActualHeight));
-        }
-
+   
         #region Event handlers
         private void PlayPause_Click(object sender, RoutedEventArgs e)
         {
@@ -624,64 +592,9 @@ namespace Kozlowski.Slide
             ResetTimer();
 
             // Regenerate tile updates
-            await TileMaker.GenerateTiles("", Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
-            Settings.Instance.InitialUpdatesMade = true;
-        }
-
-        private async void Pin_Click(object sender, RoutedEventArgs e)
-        {
-            Debug.WriteLine("Pin click");
-            MainAppBar.IsSticky = true;
-            if (SecondaryTile.Exists(Constants.SecondaryTileId1))
-            {
-                // Unpin
-                SecondaryTile secondaryTile = new SecondaryTile(Constants.SecondaryTileId1);
-
-                Windows.Foundation.Rect rect = GetElementRect((FrameworkElement)sender);
-                Windows.UI.Popups.Placement placement = Windows.UI.Popups.Placement.Above;
-
-                bool isUnpinned = await secondaryTile.RequestDeleteForSelectionAsync(rect, placement);
-
-                TogglePinButton(!isUnpinned);
-                MainAppBar.IsSticky = false;
-            }
-            else
-            {
-                // Pin
-                Uri logo = new Uri("ms-appx:///Assets/Logo.png");
-                string tileActivationArguments = Constants.SecondaryTileId1 + " was pinned at = " + DateTime.Now.ToLocalTime().ToString();
-
-                TileSize newTileDesiredSize = TileSize.Square150x150;
-
-                SecondaryTile secondaryTile = new SecondaryTile(Constants.SecondaryTileId1,
-                                                                "Secondary Tile 1",
-                                                                tileActivationArguments,
-                                                                logo,
-                                                                newTileDesiredSize);
-
-                secondaryTile.VisualElements.Square150x150Logo = new Uri("ms-appx:///Assets/Logo.png");
-                secondaryTile.VisualElements.Wide310x150Logo = new Uri("ms-appx:///Assets/Wide310x150Logo.png");
-                secondaryTile.VisualElements.Square310x310Logo = new Uri("ms-appx:///Assets/Square310x310Logo.png");
-
-                /*
-                Uri square30x30Logo = new Uri("ms-appx:///images/square30x30Tile-sdk.png");
-                secondaryTile.VisualElements.Square30x30Logo = new Uri("ms-appx:///images/square30x30Tile-sdk.png");
-                secondaryTile.VisualElements.ShowNameOnSquare150x150Logo = true;
-                secondaryTile.VisualElements.ForegroundText = ForegroundText.Dark;
-                 */
-                /*
-                Windows.Foundation.Rect rect = GetElementRect((FrameworkElement)sender);
-                Windows.UI.Popups.Placement placement = Windows.UI.Popups.Placement.Above;
-                 */
-                bool isPinned = await secondaryTile.RequestCreateAsync();
-
-                TogglePinButton(!isPinned);
-                MainAppBar.IsSticky = false;
-                await secondaryTile.RequestCreateAsync();
-                await TileMaker.GenerateTiles(Constants.SecondaryTileId1, Settings.Instance.Interval, fileList, Settings.Instance.RootFolder, Settings.Instance.IncludeSubfolders, Settings.Instance.Shuffle);
-            }
-            
-        }
+            await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", MainSettings.Instance.Interval, fileList, MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle);
+            MainSettings.Instance.InitialUpdatesMade = true;
+        }     
 
         private void FlipView_SelectionChanged(object sender, object e)
         {
@@ -693,8 +606,8 @@ namespace Kozlowski.Slide
             if (FlipView.SelectedItem == null)
                 return;
 
-            if (Settings.Instance.Animate)
-                Animate(Settings.Instance.Interval);
+            if (MainSettings.Instance.Animate)
+                Animate(MainSettings.Instance.Interval);
 
             ResetTimer();
 
@@ -746,8 +659,6 @@ namespace Kozlowski.Slide
         {
             // Hide and show the appropriate Play/Pause button
             TogglePlayPauseButton(isPaused);
-            // Hide and show the appropritae Pin/Unpin button
-            TogglePinButton(!SecondaryTile.Exists(Constants.SecondaryTileId1));
         }
 
         private void MainAppBar_Closed(object sender, object e)

@@ -11,31 +11,26 @@ namespace Kozlowski.Slide
     /// <summary>
     /// This class is used to provide a singleton, central access point to the app's settings.
     /// </summary>
-    public class Settings : INotifyPropertyChanged
+    public abstract class Settings : INotifyPropertyChanged
     {
-        // The single instance of the class
-        private static readonly Settings instance = new Settings();
         private ApplicationDataContainer settings;
         private StorageFolder rootFolder;
-        
-        /// <summary>
-        /// Gets the app's thread-safe instance of the Settings classed.
-        /// </summary>
-        public static Settings Instance { get { return instance; } }
-        
+        private string Id;
+               
         /// <summary>
         /// Private constructor that opens the app's Roaming Settings and the FutureAccessList to find the current root folder.
         /// </summary>
-        private Settings()
+        public Settings(string tileId)
         {
             Debug.WriteLine("Settings constructor called.");
+            Id = tileId;
             settings = ApplicationData.Current.RoamingSettings;
 
-            if (StorageApplicationPermissions.FutureAccessList.ContainsItem(Constants.SettingsName_ImagesLocation))
+            if (StorageApplicationPermissions.FutureAccessList.ContainsItem(Constants.SettingsName_ImagesLocation + Id))
                 Task.Run(
                    async () =>
                    {
-                       rootFolder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(Constants.SettingsName_ImagesLocation);
+                       rootFolder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(Constants.SettingsName_ImagesLocation + Id);
                    }).Wait();
             else
                 rootFolder = KnownFolders.PicturesLibrary;
@@ -48,14 +43,14 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values[Constants.SettingsName_InitialUpdatesMade] == null)
-                    settings.Values[Constants.SettingsName_InitialUpdatesMade] = false;
+                if (settings.Values[Constants.SettingsName_InitialUpdatesMade + Id] == null)
+                    settings.Values[Constants.SettingsName_InitialUpdatesMade + Id] = false;
 
-                return (bool)settings.Values[Constants.SettingsName_InitialUpdatesMade];
+                return (bool)settings.Values[Constants.SettingsName_InitialUpdatesMade + Id];
             }
             set
             {
-                settings.Values[Constants.SettingsName_InitialUpdatesMade] = value;
+                settings.Values[Constants.SettingsName_InitialUpdatesMade + Id] = value;
             }
         }
 
@@ -66,14 +61,14 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values[Constants.SettingsName_Interval] == null)
-                    settings.Values[Constants.SettingsName_Interval] = Constants.DefaultIntervalIndex;
+                if (settings.Values[Constants.SettingsName_Interval + Id] == null)
+                    settings.Values[Constants.SettingsName_Interval + Id] = Constants.DefaultIntervalIndex;
 
-                return (int)settings.Values[Constants.SettingsName_Interval];
+                return (int)settings.Values[Constants.SettingsName_Interval + Id];
             }
             set
             {
-                settings.Values[Constants.SettingsName_Interval] = value;
+                settings.Values[Constants.SettingsName_Interval + Id] = value;
                 NotifyPropertyChanged(Constants.SettingsName_Interval);
             }
         }
@@ -97,7 +92,7 @@ namespace Kozlowski.Slide
             {
                 if (value != null)
                 {
-                    StorageApplicationPermissions.FutureAccessList.AddOrReplace(Constants.SettingsName_ImagesLocation, value);
+                    StorageApplicationPermissions.FutureAccessList.AddOrReplace(Constants.SettingsName_ImagesLocation + Id, value);
                     rootFolder = value;
                     NotifyPropertyChanged(Constants.SettingsName_ImagesLocation);
                 }
@@ -127,14 +122,14 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values[Constants.SettingsName_Subfolders] == null)
-                    settings.Values[Constants.SettingsName_Subfolders] = Constants.DefaultSubfoldersSetting;
+                if (settings.Values[Constants.SettingsName_Subfolders + Id] == null)
+                    settings.Values[Constants.SettingsName_Subfolders + Id] = Constants.DefaultSubfoldersSetting;
 
-                return (bool)settings.Values[Constants.SettingsName_Subfolders];
+                return (bool)settings.Values[Constants.SettingsName_Subfolders + Id];
             }
             set
             {
-                settings.Values[Constants.SettingsName_Subfolders] = value;
+                settings.Values[Constants.SettingsName_Subfolders + Id] = value;
                 NotifyPropertyChanged(Constants.SettingsName_Subfolders);
             }
         }
@@ -146,14 +141,14 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values[Constants.SettingsName_Shuffle] == null)
-                    settings.Values[Constants.SettingsName_Shuffle] = Constants.DefaultShuffleSetting;
+                if (settings.Values[Constants.SettingsName_Shuffle + Id] == null)
+                    settings.Values[Constants.SettingsName_Shuffle + Id] = Constants.DefaultShuffleSetting;
 
-                return (bool)settings.Values[Constants.SettingsName_Shuffle];
+                return (bool)settings.Values[Constants.SettingsName_Shuffle + Id];
             }
             set
             {
-                settings.Values[Constants.SettingsName_Shuffle] = value;
+                settings.Values[Constants.SettingsName_Shuffle + Id] = value;
                 NotifyPropertyChanged(Constants.SettingsName_Shuffle);
             }
         }
@@ -165,14 +160,14 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values[Constants.SettingsName_Animate] == null)
-                    settings.Values[Constants.SettingsName_Animate] = Constants.DefaultAnimateSetting;
+                if (settings.Values[Constants.SettingsName_Animate + Id] == null)
+                    settings.Values[Constants.SettingsName_Animate + Id] = Constants.DefaultAnimateSetting;
 
-                return (bool)settings.Values[Constants.SettingsName_Animate];
+                return (bool)settings.Values[Constants.SettingsName_Animate + Id];
             }
             set
             {
-                settings.Values[Constants.SettingsName_Animate] = value;
+                settings.Values[Constants.SettingsName_Animate + Id] = value;
                 NotifyPropertyChanged(Constants.SettingsName_Animate);
             }
         }
@@ -186,6 +181,82 @@ namespace Kozlowski.Slide
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
+        }
+    }
+
+    /// <summary>
+    /// This class is used to provide a singleton, central access point to the app's settings.
+    /// </summary>
+    public class MainSettings : Settings
+    {
+        // The single instance of the class
+        private static readonly MainSettings instance = new MainSettings("");
+
+        /// <summary>
+        /// Gets the app's thread-safe instance of the Settings classed.
+        /// </summary>
+        public static MainSettings Instance { get { return instance; } }
+
+        private MainSettings(string Id)
+            : base(Id)
+        {
+        }
+    }
+
+    /// <summary>
+    /// This class is used to provide a singleton, central access point to the app's settings.
+    /// </summary>
+    public class Secondary1Settings : Settings
+    {
+        // The single instance of the class
+        private static readonly Secondary1Settings instance = new Secondary1Settings("1");
+
+        /// <summary>
+        /// Gets the app's thread-safe instance of the Settings classed.
+        /// </summary>
+        public static Secondary1Settings Instance { get { return instance; } }
+
+        private Secondary1Settings(string Id)
+            : base(Id)
+        {
+        }
+    }
+
+    /// <summary>
+    /// This class is used to provide a singleton, central access point to the app's settings.
+    /// </summary>
+    public class Secondary2Settings : Settings
+    {
+        // The single instance of the class
+        private static readonly Secondary2Settings instance = new Secondary2Settings("2");
+
+        /// <summary>
+        /// Gets the app's thread-safe instance of the Settings classed.
+        /// </summary>
+        public static Secondary2Settings Instance { get { return instance; } }
+
+        private Secondary2Settings(string Id)
+            : base(Id)
+        {
+        }
+    }
+
+    /// <summary>
+    /// This class is used to provide a singleton, central access point to the app's settings.
+    /// </summary>
+    public class Secondary3Settings : Settings
+    {
+        // The single instance of the class
+        private static readonly Secondary3Settings instance = new Secondary3Settings("3");
+
+        /// <summary>
+        /// Gets the app's thread-safe instance of the Settings classed.
+        /// </summary>
+        public static Secondary3Settings Instance { get { return instance; } }
+
+        private Secondary3Settings(string Id)
+            : base(Id)
+        {
         }
     }
 }

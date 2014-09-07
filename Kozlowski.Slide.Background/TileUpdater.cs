@@ -18,19 +18,46 @@ namespace Kozlowski.Slide.Background
         /// </summary>
         /// <param name="taskInstance">The instance of the background process.</param>
         public async void Run(IBackgroundTaskInstance taskInstance)
-        {            
+        {        
             var defferal = taskInstance.GetDeferral();
             Debug.WriteLine("Started the background task");
             var fileList = new List<StorageFile>();
-            var settings = Settings.Instance;
+            Settings settings;
+
+            // Main tile
+            settings = MainSettings.Instance;
             fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle));
             Debug.WriteLine("Creating primary tile updates");
-            await TileMaker.GenerateTiles("", settings.Interval, fileList, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle);
+            await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", settings.Interval, fileList, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle);
 
-            if (SecondaryTile.Exists(Constants.SecondaryTileId1))
+            // Secondary tile 1
+            if (SecondaryTile.Exists(Constants.Secondary1TileId))
             {
-                Debug.WriteLine("Creating secondary tile updates");
-                await TileMaker.GenerateTiles(Constants.SecondaryTileId1, settings.Interval, fileList, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle);
+                fileList.Clear();
+                settings = Secondary1Settings.Instance;
+                fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle));
+                Debug.WriteLine("Creating secondary 1 tile updates");
+                await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", settings.Interval, fileList, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle);
+            }
+
+            // Secondary tile 2
+            if (SecondaryTile.Exists(Constants.Secondary2TileId))
+            {
+                fileList = new List<StorageFile>();
+                settings = Secondary2Settings.Instance;
+                fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle));
+                Debug.WriteLine("Creating secondary 2 tile updates");
+                await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", settings.Interval, fileList, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle);
+            }
+
+            // Secondary tile 3
+            if (SecondaryTile.Exists(Constants.Secondary3TileId))
+            {
+                fileList = new List<StorageFile>();
+                settings = Secondary3Settings.Instance;
+                fileList.AddRange(await TileMaker.GetImageList(settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle));
+                Debug.WriteLine("Creating secondary 3 tile updates");
+                await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", settings.Interval, fileList, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle);
             }
 
             Debug.WriteLine("Finished the background task");

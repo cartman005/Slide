@@ -115,8 +115,11 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SlideSettingsFlyout.xaml.cs">
-      <DependentUpon>SlideSettingsFlyout.xaml</DependentUpon>
+    <Compile Include="SecondarySettingsFlyout.xaml.cs">
+      <DependentUpon>SecondarySettingsFlyout.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MainSettingsFlyout.xaml.cs">
+      <DependentUpon>MainSettingsFlyout.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -160,7 +163,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="SlideSettingsFlyout.xaml">
+    <Page Include="SecondarySettingsFlyout.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainSettingsFlyout.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

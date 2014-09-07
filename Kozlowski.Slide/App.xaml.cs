@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Background;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
@@ -95,12 +96,26 @@ namespace Kozlowski.Slide
 
         private void OnCommandsRequested(SettingsPane sender, SettingsPaneCommandsRequestedEventArgs args)
         {
-            args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Options", (handler) => ShowSettingsFlyout()));
+            args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Main App Options", (handler) => ShowMainSettingsFlyout()));
+
+            var result = BackgroundExecutionManager.GetAccessStatus();
+            if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity || result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
+            {
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Secondary 1 Options", (handler) => ShowSecondarySettingsFlyout(1)));
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Secondary 2 Options", (handler) => ShowSecondarySettingsFlyout(2)));
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Secondary 3 Options", (handler) => ShowSecondarySettingsFlyout(3)));
+            }
         }
 
-        public void ShowSettingsFlyout()
+        public void ShowMainSettingsFlyout()
         {
-            SlideSettingsFlyout settings = new SlideSettingsFlyout();
+            var settings = new MainSettingsFlyout();
+            settings.Show();
+        }
+
+        public void ShowSecondarySettingsFlyout(int number)
+        {
+            var settings = new SecondarySettingsFlyout(number);
             settings.Show();
         }
 

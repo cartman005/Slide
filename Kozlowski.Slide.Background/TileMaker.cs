@@ -73,7 +73,7 @@ namespace Kozlowski.Slide.Background
             }).AsAsyncOperation<IReadOnlyList<StorageFile>>();
         }
 
-        public static IAsyncOperation<XmlDocument> CreateTileUpdate(StorageFile file, int tileWidth, int tileHeight)
+        public static IAsyncOperation<XmlDocument> CreateTileUpdate(string destination, StorageFile file, int tileWidth, int tileHeight)
         {
             return Task.Run<XmlDocument>(async () =>
             {
@@ -97,7 +97,7 @@ namespace Kozlowski.Slide.Background
                                 ExifOrientationMode.RespectExifOrientation,
                                 ColorManagementMode.DoNotColorManage);
 
-                        var cachedFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(string.Format("{0}\\{1}{2}", Constants.TileUpdatesFolder, file.DisplayName, file.FileType), CreationCollisionOption.GenerateUniqueName);
+                        var cachedFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(string.Format("{0}\\{1}\\{2}{3}", Constants.TileUpdatesFolder, destination, file.DisplayName, file.FileType), CreationCollisionOption.GenerateUniqueName);
                         var destinationStream = await cachedFile.OpenAsync(FileAccessMode.ReadWrite);
 
                         // Find the correct encoder for the image file
@@ -136,7 +136,7 @@ namespace Kozlowski.Slide.Background
                         // Parent, 150x150 tile
                         var parentTile = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Image);
                         var tileImageAttributes = (XmlElement)parentTile.GetElementsByTagName("image").Item(0);
-                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}", Constants.TileUpdatesFolder, cachedFile.Name));
+                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}/{2}", Constants.TileUpdatesFolder, destination, cachedFile.Name));
                         tileImageAttributes.SetAttribute("alt", file.DisplayName);
                         var bindingElement = (XmlElement)parentTile.GetElementsByTagName("binding").Item(0);
                         bindingElement.SetAttribute("branding", "none");
@@ -144,7 +144,7 @@ namespace Kozlowski.Slide.Background
                         // 310x150 tile
                         var wideTile = TileUpdateManager.GetTemplateContent(TileTemplateType.TileWide310x150Image);
                         tileImageAttributes = (XmlElement)wideTile.GetElementsByTagName("image").Item(0);
-                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}", Constants.TileUpdatesFolder, cachedFile.Name));
+                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}/{2}", Constants.TileUpdatesFolder, destination, cachedFile.Name));
                         tileImageAttributes.SetAttribute("alt", file.DisplayName);
                         bindingElement = (XmlElement)wideTile.GetElementsByTagName("binding").Item(0);
                         bindingElement.SetAttribute("branding", "none");
@@ -156,7 +156,7 @@ namespace Kozlowski.Slide.Background
                         // 310x310 tile
                         var largeTile = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare310x310Image);
                         tileImageAttributes = (XmlElement)largeTile.GetElementsByTagName("image").Item(0);
-                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}", Constants.TileUpdatesFolder, cachedFile.Name));
+                        tileImageAttributes.SetAttribute("src", string.Format("ms-appdata:///Local/{0}/{1}/{2}", Constants.TileUpdatesFolder, destination, cachedFile.Name));
                         tileImageAttributes.SetAttribute("alt", file.DisplayName);
                         bindingElement = (XmlElement)largeTile.GetElementsByTagName("binding").Item(0);
                         bindingElement.SetAttribute("branding", "none");
@@ -184,11 +184,11 @@ namespace Kozlowski.Slide.Background
         /// <param name="tileId">The ID of the tile to create updates for. Will be null for the main app tile.</param>
         /// <param name="seconds"></param>
         /// <param name="IFileList"></param>
-        /// <param name="folder"></param>
+        /// <param name="sourceFolder"></param>
         /// <param name="includeSubfolders"></param>
         /// <param name="shuffle"></param>
         /// <returns></returns>
-        public static IAsyncAction GenerateTiles(string tileId, int seconds, IReadOnlyList<StorageFile> IFileList, StorageFolder folder, bool includeSubfolders, bool shuffle)
+        public static IAsyncAction GenerateTiles(string subfolder, string tileId, int seconds, IReadOnlyList<StorageFile> IFileList, StorageFolder sourceFolder, bool includeSubfolders, bool shuffle)
         {
             return Task.Run(async () =>
             {
@@ -202,11 +202,12 @@ namespace Kozlowski.Slide.Background
                 updater.EnableNotificationQueue(true);
                 updater.Clear();
 
-                // Clear existing images by deleting the Tile Updates folder in AppData
+                // Clear existing images by deleting the specifed Tile Updates subfolder in AppData
                 try
                 {
-                    var tileUpdateFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync(Constants.TileUpdatesFolder);
-                    await tileUpdateFolder.DeleteAsync();
+                    var parentFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync(Constants.TileUpdatesFolder);
+                    var tileUpdatesFolder = await parentFolder.GetFolderAsync(subfolder);
+                    await tileUpdatesFolder.DeleteAsync();
                 }
                 catch (FileNotFoundException ex)
                 {
@@ -234,7 +235,7 @@ namespace Kozlowski.Slide.Background
                     file = fileList[index];
                     fileList.RemoveAt(index);
 
-                    var tile = await CreateTileUpdate(file, 310, 310);
+                    var tile = await CreateTileUpdate(subfolder, file, 310, 310);
                     if (tile != null)
                     {
                         updater.Update(new TileNotification(tile) { ExpirationTime = now.AddMinutes(1) });
@@ -245,7 +246,7 @@ namespace Kozlowski.Slide.Background
                     for (var startPlanning = updateTime; startPlanning < planTill; startPlanning = startPlanning.AddSeconds(seconds))
                     {                        
                             if (fileList.Count < 1)
-                                fileList.AddRange(await GetImageList(folder, includeSubfolders, shuffle));
+                                fileList.AddRange(await GetImageList(sourceFolder, includeSubfolders, shuffle));
 
                             if (shuffle)
                                 index = SingleRandom.Instance.Next(0, fileList.Count);
@@ -262,7 +263,7 @@ namespace Kozlowski.Slide.Background
                                 file = fileList[index];
                                 fileList.RemoveAt(index);
                                 Debug.WriteLine("Schedule at {0}", startPlanning);
-                                tile = await CreateTileUpdate(file, 310, 310);
+                                tile = await CreateTileUpdate(subfolder, file, 310, 310);
                                 if (tile != null)
                                 {
                                     var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddMinutes(1) };

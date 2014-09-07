@@ -25,22 +25,17 @@ namespace Kozlowski.Slide.Shared
         /// <summary>
         /// Gets the ID of the first secondary tile.
         /// </summary>
-        public static string SecondaryTileId1 { get { return "SlideSecondaryTile1"; } }
+        public static string Secondary1TileId { get { return "SlideSecondaryTile1"; } }
 
         /// <summary>
         /// Gets the ID of the second secondary tile.
         /// </summary>
-        public static string SecondaryTileId2 { get { return "SlideSecondaryTile2"; } }
+        public static string Secondary2TileId { get { return "SlideSecondaryTile2"; } }
 
         /// <summary>
         /// Gets the ID of the third secondary tile.
         /// </summary>
-        public static string SecondaryTileId3 { get { return "SlideSecondaryTile3"; } }
-
-        /// <summary>
-        /// Gets the ID of the fourth secondary tile.
-        /// </summary>
-        public static string SecondaryTileId4 { get { return "SlideSecondaryTile4"; } }
+        public static string Secondary3TileId { get { return "SlideSecondaryTile3"; } }
 
         /// <summary>
         /// Gets the interval for scheduling the timer background task.
@@ -95,6 +90,26 @@ namespace Kozlowski.Slide.Shared
         /// Gets the name of the folder to store the cached tile update images in the AppData folder.
         /// </summary>
         public static string TileUpdatesFolder { get { return "TileUpdates"; } }
+
+        /// <summary>
+        /// Gets the name of the folder to store the cached tile update images in the AppData folder.
+        /// </summary>
+        public static string MainTileUpdatesFolder { get { return "MainTile"; } }
+
+        /// <summary>
+        /// Gets the name of the folder to store the cached tile update images in the AppData folder.
+        /// </summary>
+        public static string Secondary1TileUpdatesFolder { get { return "SecondaryTile1"; } }
+
+        /// <summary>
+        /// Gets the name of the folder to store the cached tile update images in the AppData folder.
+        /// </summary>
+        public static string Secondary2TileUpdatesFolder { get { return "SecondaryTile2"; } }
+
+        /// <summary>
+        /// Gets the name of the folder to store the cached tile update images in the AppData folder.
+        /// </summary>
+        public static string Secondary3TileUpdatesFolder { get { return "SecondaryTile3"; } }
 
         /// <summary>
         /// Gets the name of the file for storing the serialized Items collection in the AppData folder.

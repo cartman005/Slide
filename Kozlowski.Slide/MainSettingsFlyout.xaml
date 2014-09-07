@@ -1,0 +1,77 @@
+﻿<SettingsFlyout
+    x:Class="Kozlowski.Slide.MainSettingsFlyout"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Kozlowski.Slide"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    IconSource="Assets/SmallLogo.png"
+    Title="Main App"
+    d:DesignWidth="346">
+
+    <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+                
+        <!-- Pictures Location -->
+        <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
+            <TextBlock Text="Pictures Location" Style="{StaticResource TitleTextBlockStyle}"/>
+            <StackPanel Margin="0,7,0,0" Orientation="Vertical">
+                <TextBox
+                    Header="Root Folder"
+                    HorizontalAlignment="Left"
+                    Width="250"
+                    IsEnabled="False"
+                    Text="{Binding FolderPath}"/>
+                <Button
+                    x:Name="Browse"
+                    Content="Browse"
+                    Click="BrowseForRootFolder"
+                    VerticalAlignment="Bottom"
+                    ToolTipService.ToolTip="Choose pictures source folder"
+                    TabIndex="0" />
+            </StackPanel>
+            <ToggleSwitch
+                Name="SubfoldersSwitch"
+                Header="Include Sub-Folders"
+                IsOn="{Binding Path=IncludeSubfolders, Mode=TwoWay}"
+                ToolTipService.ToolTip="Include sub-folders inside of root folder?"
+                TabIndex="1" />
+            <ToggleSwitch
+                Name="ShuffleSwitch"
+                Header="Shuffle"
+                IsOn="{Binding Path=Shuffle, Mode=TwoWay}"
+                ToolTipService.ToolTip="Shuffle picture order?"
+                TabIndex="2"/>
+        </StackPanel>
+
+        <!-- Animation -->
+        <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
+            <TextBlock Text="Animation" Style="{StaticResource TitleTextBlockStyle}"/>
+            <!-- Interval dropdown -->
+            <StackPanel Style="{StaticResource SettingsFlyoutSectionStyle}">
+                <ComboBox
+                    Name="Interval"
+                    Header="Interval"
+                    Margin="0,7,0,0"
+                    HorizontalAlignment="Left"
+                    PlaceholderText="Select Interval"
+                    SelectedIndex="{Binding Path=Index, Mode=TwoWay}"
+                    ToolTipService.ToolTip="Select time between pictures"
+                    TabIndex="3">
+                    <x:String>5 seconds</x:String>
+                    <x:String>10 seconds</x:String>
+                    <x:String>30 seconds</x:String>
+                    <x:String>1 minute</x:String>
+                    <x:String>3 minutes</x:String>
+                </ComboBox>
+            </StackPanel>
+            <!-- Zoom -->
+            <ToggleSwitch
+                Name="ZoomSwitch"
+                Header="Pan/Zoom"
+                IsOn="{Binding Path=Animate, Mode=TwoWay}"
+                ToolTipService.ToolTip="Pan and zoom in on images?"
+                TabIndex="4" />
+        </StackPanel>
+    </StackPanel>
+</SettingsFlyout>

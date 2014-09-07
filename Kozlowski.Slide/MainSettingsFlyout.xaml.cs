@@ -7,15 +7,15 @@ using Windows.UI.Xaml.Controls;
 
 namespace Kozlowski.Slide
 {
-    public sealed partial class SlideSettingsFlyout : SettingsFlyout
+    public sealed partial class MainSettingsFlyout : SettingsFlyout
     {
         /// <summary>
         /// Create the Settings flyout.
         /// </summary>
-        public SlideSettingsFlyout()
+        public MainSettingsFlyout()
         {
             this.InitializeComponent();
-            this.DataContext = Settings.Instance;
+            this.DataContext = MainSettings.Instance;
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Kozlowski.Slide
             var folder = await folderPicker.PickSingleFolderAsync();
 
             if (folder != null)
-                Settings.Instance.RootFolder = folder;
+                MainSettings.Instance.RootFolder = folder;
         }
 
     }
