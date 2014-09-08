@@ -245,7 +245,7 @@
                         Name="ClearButton"
                         Icon="Clear"
                         Label="Clear"
-                        ToolTipService.ToolTip="Clear all images"
+                        ToolTipService.ToolTip="Clear images in slideshow and on Start screen tile"
                         Click="Clear_Click"
                         TabIndex="2"/>
                 </StackPanel>

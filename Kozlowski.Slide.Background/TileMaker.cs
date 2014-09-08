@@ -238,7 +238,8 @@ namespace Kozlowski.Slide.Background
                     var tile = await CreateTileUpdate(subfolder, file, 310, 310);
                     if (tile != null)
                     {
-                        updater.Update(new TileNotification(tile) { ExpirationTime = now.AddMinutes(1) });
+                        //updater.Update(new TileNotification(tile) { ExpirationTime = now.AddMinutes(1) });
+                        updater.Update(new TileNotification(tile) { ExpirationTime = now.AddSeconds((seconds * Constants.ConcurrentTiles) > 60 ? seconds * Constants.ConcurrentTiles : 60) });
                     }
 
                     // Create the rest of the tiles
@@ -266,7 +267,9 @@ namespace Kozlowski.Slide.Background
                                 tile = await CreateTileUpdate(subfolder, file, 310, 310);
                                 if (tile != null)
                                 {
-                                    var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddMinutes(1) };
+                                    //var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddMinutes(1) };
+                                    // Tile shouldn't expire less than 60 seconds after it is scheduled for timing reasons
+                                    var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddSeconds((seconds * Constants.ConcurrentTiles) > 60 ? seconds * Constants.ConcurrentTiles : 60) };
                                     updater.AddToSchedule(scheduledNotification);
                                 }
                             }

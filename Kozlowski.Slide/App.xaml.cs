@@ -61,7 +61,7 @@ namespace Kozlowski.Slide
             }
             */
 #endif
-            // Set up settings class
+            // Set up settings instance
             if (string.IsNullOrEmpty(e.Arguments))
             {
                 settingsInstance = MainSettings.Instance;
@@ -103,6 +103,7 @@ namespace Kozlowski.Slide
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
 
+                // Restore the previous state only if the the app was suspended and then terminated
                 if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
                 {
                     await SuspensionManager.RestoreAsync();
@@ -130,15 +131,23 @@ namespace Kozlowski.Slide
 
         private void OnCommandsRequested(SettingsPane sender, SettingsPaneCommandsRequestedEventArgs args)
         {
-            args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Main Tile Options", (handler) => ShowSettingsFlyout(0)));
+            args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(0), (handler) => ShowSettingsFlyout(0)));
 
             var result = BackgroundExecutionManager.GetAccessStatus();
             if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity || result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
             {
-                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Tile 2 Options", (handler) => ShowSettingsFlyout(1)));
-                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Tile 3 Options", (handler) => ShowSettingsFlyout(2)));
-                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Tile 4 Options", (handler) => ShowSettingsFlyout(3)));
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(1), (handler) => ShowSettingsFlyout(1)));
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(2), (handler) => ShowSettingsFlyout(2)));
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(3), (handler) => ShowSettingsFlyout(3)));
             }
+        }
+
+        public string FormatOptionsTitle(int number)
+        {
+            if (id == number)
+                return string.Format("Tile {0} Options (Current)", number + 1);
+            else
+                return string.Format("Tile {0} Options", number + 1);
         }
 
         public void ShowSettingsFlyout(int number)

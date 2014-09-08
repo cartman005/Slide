@@ -169,5 +169,12 @@ namespace Kozlowski.Slide.Shared
         /// Gets the decimal by which to scale the images when animating.
         /// </summary>
         public static double ScaleDecimal { get { return 1.25; } }
+
+        /// <summary>
+        /// Gets the number of tile updates that are allowed to overlap.
+        /// A higher number ensures that no gaps exist in the tile updates.
+        /// No more than 6 updates can exist at the same time.
+        /// </summary>
+        public static double ConcurrentTiles { get { return 3; } }
     }
 }

@@ -30,11 +30,14 @@ namespace Kozlowski.Slide
             this.InitializeComponent();
             this.Title = string.Format("Slide Tile {0}", number + 1);
 
-            if (number == 0)
-                PinPanel.Visibility = Visibility.Collapsed;
-
             switch(tileNumber)
             {
+                case 0:
+                    tileId = "";
+                    this.DataContext = MainSettings.Instance;
+                    PinPanel.Visibility = Visibility.Collapsed;
+                    MainSettings.Instance.PropertyChanged += Setting_Changed;
+                    break;
                 case 1:
                     tileId = Constants.Secondary1TileId;
                     this.DataContext = Secondary1Settings.Instance;
@@ -62,7 +65,8 @@ namespace Kozlowski.Slide
         {
             Debug.WriteLine("Settings Changed");
 
-            CreateUpdates(tileNumber);
+            if (e.PropertyName == Constants.SettingsName_Interval || e.PropertyName == Constants.SettingsName_ImagesLocation || e.PropertyName == Constants.SettingsName_Shuffle || e.PropertyName == Constants.SettingsName_Subfolders)
+                CreateUpdates(tileNumber);
         }
 
         private async void CreateUpdates(int number)

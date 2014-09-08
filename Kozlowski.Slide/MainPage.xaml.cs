@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using System.Xml;
 using Windows.ApplicationModel.Background;
 using Windows.Foundation;
 using Windows.Storage;
@@ -125,11 +126,16 @@ namespace Kozlowski.Slide
                                     Debug.WriteLine("Start at index {0}", (int)storedIndex);
                                     initialIndex = (int)storedIndex;
                                 }
-                                }
+                            }
                         }
                         catch (FileNotFoundException ex)
                         {
                             Debug.WriteLine("File not found: '{0}'", ex);
+                        }
+                        catch (XmlException ex)
+                        {
+                            // File not written properly
+                            Debug.WriteLine("Unexpected end of file: '{0}'", ex);
                         }
                     }
                 }
