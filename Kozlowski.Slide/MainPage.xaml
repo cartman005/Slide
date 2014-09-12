@@ -216,7 +216,7 @@
 
     <!-- App Bar -->
     <Page.BottomAppBar>
-        <AppBar x:Name="MainAppBar" Opened="MainAppBar_Opened" Closed="MainAppBar_Closed">
+        <AppBar x:Name="MainAppBar" Opened="MainAppBar_Opened">
             <Grid>
                 <!-- Play/Pause button -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">

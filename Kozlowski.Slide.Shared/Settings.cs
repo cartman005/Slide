@@ -15,25 +15,24 @@ namespace Kozlowski.Slide
     {
         private ApplicationDataContainer settings;
         private StorageFolder rootFolder;
-        private string Id;
-               
+
         /// <summary>
         /// Private constructor that opens the app's Roaming Settings and the FutureAccessList to find the current root folder.
         /// </summary>
-        public Settings(string tileId)
+        public Settings()
         {
             Debug.WriteLine("Settings constructor called.");
-            Id = tileId;
-            settings = ApplicationData.Current.RoamingSettings;
+            settings = ApplicationData.Current.LocalSettings;
 
-            if (StorageApplicationPermissions.FutureAccessList.ContainsItem(Constants.SettingsName_ImagesLocation + Id))
+            // Get root folder now since requires an asynchronous function
+            if (StorageApplicationPermissions.FutureAccessList.ContainsItem(GetTileSpecificSettingName(Constants.SettingsName_ImagesLocation)))
                 Task.Run(
                    async () =>
                    {
-                       rootFolder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(Constants.SettingsName_ImagesLocation + Id);
+                       rootFolder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(GetTileSpecificSettingName(Constants.SettingsName_ImagesLocation));
                    }).Wait();
             else
-                rootFolder = KnownFolders.PicturesLibrary;
+                rootFolder = Constants.DefaultFolder;
         }
 
         /// <summary>
@@ -43,14 +42,11 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values[Constants.SettingsName_InitialUpdatesMade + Id] == null)
-                    settings.Values[Constants.SettingsName_InitialUpdatesMade + Id] = false;
-
-                return (bool)settings.Values[Constants.SettingsName_InitialUpdatesMade + Id];
+                return GetSetting<bool>(Constants.SettingsName_InitialUpdatesMade, false);
             }
             set
             {
-                settings.Values[Constants.SettingsName_InitialUpdatesMade + Id] = value;
+                SetSetting<bool>(Constants.SettingsName_InitialUpdatesMade, value);
             }
         }
 
@@ -61,15 +57,11 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values[Constants.SettingsName_Interval + Id] == null)
-                    settings.Values[Constants.SettingsName_Interval + Id] = Constants.DefaultIntervalIndex;
-
-                return (int)settings.Values[Constants.SettingsName_Interval + Id];
+                return GetSetting<int>(Constants.SettingsName_Interval, Constants.DefaultIntervalIndex);
             }
             set
             {
-                settings.Values[Constants.SettingsName_Interval + Id] = value;
-                NotifyPropertyChanged(Constants.SettingsName_Interval);
+                SetSetting<int>(Constants.SettingsName_Interval, value);
             }
         }
 
@@ -92,7 +84,7 @@ namespace Kozlowski.Slide
             {
                 if (value != null)
                 {
-                    StorageApplicationPermissions.FutureAccessList.AddOrReplace(Constants.SettingsName_ImagesLocation + Id, value);
+                    StorageApplicationPermissions.FutureAccessList.AddOrReplace(GetTileSpecificSettingName(Constants.SettingsName_ImagesLocation), value);
                     rootFolder = value;
                     NotifyPropertyChanged(Constants.SettingsName_ImagesLocation);
                 }
@@ -105,7 +97,7 @@ namespace Kozlowski.Slide
         public string FolderPath
         {
             get
-            { 
+            {
                 string path = RootFolder.Path;
 
                 // Paths for virtual folders like Libraries are blank
@@ -122,15 +114,11 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values[Constants.SettingsName_Subfolders + Id] == null)
-                    settings.Values[Constants.SettingsName_Subfolders + Id] = Constants.DefaultSubfoldersSetting;
-
-                return (bool)settings.Values[Constants.SettingsName_Subfolders + Id];
+                return GetSetting<bool>(Constants.SettingsName_Subfolders, Constants.DefaultSubfoldersSetting);
             }
             set
             {
-                settings.Values[Constants.SettingsName_Subfolders + Id] = value;
-                NotifyPropertyChanged(Constants.SettingsName_Subfolders);
+                SetSetting<bool>(Constants.SettingsName_Subfolders, value);
             }
         }
 
@@ -141,18 +129,14 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values[Constants.SettingsName_Shuffle + Id] == null)
-                    settings.Values[Constants.SettingsName_Shuffle + Id] = Constants.DefaultShuffleSetting;
-
-                return (bool)settings.Values[Constants.SettingsName_Shuffle + Id];
+                return GetSetting<bool>(Constants.SettingsName_Shuffle, Constants.DefaultShuffleSetting);
             }
             set
             {
-                settings.Values[Constants.SettingsName_Shuffle + Id] = value;
-                NotifyPropertyChanged(Constants.SettingsName_Shuffle);
+                SetSetting<bool>(Constants.SettingsName_Shuffle, value);
             }
         }
-        
+
         /// <summary>
         /// Gets or sets whether the images displayed should be animated.
         /// </summary>
@@ -160,22 +144,24 @@ namespace Kozlowski.Slide
         {
             get
             {
-                if (settings.Values[Constants.SettingsName_Animate + Id] == null)
-                    settings.Values[Constants.SettingsName_Animate + Id] = Constants.DefaultAnimateSetting;
-
-                return (bool)settings.Values[Constants.SettingsName_Animate + Id];
+                return GetSetting<bool>(Constants.SettingsName_Animate, Constants.DefaultAnimateSetting);
             }
             set
             {
-                settings.Values[Constants.SettingsName_Animate + Id] = value;
-                NotifyPropertyChanged(Constants.SettingsName_Animate);
+                SetSetting<bool>(Constants.SettingsName_Animate, value);
             }
         }
-
-        public string TileId { get { return Id; } }
-
-        public abstract string SaveFolder { get; }
         
+        /// <summary>
+        /// Gets the ID of the tile for creating secondary tiles.
+        /// </summary>
+        public abstract string TileId { get; }
+
+        /// <summary>
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the specific tile represented by the Settings instance.
+        /// </summary>
+        public abstract string SaveFolder { get; }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void NotifyPropertyChanged(string propertyName)
@@ -186,89 +172,160 @@ namespace Kozlowski.Slide
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
         }
+
+        /// <summary>
+        /// Helper function to get a setting in the LocalSettings file for the tile represented by this particular Settings instance.
+        /// Creates the value if it does not already exists.
+        /// </summary>
+        /// <typeparam name="T">The type of the value to be returned.</typeparam>
+        /// <param name="baseSettingName">The base name of the setting which is the same for all tiles.</param>
+        /// <param name="defaultValue">The value to be returned if no previously-stored value is found.</param>
+        private T GetSetting<T>(string baseSettingName, T defaultValue)
+        {
+            if (settings.Values[GetTileSpecificSettingName(baseSettingName)] == null)
+                settings.Values[GetTileSpecificSettingName(baseSettingName)] = defaultValue;
+
+            return (T)settings.Values[GetTileSpecificSettingName(baseSettingName)];
+        }
+
+        /// <summary>
+        /// Helper function to update a setting in the LocalSettings file for the tile represented by this particular Settings instance.
+        /// Sends a notification that the setting has been updated.
+        /// </summary>
+        /// <typeparam name="T">The type of the value to be stored.</typeparam>
+        /// <param name="baseSettingName">The base name of the setting which is the same for all tiles.</param>
+        /// <param name="value">The value to be stored in the settings file.</param>
+        private void SetSetting<T>(string baseSettingName, T value)
+        {
+            settings.Values[GetTileSpecificSettingName(baseSettingName)] = value;
+            NotifyPropertyChanged(baseSettingName);
+        }
+
+        /// <summary>
+        /// Helper function to find the name of a setting in the LocalSettings file for the tile represented by this particular Settings instance.
+        /// </summary>
+        /// <param name="baseSettingName">The base name of the setting which is the same for all tiles.</param>
+        /// <returns>The full name of the setting, specific to a single tile.</returns>
+        private string GetTileSpecificSettingName(string baseSettingName)
+        {
+            return string.Format("{0}_{1}", baseSettingName, TileId);
+        }
     }
 
     /// <summary>
-    /// This class is used to provide a singleton, central access point to the app's settings.
+    /// This class is used to provide a singleton, central access point to the app's settings for the main/default tile (tile 1).
     /// </summary>
-    public class MainSettings : Settings
+    public class Tile1Settings : Settings
     {
         // The single instance of the class
-        private static readonly MainSettings instance = new MainSettings("");
+        private static readonly Tile1Settings instance = new Tile1Settings();
 
         /// <summary>
-        /// Gets the app's thread-safe instance of the Settings classed.
+        /// Gets the app's thread-safe instance of the Settings class for tile 1.
         /// </summary>
-        public static MainSettings Instance { get { return instance; } }
+        public static Tile1Settings Instance { get { return instance; } }
 
-        private MainSettings(string Id)
-            : base(Id)
-        {
-        }
+        /// <summary>
+        /// Calls the base constructor.
+        /// </summary>
+        private Tile1Settings(): base() { }
 
-        public override string SaveFolder { get { return Constants.MainTileUpdatesFolder; } }
+        /// <summary>
+        /// Gets the ID of the tile 1.
+        /// This is blank because a tile ID is not needed for the main app tile. 
+        /// </summary>
+        public override string TileId { get { return Constants.Tile1Id; } }
+
+        /// <summary>
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for tile 1.
+        /// </summary>
+        public override string SaveFolder { get { return Constants.Tile1SaveFolder; } }
     }
 
     /// <summary>
-    /// This class is used to provide a singleton, central access point to the app's settings.
+    /// This class is used to provide a singleton, central access point to the app's settings for tile 2.
     /// </summary>
-    public class Secondary1Settings : Settings
+    public class Tile2Settings : Settings
     {
         // The single instance of the class
-        private static readonly Secondary1Settings instance = new Secondary1Settings(Constants.Secondary1TileId);
+        private static readonly Tile2Settings instance = new Tile2Settings();
 
         /// <summary>
-        /// Gets the app's thread-safe instance of the Settings classed.
+        /// Gets the app's thread-safe instance of the Settings class for tile 2.
         /// </summary>
-        public static Secondary1Settings Instance { get { return instance; } }
+        public static Tile2Settings Instance { get { return instance; } }
 
-        private Secondary1Settings(string Id)
-            : base(Id)
-        {
-        }
+        /// <summary>
+        /// Calls the base constructor.
+        /// </summary>
+        private Tile2Settings(): base() { }
 
-        public override string SaveFolder { get { return Constants.Secondary1TileUpdatesFolder; } }
+        /// <summary>
+        /// Gets the ID of tile 2.
+        /// </summary>
+        public override string TileId { get { return Constants.Tile2Id; } }
+
+        /// <summary>
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for tile 2.
+        /// </summary>
+        public override string SaveFolder { get { return Constants.Tile2SaveFolder; } }
     }
 
     /// <summary>
-    /// This class is used to provide a singleton, central access point to the app's settings.
+    /// This class is used to provide a singleton, central access point to the app's settings for tile 3.
     /// </summary>
-    public class Secondary2Settings : Settings
+    public class Tile3Settings : Settings
     {
         // The single instance of the class
-        private static readonly Secondary2Settings instance = new Secondary2Settings(Constants.Secondary2TileId);
+        private static readonly Tile3Settings instance = new Tile3Settings();
 
         /// <summary>
-        /// Gets the app's thread-safe instance of the Settings classed.
+        /// Gets the app's thread-safe instance of the Settings class for tile 3.
         /// </summary>
-        public static Secondary2Settings Instance { get { return instance; } }
+        public static Tile3Settings Instance { get { return instance; } }
 
-        private Secondary2Settings(string Id)
-            : base(Id)
-        {
-        }
+        /// <summary>
+        /// Calls the base constructor.
+        /// </summary>
+        private Tile3Settings(): base() { }
 
-        public override string SaveFolder { get { return Constants.Secondary2TileUpdatesFolder; } }
+        /// <summary>
+        /// Gets the ID of tile 3.
+        /// </summary>
+        public override string TileId { get { return Constants.Tile3Id; } }
+
+        /// <summary>
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for tile 3.
+        /// </summary>
+        public override string SaveFolder { get { return Constants.Tile3SaveFolder; } }
     }
 
     /// <summary>
-    /// This class is used to provide a singleton, central access point to the app's settings.
+    /// This class is used to provide a singleton, central access point to the app's settings for tile 4.
     /// </summary>
-    public class Secondary3Settings : Settings
+    public class Tile4Settings : Settings
     {
         // The single instance of the class
-        private static readonly Secondary3Settings instance = new Secondary3Settings(Constants.Secondary3TileId);
+        private static readonly Tile4Settings instance = new Tile4Settings();
 
         /// <summary>
-        /// Gets the app's thread-safe instance of the Settings classed.
+        /// Gets the app's thread-safe instance of the Settings class for tile 4.
         /// </summary>
-        public static Secondary3Settings Instance { get { return instance; } }
+        public static Tile4Settings Instance { get { return instance; } }
 
-        private Secondary3Settings(string Id)
-            : base(Id)
-        {
-        }
+        /// <summary>
+        /// Calls the base constructor.
+        /// </summary>
+        private Tile4Settings(): base() { }
 
-        public override string SaveFolder { get { return Constants.Secondary3TileUpdatesFolder; } }
+        /// <summary>
+        /// Gets the ID of tile 4.
+        /// </summary>
+        public override string TileId { get { return Constants.Tile4Id; } }
+
+        /// <summary>
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for tile 4.
+        /// </summary>
+        public override string SaveFolder { get { return Constants.Tile4SaveFolder; } }
     }
 }

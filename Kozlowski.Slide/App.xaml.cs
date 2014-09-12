@@ -30,7 +30,7 @@ namespace Kozlowski.Slide
     sealed partial class App : Application
     {
         private Settings settingsInstance;
-        private int id;
+        private int tileId;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -43,7 +43,7 @@ namespace Kozlowski.Slide
         }
 
         public Settings Settings { get { return settingsInstance; } }
-        public int Id { get { return id; } }
+        public int TileId { get { return tileId; } }
 
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
@@ -64,26 +64,29 @@ namespace Kozlowski.Slide
             // Set up settings instance
             if (string.IsNullOrEmpty(e.Arguments))
             {
-                settingsInstance = MainSettings.Instance;
-                id = 0;
+                // Main tile
+                settingsInstance = Tile1Settings.Instance;
+                tileId = 0;
             }
             else
             {
+                // Secondary tile
                 switch (e.TileId)
                 {
                     case "SlideSecondaryTile1":
-                        settingsInstance = Secondary1Settings.Instance;
-                        id = 1;
+                        settingsInstance = Tile2Settings.Instance;
+                        tileId = 1;
                         break;
                     case "SlideSecondaryTile2":
-                        settingsInstance = Secondary2Settings.Instance;
-                        id = 2;
+                        settingsInstance = Tile3Settings.Instance;
+                        tileId = 2;
                         break;
                     case "SlideSecondaryTile3":
-                        settingsInstance = Secondary3Settings.Instance;
-                        id = 3;
+                        settingsInstance = Tile4Settings.Instance;
+                        tileId = 3;
                         break;
                     default:
+                        // Invalid tile ID
                         throw new NotImplementedException();
                 }
             }
@@ -144,7 +147,7 @@ namespace Kozlowski.Slide
 
         public string FormatOptionsTitle(int number)
         {
-            if (id == number)
+            if (tileId == number)
                 return string.Format("Tile {0} Options (Current)", number + 1);
             else
                 return string.Format("Tile {0} Options", number + 1);

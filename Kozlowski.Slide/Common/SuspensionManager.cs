@@ -76,7 +76,7 @@ namespace Kozlowski.Slide.Common
                 serializer.WriteObject(sessionData, _sessionState);
 
                 // Get an output stream for the SessionState file and write the state asynchronously
-                StorageFile file = await ApplicationData.Current.LocalFolder.CreateFileAsync(string.Format("{0}\\{1}", ((App)App.Current).Settings.SaveFolder, sessionStateFilename), CreationCollisionOption.ReplaceExisting);
+                StorageFile file = await ApplicationData.Current.LocalFolder.CreateFileAsync(sessionStateFilename, CreationCollisionOption.ReplaceExisting);
                 using (Stream fileStream = await file.OpenStreamForWriteAsync())
                 {
                     sessionData.Seek(0, SeekOrigin.Begin);
@@ -105,8 +105,7 @@ namespace Kozlowski.Slide.Common
             try
             {
                 // Get the input stream for the SessionState file
-                StorageFolder folder = await ApplicationData.Current.LocalFolder.GetFolderAsync(((App)App.Current).Settings.SaveFolder);
-                StorageFile file = await folder.GetFileAsync(sessionStateFilename);
+                StorageFile file = await ApplicationData.Current.LocalFolder.GetFileAsync(sessionStateFilename);
                 using (IInputStream inStream = await file.OpenSequentialReadAsync())
                 {
                     // Deserialize the Session State

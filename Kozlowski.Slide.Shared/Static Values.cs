@@ -1,4 +1,5 @@
 ﻿
+using Windows.Storage;
 namespace Kozlowski.Slide.Shared
 {
     /// <summary>
@@ -23,19 +24,25 @@ namespace Kozlowski.Slide.Shared
         public static string TaskEntryPoint { get { return "Kozlowski.Slide.Background.BackgroundTileMaker"; } }
 
         /// <summary>
-        /// Gets the ID of the first secondary tile.
+        /// Gets the ID of the main tile (Tile 1).
+        /// This is blank because a tile ID is not needed for the main app tile.
         /// </summary>
-        public static string Secondary1TileId { get { return "SlideSecondaryTile1"; } }
+        public static string Tile1Id { get { return ""; } }
 
         /// <summary>
-        /// Gets the ID of the second secondary tile.
+        /// Gets the ID of the first secondary tile (Tile 2).
         /// </summary>
-        public static string Secondary2TileId { get { return "SlideSecondaryTile2"; } }
+        public static string Tile2Id { get { return "SlideTile2"; } }
 
         /// <summary>
-        /// Gets the ID of the third secondary tile.
+        /// Gets the ID of the second secondary tile (Tile 3).
         /// </summary>
-        public static string Secondary3TileId { get { return "SlideSecondaryTile3"; } }
+        public static string Tile3Id { get { return "SlideTile3"; } }
+
+        /// <summary>
+        /// Gets the ID of the third secondary tile (Tile 4).
+        /// </summary>
+        public static string Tile4Id { get { return "SlideTile4"; } }
 
         /// <summary>
         /// Gets the interval for scheduling the timer background task.
@@ -87,29 +94,24 @@ namespace Kozlowski.Slide.Shared
 
         // File names
         /// <summary>
-        /// Gets the name of the folder to store the cached tile update images in the AppData folder.
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the main tile (Tile 1).
         /// </summary>
-        public static string TileUpdatesFolder { get { return "TileUpdates"; } }
+        public static string Tile1SaveFolder { get { return "Tile1"; } }
 
         /// <summary>
-        /// Gets the name of the folder to store the cached tile update images in the AppData folder.
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the first secondary tile (Tile 2).
         /// </summary>
-        public static string MainTileUpdatesFolder { get { return "MainTile"; } }
+        public static string Tile2SaveFolder { get { return "Tile2"; } }
 
         /// <summary>
-        /// Gets the name of the folder to store the cached tile update images in the AppData folder.
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the second secondary tile (Tile 3).
         /// </summary>
-        public static string Secondary1TileUpdatesFolder { get { return "SecondaryTile1"; } }
+        public static string Tile3SaveFolder { get { return "Tile3"; } }
 
         /// <summary>
-        /// Gets the name of the folder to store the cached tile update images in the AppData folder.
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the third secondary tile (Tile 4).
         /// </summary>
-        public static string Secondary2TileUpdatesFolder { get { return "SecondaryTile2"; } }
-
-        /// <summary>
-        /// Gets the name of the folder to store the cached tile update images in the AppData folder.
-        /// </summary>
-        public static string Secondary3TileUpdatesFolder { get { return "SecondaryTile3"; } }
+        public static string Tile4SaveFolder { get { return "Tile4"; } }
 
         /// <summary>
         /// Gets the name of the file for storing the serialized Items collection in the AppData folder.
@@ -145,6 +147,7 @@ namespace Kozlowski.Slide.Shared
         public static int[] IndexList { get { return new int[] { 5, 10, 30, 60, 180 }; } }
 
         // Defaults
+        public static StorageFolder DefaultFolder { get { return KnownFolders.PicturesLibrary; } }
         /// <summary>
         /// Gets the combo box index of the default interval setting.
         /// </summary>

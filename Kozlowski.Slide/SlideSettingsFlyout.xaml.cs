@@ -34,27 +34,27 @@ namespace Kozlowski.Slide
             {
                 case 0:
                     tileId = "";
-                    this.DataContext = MainSettings.Instance;
+                    this.DataContext = Tile1Settings.Instance;
                     PinPanel.Visibility = Visibility.Collapsed;
-                    MainSettings.Instance.PropertyChanged += Setting_Changed;
+                    Tile1Settings.Instance.PropertyChanged += Setting_Changed;
                     break;
                 case 1:
-                    tileId = Constants.Secondary1TileId;
-                    this.DataContext = Secondary1Settings.Instance;
+                    tileId = Constants.Tile2Id;
+                    this.DataContext = Tile2Settings.Instance;
                     TogglePinButton(!SecondaryTile.Exists(tileId));
-                    Secondary1Settings.Instance.PropertyChanged += Setting_Changed;
+                    Tile2Settings.Instance.PropertyChanged += Setting_Changed;
                     break;
                 case 2:
-                    tileId = Constants.Secondary2TileId;
-                    this.DataContext = Secondary2Settings.Instance;
+                    tileId = Constants.Tile3Id;
+                    this.DataContext = Tile3Settings.Instance;
                     TogglePinButton(!SecondaryTile.Exists(tileId));
-                    Secondary2Settings.Instance.PropertyChanged += Setting_Changed;
+                    Tile3Settings.Instance.PropertyChanged += Setting_Changed;
                     break;
                 case 3:
-                    tileId = Constants.Secondary3TileId;
-                    this.DataContext = Secondary3Settings.Instance;
+                    tileId = Constants.Tile4Id;
+                    this.DataContext = Tile4Settings.Instance;
                     TogglePinButton(!SecondaryTile.Exists(tileId));
-                    Secondary3Settings.Instance.PropertyChanged += Setting_Changed;
+                    Tile4Settings.Instance.PropertyChanged += Setting_Changed;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -75,8 +75,8 @@ namespace Kozlowski.Slide
 
             if (number == 0)
             {
-                await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", MainSettings.Instance.Interval, MainSettings.Instance.RootFolder, MainSettings.Instance.IncludeSubfolders, MainSettings.Instance.Shuffle);
-                MainSettings.Instance.InitialUpdatesMade = true;
+                await TileMaker.GenerateTiles(Constants.Tile1SaveFolder, "", Tile1Settings.Instance.Interval, Tile1Settings.Instance.RootFolder, Tile1Settings.Instance.IncludeSubfolders, Tile1Settings.Instance.Shuffle, true);
+                Tile1Settings.Instance.InitialUpdatesMade = true;
             }
             else
             {
@@ -85,16 +85,16 @@ namespace Kozlowski.Slide
                     switch (tileNumber)
                     {
                         case 1:
-                            await TileMaker.GenerateTiles(Constants.Secondary1TileUpdatesFolder, Constants.Secondary1TileId, Secondary1Settings.Instance.Interval, Secondary1Settings.Instance.RootFolder, Secondary1Settings.Instance.IncludeSubfolders, Secondary1Settings.Instance.Shuffle);
-                            Secondary1Settings.Instance.InitialUpdatesMade = true;
+                            await TileMaker.GenerateTiles(Constants.Tile2SaveFolder, Constants.Tile2Id, Tile2Settings.Instance.Interval, Tile2Settings.Instance.RootFolder, Tile2Settings.Instance.IncludeSubfolders, Tile2Settings.Instance.Shuffle, true);
+                            Tile2Settings.Instance.InitialUpdatesMade = true;
                             break;
                         case 2:
-                            await TileMaker.GenerateTiles(Constants.Secondary2TileUpdatesFolder, Constants.Secondary2TileId, Secondary2Settings.Instance.Interval, Secondary2Settings.Instance.RootFolder, Secondary2Settings.Instance.IncludeSubfolders, Secondary2Settings.Instance.Shuffle);
-                            Secondary2Settings.Instance.InitialUpdatesMade = true;
+                            await TileMaker.GenerateTiles(Constants.Tile3SaveFolder, Constants.Tile3Id, Tile3Settings.Instance.Interval, Tile3Settings.Instance.RootFolder, Tile3Settings.Instance.IncludeSubfolders, Tile3Settings.Instance.Shuffle, true);
+                            Tile3Settings.Instance.InitialUpdatesMade = true;
                             break;
                         case 3:
-                            await TileMaker.GenerateTiles(Constants.Secondary3TileUpdatesFolder, Constants.Secondary3TileId, Secondary3Settings.Instance.Interval, Secondary3Settings.Instance.RootFolder, Secondary3Settings.Instance.IncludeSubfolders, Secondary3Settings.Instance.Shuffle);
-                            Secondary3Settings.Instance.InitialUpdatesMade = true;
+                            await TileMaker.GenerateTiles(Constants.Tile4SaveFolder, Constants.Tile4Id, Tile4Settings.Instance.Interval, Tile4Settings.Instance.RootFolder, Tile4Settings.Instance.IncludeSubfolders, Tile4Settings.Instance.Shuffle, true);
+                            Tile4Settings.Instance.InitialUpdatesMade = true;
                             break;
                     }
                 }
@@ -145,13 +145,13 @@ namespace Kozlowski.Slide
                 switch (tileNumber)
                 {
                     case 1:
-                        Secondary1Settings.Instance.RootFolder = folder;
+                        Tile2Settings.Instance.RootFolder = folder;
                         break;
                     case 2:
-                        Secondary2Settings.Instance.RootFolder = folder;
+                        Tile3Settings.Instance.RootFolder = folder;
                         break;
                     case 3:
-                        Secondary3Settings.Instance.RootFolder = folder;
+                        Tile4Settings.Instance.RootFolder = folder;
                         break;
                 }
             }
@@ -164,7 +164,7 @@ namespace Kozlowski.Slide
             if (SecondaryTile.Exists(tileId))
             {
                 // Unpin
-                var secondaryTile = new SecondaryTile(Constants.Secondary1TileId);
+                var secondaryTile = new SecondaryTile(Constants.Tile2Id);
 
                 var rect = GetElementRect((FrameworkElement)sender);
                 var placement = Windows.UI.Popups.Placement.Above;

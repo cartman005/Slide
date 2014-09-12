@@ -15,6 +15,7 @@ namespace Kozlowski.Slide.Background
     {
         /// <summary>
         /// Performs the work of the background task.
+        /// Generates tile updates for each tile that is currently pinned to the Start screen.
         /// </summary>
         /// <param name="taskInstance">The instance of the background process.</param>
         public async void Run(IBackgroundTaskInstance taskInstance)
@@ -25,31 +26,31 @@ namespace Kozlowski.Slide.Background
 
             // Main tile
             Debug.WriteLine("Creating primary tile updates");
-            settings = MainSettings.Instance;
-            await TileMaker.GenerateTiles(Constants.MainTileUpdatesFolder, "", settings.Interval, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle);
+            settings = Tile1Settings.Instance;
+            await TileMaker.GenerateTiles(Constants.Tile1SaveFolder, "", settings.Interval, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle, false);
 
-            // Secondary tile 1
-            if (SecondaryTile.Exists(Constants.Secondary1TileId))
+            // Tile 2
+            if (SecondaryTile.Exists(Constants.Tile2Id))
             {
                 Debug.WriteLine("Creating secondary 1 tile updates");
-                settings = Secondary1Settings.Instance;
-                await TileMaker.GenerateTiles(Constants.Secondary1TileUpdatesFolder, Constants.Secondary1TileId, settings.Interval, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle);
+                settings = Tile2Settings.Instance;
+                await TileMaker.GenerateTiles(Constants.Tile2SaveFolder, Constants.Tile2Id, settings.Interval, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle, false);
             }
 
-            // Secondary tile 2
-            if (SecondaryTile.Exists(Constants.Secondary2TileId))
+            // Tile 3
+            if (SecondaryTile.Exists(Constants.Tile3Id))
             {
                 Debug.WriteLine("Creating secondary 2 tile updates");
-                settings = Secondary2Settings.Instance;
-                await TileMaker.GenerateTiles(Constants.Secondary2TileUpdatesFolder, Constants.Secondary2TileId, settings.Interval, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle);
+                settings = Tile3Settings.Instance;
+                await TileMaker.GenerateTiles(Constants.Tile3SaveFolder, Constants.Tile3Id, settings.Interval, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle, false);
             }
 
-            // Secondary tile 3
-            if (SecondaryTile.Exists(Constants.Secondary3TileId))
+            // Tile 4
+            if (SecondaryTile.Exists(Constants.Tile4Id))
             {
                 Debug.WriteLine("Creating secondary 3 tile updates");
-                settings = Secondary3Settings.Instance;
-                await TileMaker.GenerateTiles(Constants.Secondary3TileUpdatesFolder, Constants.Secondary3TileId, settings.Interval, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle);
+                settings = Tile4Settings.Instance;
+                await TileMaker.GenerateTiles(Constants.Tile4SaveFolder, Constants.Tile4Id, settings.Interval, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle, false);
             }
 
             Debug.WriteLine("Finished the background task");

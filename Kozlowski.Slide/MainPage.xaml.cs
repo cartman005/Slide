@@ -109,23 +109,19 @@ namespace Kozlowski.Slide
                     {
                         try
                         {
-                            var folder = await ApplicationData.Current.LocalFolder.GetFolderAsync(GetSettings().SaveFolder);
-                            if (folder != null)
+                            var file = await ApplicationData.Current.LocalFolder.GetFileAsync(Constants.CollectionFileName);
+                            if (file != null)
                             {
-                                var file = await folder.GetFileAsync(Constants.CollectionFileName);
-                                if (file != null)
+                                using (IInputStream inStream = await file.OpenSequentialReadAsync())
                                 {
-                                    using (IInputStream inStream = await file.OpenSequentialReadAsync())
-                                    {
-                                        DataContractSerializer serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
-                                        var data = (ObservableCollection<ListItem>)serializer.ReadObject(inStream.AsStreamForRead());
-                                        Items = data;
-                                        Debug.WriteLine("Found serialized Items collection");
-                                    }
-
-                                    Debug.WriteLine("Start at index {0}", (int)storedIndex);
-                                    initialIndex = (int)storedIndex;
+                                    DataContractSerializer serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
+                                    var data = (ObservableCollection<ListItem>)serializer.ReadObject(inStream.AsStreamForRead());
+                                    Items = data;
+                                    Debug.WriteLine("Found serialized Items collection");
                                 }
+
+                                Debug.WriteLine("Start at index {0}", (int)storedIndex);
+                                initialIndex = (int)storedIndex;
                             }
                         }
                         catch (FileNotFoundException ex)
@@ -184,7 +180,7 @@ namespace Kozlowski.Slide
             if (!GetSettings().InitialUpdatesMade)
             {
                 Debug.WriteLine("Generate initial updates");
-                await TileMaker.GenerateTiles(GetSettings().SaveFolder, GetSettings().TileId, GetSettings().Interval, GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle);
+                await TileMaker.GenerateTiles(GetSettings().SaveFolder, GetSettings().TileId, GetSettings().Interval, GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle, true);
                 GetSettings().InitialUpdatesMade = true;
             }
         }
@@ -211,8 +207,7 @@ namespace Kozlowski.Slide
             var serializer = new DataContractSerializer(typeof(ObservableCollection<ListItem>));
             serializer.WriteObject(sessionData, Items);
 
-            var folder = await ApplicationData.Current.LocalFolder.CreateFolderAsync(GetSettings().SaveFolder, CreationCollisionOption.OpenIfExists);
-            var file = await folder.CreateFileAsync(Constants.CollectionFileName, CreationCollisionOption.ReplaceExisting);
+            var file = await ApplicationData.Current.LocalFolder.CreateFileAsync(Constants.CollectionFileName, CreationCollisionOption.ReplaceExisting);
             using (Stream fileStream = await file.OpenStreamForWriteAsync())
             {
                 sessionData.Seek(0, SeekOrigin.Begin);
@@ -250,49 +245,7 @@ namespace Kozlowski.Slide
                 timer.Start();
             }
         }
-
-        /// <summary>
-        /// Updates the chosen images to match updated setting.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void Settings_Changed(object sender, PropertyChangedEventArgs e)
-        {
-            Debug.WriteLine("Settings Changed");
-
-            // Interval
-            if (e.PropertyName == Constants.SettingsName_Interval)
-                timer.Interval = TimeSpan.FromSeconds(GetSettings().Interval);
-            
-            // Change storyboard if animation or interval settings change
-            if (e.PropertyName == Constants.SettingsName_Animate || e.PropertyName == Constants.SettingsName_Interval)
-            {
-                if (GetSettings().Animate)
-                    Animate(GetSettings().Interval);
-            }
-           
-            // Change collection of image files to use if the changed property affects it
-            if (e.PropertyName == Constants.SettingsName_ImagesLocation || e.PropertyName == Constants.SettingsName_Subfolders || e.PropertyName == Constants.SettingsName_Shuffle)
-            {
-                // Clear images following the current index
-                FlipView.SelectionChanged -= FlipView_SelectionChanged;
-                for (int i = FlipView.SelectedIndex + 1; i < Items.Count; )
-                {
-                    Items.RemoveAt(i);
-                }
-
-                // Clear file list, as files are missing
-                fileList.Clear();
-                fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
-                await LoadMoreFiles(Constants.ImagesToLoad);
-                FlipView.SelectionChanged += FlipView_SelectionChanged;
-            }
-
-            // Start the timer if not paused
-            if (!isPaused && !timer.IsEnabled)
-                timer.Start();
-        }
-
+              
         private async Task LoadMoreFiles(int count)
         {
             Debug.WriteLine("Load more files");
@@ -415,14 +368,6 @@ namespace Kozlowski.Slide
         }
 
         #endregion
-
-        private async void OpenFile_Click(object sender, RoutedEventArgs e)
-        {
-            var file = await StorageFile.GetFileFromPathAsync(((ListItem)FlipView.SelectedItem).FilePath);
-            var launcherOptions = new LauncherOptions();
-            launcherOptions.DisplayApplicationPicker = true;
-            await Launcher.LaunchFileAsync(file, launcherOptions);
-        }
 
         // This function was adapted from a post by Iris Classon on 06/28/2012 on her blog "In Love With Code" here:
         // http://irisclasson.com/2012/06/28/creating-a-scaletransform-animation-in-c-for-winrt-metro-apps/
@@ -600,9 +545,59 @@ namespace Kozlowski.Slide
             ResetTimer();
 
             // Regenerate tile updates
-            await TileMaker.GenerateTiles(GetSettings().SaveFolder, GetSettings().TileId, GetSettings().Interval, GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle);
+            await TileMaker.GenerateTiles(GetSettings().SaveFolder, GetSettings().TileId, GetSettings().Interval, GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle, true);
             GetSettings().InitialUpdatesMade = true;
-        }     
+        }
+
+        private async void OpenFile_Click(object sender, RoutedEventArgs e)
+        {
+            var file = await StorageFile.GetFileFromPathAsync(((ListItem)FlipView.SelectedItem).FilePath);
+            var launcherOptions = new LauncherOptions();
+            launcherOptions.DisplayApplicationPicker = true;
+            await Launcher.LaunchFileAsync(file, launcherOptions);
+        }
+
+        /// <summary>
+        /// Updates the set of chosen images to match updated settings.
+        /// </summary>
+        /// <param name="sender">Unused parameter.</param>
+        /// <param name="e">Holds information about the property that was changed.</param>
+        private async void Settings_Changed(object sender, PropertyChangedEventArgs e)
+        {
+            Debug.WriteLine("Settings Changed");
+
+            // Interval
+            if (e.PropertyName == Constants.SettingsName_Interval)
+                timer.Interval = TimeSpan.FromSeconds(GetSettings().Interval);
+
+            // Change storyboard if animation or interval settings change
+            if (e.PropertyName == Constants.SettingsName_Animate || e.PropertyName == Constants.SettingsName_Interval)
+            {
+                if (GetSettings().Animate)
+                    Animate(GetSettings().Interval);
+            }
+
+            // Change collection of image files to use if the changed property affects it
+            if (e.PropertyName == Constants.SettingsName_ImagesLocation || e.PropertyName == Constants.SettingsName_Subfolders || e.PropertyName == Constants.SettingsName_Shuffle)
+            {
+                // Clear images following the current index
+                FlipView.SelectionChanged -= FlipView_SelectionChanged;
+                for (int i = FlipView.SelectedIndex + 1; i < Items.Count; )
+                {
+                    Items.RemoveAt(i);
+                }
+
+                // Clear file list, as files are missing
+                fileList.Clear();
+                fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
+                await LoadMoreFiles(Constants.ImagesToLoad);
+                FlipView.SelectionChanged += FlipView_SelectionChanged;
+            }
+
+            // Start the timer if not paused
+            if (!isPaused && !timer.IsEnabled)
+                timer.Start();
+        }
 
         private void FlipView_SelectionChanged(object sender, object e)
         {
@@ -626,12 +621,17 @@ namespace Kozlowski.Slide
             UpdateName((ListItem)FlipView.SelectedItem);
         }
 
+        /// <summary>
+        /// Handles timer tick events by moving to the next image and loading more images when necessary.
+        /// </summary>
+        /// <param name="sender">Unused parameter.</param>
+        /// <param name="e">Unused parameter.</param>
         private async void Timer_Tick(object sender, object e)
         {
             Debug.WriteLine("Timer tick");
 
             // Check that the next image is available
-            // Additional images will be loaded by the FlipView_SelectionChanged event
+            // Additional images will be loaded by the FlipView_SelectionChanged event, so this should not be necessary
             if (FlipView.SelectedIndex >= Items.Count)
                 await LoadMoreFiles(Constants.ImagesToLoad);
 
@@ -639,6 +639,11 @@ namespace Kozlowski.Slide
             FlipView.SelectedIndex++;
         }
 
+        /// <summary>
+        /// Updates the size of the Image being displayed when the size of the Grid changes due to the app being snapped.
+        /// </summary>
+        /// <param name="sender">Usused parameter.</param>
+        /// <param name="e">Unused parameter.</param>
         private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             // FlipView keeps three items in memory at a time, so force the update the size of each so they are resized
@@ -648,30 +653,33 @@ namespace Kozlowski.Slide
             // Grid_SizeChanged is called on initialization, so make sure that the SelectedIndex is not negative
             if (FlipView.SelectedIndex >= 0)
             {
+                // Start with the previous image, if one exists
                 if (FlipView.SelectedIndex > 0)
                     startingIndex = FlipView.SelectedIndex - 1;
                 else
                     startingIndex = FlipView.SelectedIndex;
 
+                // Update the current image, previous image and next image (the three that are in memory)
                 for (int i = 0; i < 3; i++)
                 {
                     if (startingIndex + i <= Items.Count)
                     {
+                        // Set the Item to itself to trigger a PropertyChangedEvent, causing the image to be resized
                         Items[startingIndex + i].FilePath = Items[startingIndex + i].FilePath;
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Toggles the play/pause button according to the current state of the slide show.
+        /// </summary>
+        /// <param name="sender">Unused parameter.</param>
+        /// <param name="e">Unused parameter.</param>
         private void MainAppBar_Opened(object sender, object e)
         {
             // Hide and show the appropriate Play/Pause button
             TogglePlayPauseButton(isPaused);
-        }
-
-        private void MainAppBar_Closed(object sender, object e)
-        {
-            // Do nothing
         }
         #endregion
 
@@ -716,6 +724,10 @@ namespace Kozlowski.Slide
             var registration = builder.Register();
         }
 
+        /// <summary>
+        /// Helper function to retrieve the app's current Settings instance.
+        /// </summary>
+        /// <returns>The app's current Settings instance.</returns>
         private Settings GetSettings()
         {
             return ((App)App.Current).Settings;
