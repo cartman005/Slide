@@ -1,5 +1,4 @@
-﻿
-using Windows.Storage;
+﻿using Windows.Storage;
 namespace Kozlowski.Slide.Shared
 {
     /// <summary>
@@ -7,7 +6,7 @@ namespace Kozlowski.Slide.Shared
     /// </summary>
     public static class Constants
     {
-        // Background tasks
+        #region Background Tasks
         /// <summary>
         /// Gets the name of the timer background task.
         /// </summary>
@@ -48,8 +47,9 @@ namespace Kozlowski.Slide.Shared
         /// Gets the interval for scheduling the timer background task.
         /// </summary>
         public static int BackgroundTaskInterval { get { return 15; } }
+        #endregion
 
-        // Settings names
+        #region Settings Names
         // Persistent
         /// <summary>
         /// Gets the name of the interval setting.
@@ -91,8 +91,9 @@ namespace Kozlowski.Slide.Shared
         /// Gets the name of the paused setting.
         /// </summary>
         public static string SettingsName_IsPaused { get { return "IsPaused"; } }
+        #endregion
 
-        // File names
+        #region File Names
         /// <summary>
         /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the main tile (Tile 1).
         /// </summary>
@@ -117,8 +118,9 @@ namespace Kozlowski.Slide.Shared
         /// Gets the name of the file for storing the serialized Items collection in the AppData folder.
         /// </summary>
         public static string CollectionFileName { get { return "SlideItemsCollection.xml"; } }
+        #endregion
 
-        // Commands
+        #region Commands
         /// <summary>
         /// The try again message.
         /// </summary>
@@ -128,26 +130,36 @@ namespace Kozlowski.Slide.Shared
         /// The close message.
         /// </summary>
         public const string CLOSE = "Close";
-        
-        // Image counts
+        #endregion
+
+        #region Image Counts
         /// <summary>
         /// Gets the number of images to load incrementally each time LoadMoreFiles is called.
         /// </summary>
         public static int ImagesToLoad { get { return 12; } }
 
         /// <summary>
+        /// Gets the minimum number of future images to have loaded at all times for the full screen slide show.
+        /// </summary>
+        public static int ImageLoadBuffer { get { return 3; } }
+
+        /// <summary>
         /// Gets the number of the maximum number of image files to keep in the file list.
         /// </summary>
         public static int MaxCount { get { return 300; } }
 
-        // Intervals
         /// <summary>
         /// Gets the array of intervals, in seconds, associated with each index of the combo box.
         /// </summary>
         public static int[] IndexList { get { return new int[] { 5, 10, 30, 60, 180 }; } }
+        #endregion
 
-        // Defaults
+        #region Defaults
+        /// <summary>
+        /// Returns the default folder to find images for the slide show.
+        /// </summary>
         public static StorageFolder DefaultFolder { get { return KnownFolders.PicturesLibrary; } }
+
         /// <summary>
         /// Gets the combo box index of the default interval setting.
         /// </summary>
@@ -179,5 +191,6 @@ namespace Kozlowski.Slide.Shared
         /// No more than 6 updates can exist at the same time.
         /// </summary>
         public static double ConcurrentTiles { get { return 3; } }
+        #endregion
     }
 }

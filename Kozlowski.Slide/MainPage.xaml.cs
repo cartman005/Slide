@@ -15,6 +15,7 @@ using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.StartScreen;
 using Windows.UI.Xaml;
@@ -226,8 +227,8 @@ namespace Kozlowski.Slide
         {
             Debug.WriteLine("Move forward");
 
-            // Use a buffer of 3 images due to the asynchronous execution of this method
-            if (Items.Count - FlipView.SelectedIndex < 3)
+            // Use a buffer of loaded images due to the asynchronous execution of this method
+            if (Items.Count - FlipView.SelectedIndex < Constants.ImageLoadBuffer)
             {
                 await LoadMoreFiles(Constants.ImagesToLoad);
             }
@@ -311,42 +312,7 @@ namespace Kozlowski.Slide
             }
 
             return;
-        }
-
-        private void CommandInvokedHandler(IUICommand command)
-        {
-            switch (command.Label)
-            {
-                case Constants.TRY_AGAIN:
-                    MoveForward();
-                    Play();
-                    break;
-
-                case Constants.CLOSE:
-                    // Do nothing
-                    break;
-            }
-        }
-
-        private void CoreWindow_KeyDown(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs args)
-        {
-            switch (args.VirtualKey)
-            {
-                case VirtualKey.Left:
-                    ResetTimer();
-                    break;
-                case VirtualKey.Right:
-                    ResetTimer();
-                    break;
-                case VirtualKey.Space:
-                    if (timer.IsEnabled)
-                        Pause();
-                    else
-                        Play();
-                    break;
-            }
-        }
-
+        }   
         #region NavigationHelper registration
 
         /// The methods provided in this section are simply used to allow
@@ -521,6 +487,52 @@ namespace Kozlowski.Slide
         }
    
         #region Event handlers
+        /// <summary>
+        /// Handles the user response from Message Dialogs.
+        /// </summary>
+        /// <param name="command">Contains the label of the command that was chosen.</param>
+        private void CommandInvokedHandler(IUICommand command)
+        {
+            switch (command.Label)
+            {
+                case Constants.TRY_AGAIN:
+                    // Try loading next image again
+                    MoveForward();
+                    Play();
+                    break;
+
+                case Constants.CLOSE:
+                    // Do nothing
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Handles keyboard input that is not already built into the FlipView.
+        /// Resets the timer when the left and right arrow keys are used. (The FlipView already responds to these by moving to the next/previous item.)
+        /// Plays/pauses the timer when the space bar is pressed.
+        /// </summary>
+        /// <param name="sender">Unused parameter.</param>
+        /// <param name="args">Contains the key that was pressed.</param>
+        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs args)
+        {
+            switch (args.VirtualKey)
+            {
+                case VirtualKey.Left:
+                    ResetTimer();
+                    break;
+                case VirtualKey.Right:
+                    ResetTimer();
+                    break;
+                case VirtualKey.Space:
+                    if (timer.IsEnabled)
+                        Pause();
+                    else
+                        Play();
+                    break;
+            }
+        }
+
         private void PlayPause_Click(object sender, RoutedEventArgs e)
         {
             if (isPaused)
@@ -558,7 +570,8 @@ namespace Kozlowski.Slide
         }
 
         /// <summary>
-        /// Updates the set of chosen images to match updated settings.
+        /// Updates the set of chosen images for the full screen slide show to match updated settings.
+        /// This handler is not responsible for updating the images used for the tiles.
         /// </summary>
         /// <param name="sender">Unused parameter.</param>
         /// <param name="e">Holds information about the property that was changed.</param>
@@ -580,7 +593,7 @@ namespace Kozlowski.Slide
             // Change collection of image files to use if the changed property affects it
             if (e.PropertyName == Constants.SettingsName_ImagesLocation || e.PropertyName == Constants.SettingsName_Subfolders || e.PropertyName == Constants.SettingsName_Shuffle)
             {
-                // Clear images following the current index
+                // Clear images following the current index, leave images that were already passed
                 FlipView.SelectionChanged -= FlipView_SelectionChanged;
                 for (int i = FlipView.SelectedIndex + 1; i < Items.Count; )
                 {
@@ -599,19 +612,28 @@ namespace Kozlowski.Slide
                 timer.Start();
         }
 
+        /// <summary>
+        /// Handles the selection of the FlipView being changed.
+        /// This event is triggered on startup and when the FlipView is moved forward or backward by mouse, touch, keyboard and timer events.
+        /// Resets the animation, timer and loads more files if necessary.
+        /// </summary>
+        /// <param name="sender">Unused parameter.</param>
+        /// <param name="e">Unused parameter.</param>
         private void FlipView_SelectionChanged(object sender, object e)
         {
-            if (story != null)
-                story.Stop();
-
             Debug.WriteLine("Selection changed, index {0}", FlipView.SelectedIndex);
 
             if (FlipView.SelectedItem == null)
                 return;
 
+            // Reset the animation
+            if (story != null)
+                story.Stop();
+
             if (GetSettings().Animate)
                 Animate(GetSettings().Interval);
 
+            // Reset the timer to its starting interval
             ResetTimer();
 
             // Check if more files need to be loaded
