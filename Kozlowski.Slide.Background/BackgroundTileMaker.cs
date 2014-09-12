@@ -22,36 +22,21 @@ namespace Kozlowski.Slide.Background
         {        
             var defferal = taskInstance.GetDeferral();
             Debug.WriteLine("Started the background task");
-            Settings settings;
 
             // Main tile
-            Debug.WriteLine("Creating primary tile updates");
-            settings = Tile1Settings.Instance;
-            await TileMaker.GenerateTiles(Constants.Tile1SaveFolder, "", settings.Interval, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle, false);
+            await TileMaker.CreateTileUpdates(Constants.Tile1Number, false);
 
             // Tile 2
             if (SecondaryTile.Exists(Constants.Tile2Id))
-            {
-                Debug.WriteLine("Creating secondary 1 tile updates");
-                settings = Tile2Settings.Instance;
-                await TileMaker.GenerateTiles(Constants.Tile2SaveFolder, Constants.Tile2Id, settings.Interval, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle, false);
-            }
+                await TileMaker.CreateTileUpdates(Constants.Tile2Number, false);
 
             // Tile 3
             if (SecondaryTile.Exists(Constants.Tile3Id))
-            {
-                Debug.WriteLine("Creating secondary 2 tile updates");
-                settings = Tile3Settings.Instance;
-                await TileMaker.GenerateTiles(Constants.Tile3SaveFolder, Constants.Tile3Id, settings.Interval, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle, false);
-            }
+                await TileMaker.CreateTileUpdates(Constants.Tile3Number, false);
 
             // Tile 4
             if (SecondaryTile.Exists(Constants.Tile4Id))
-            {
-                Debug.WriteLine("Creating secondary 3 tile updates");
-                settings = Tile4Settings.Instance;
-                await TileMaker.GenerateTiles(Constants.Tile4SaveFolder, Constants.Tile4Id, settings.Interval, settings.RootFolder, settings.IncludeSubfolders, settings.Shuffle, false);
-            }
+                await TileMaker.CreateTileUpdates(Constants.Tile4Number, false);
 
             Debug.WriteLine("Finished the background task");
             defferal.Complete();

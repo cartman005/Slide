@@ -17,87 +17,73 @@ namespace Kozlowski.Slide
 {
     public sealed partial class SlideSettingsFlyout : SettingsFlyout
     {
-        private int tileNumber;
-        private string tileId;
+        /// <summary>
+        /// The number of the tile associated with this flyout.
+        /// </summary>
+        private int _tileNumber;
 
         /// <summary>
-        /// Create the Settings flyout.
+        /// The ID of the tile associated with this flyout.
+        /// For use with secondary tiles.
         /// </summary>
-        public SlideSettingsFlyout(int number)
+        private string _tileId;
+
+        /// <summary>
+        /// Create the SettingsFlyout for the specified tile number.
+        /// </summary>
+        /// <param name="tileNumber">The number of the tile to be represented by these settings.</param>
+        public SlideSettingsFlyout(int tileNumber)
         {
-            tileNumber = number;
+            _tileNumber = tileNumber;
 
             this.InitializeComponent();
-            this.Title = string.Format("Slide Tile {0}", number + 1);
+            this.Title = string.Format("Slide Tile {0}", _tileNumber);
 
-            switch(tileNumber)
+            switch(_tileNumber)
             {
-                case 0:
-                    tileId = "";
+                case Constants.TILE_1_NUMBER:
+                    _tileId = Constants.Tile1Id;
                     this.DataContext = Tile1Settings.Instance;
                     PinPanel.Visibility = Visibility.Collapsed;
-                    Tile1Settings.Instance.PropertyChanged += Setting_Changed;
+                    Tile1Settings.Instance.PropertyChanged += Settings_Changed;
                     break;
-                case 1:
-                    tileId = Constants.Tile2Id;
+                case Constants.TILE_2_NUMBER:
+                    _tileId = Constants.Tile2Id;
                     this.DataContext = Tile2Settings.Instance;
-                    TogglePinButton(!SecondaryTile.Exists(tileId));
-                    Tile2Settings.Instance.PropertyChanged += Setting_Changed;
+                    TogglePinButton(!SecondaryTile.Exists(_tileId));
+                    Tile2Settings.Instance.PropertyChanged += Settings_Changed;
                     break;
-                case 2:
-                    tileId = Constants.Tile3Id;
+                case Constants.TILE_3_NUMBER:
+                    _tileId = Constants.Tile3Id;
                     this.DataContext = Tile3Settings.Instance;
-                    TogglePinButton(!SecondaryTile.Exists(tileId));
-                    Tile3Settings.Instance.PropertyChanged += Setting_Changed;
+                    TogglePinButton(!SecondaryTile.Exists(_tileId));
+                    Tile3Settings.Instance.PropertyChanged += Settings_Changed;
                     break;
-                case 3:
-                    tileId = Constants.Tile4Id;
+                case Constants.TILE_4_NUMBER:
+                    _tileId = Constants.Tile4Id;
                     this.DataContext = Tile4Settings.Instance;
-                    TogglePinButton(!SecondaryTile.Exists(tileId));
-                    Tile4Settings.Instance.PropertyChanged += Setting_Changed;
+                    TogglePinButton(!SecondaryTile.Exists(_tileId));
+                    Tile4Settings.Instance.PropertyChanged += Settings_Changed;
                     break;
                 default:
                     throw new NotImplementedException();
             }
         }
 
-        private void Setting_Changed(object sender, PropertyChangedEventArgs e)
+        /// <summary>
+        /// Re-creates background tile updates when settings affecting them are changed.
+        /// This handler does not deal with the full screen slidesow. The MainPage's handler is responsible for those changes.
+        /// </summary>
+        /// <param name="sender">Unused parameter.</param>
+        /// <param name="e">Contains details on the property that was changed.</param>
+        private async void Settings_Changed(object sender, PropertyChangedEventArgs e)
         {
             Debug.WriteLine("Settings Changed");
 
             if (e.PropertyName == Constants.SettingsName_Interval || e.PropertyName == Constants.SettingsName_ImagesLocation || e.PropertyName == Constants.SettingsName_Shuffle || e.PropertyName == Constants.SettingsName_Subfolders)
-                CreateUpdates(tileNumber);
-        }
-
-        private async void CreateUpdates(int number)
-        {
-            var fileList = new List<StorageFile>();
-
-            if (number == 0)
             {
-                await TileMaker.GenerateTiles(Constants.Tile1SaveFolder, "", Tile1Settings.Instance.Interval, Tile1Settings.Instance.RootFolder, Tile1Settings.Instance.IncludeSubfolders, Tile1Settings.Instance.Shuffle, true);
-                Tile1Settings.Instance.InitialUpdatesMade = true;
-            }
-            else
-            {
-                if (SecondaryTile.Exists(tileId))
-                {
-                    switch (tileNumber)
-                    {
-                        case 1:
-                            await TileMaker.GenerateTiles(Constants.Tile2SaveFolder, Constants.Tile2Id, Tile2Settings.Instance.Interval, Tile2Settings.Instance.RootFolder, Tile2Settings.Instance.IncludeSubfolders, Tile2Settings.Instance.Shuffle, true);
-                            Tile2Settings.Instance.InitialUpdatesMade = true;
-                            break;
-                        case 2:
-                            await TileMaker.GenerateTiles(Constants.Tile3SaveFolder, Constants.Tile3Id, Tile3Settings.Instance.Interval, Tile3Settings.Instance.RootFolder, Tile3Settings.Instance.IncludeSubfolders, Tile3Settings.Instance.Shuffle, true);
-                            Tile3Settings.Instance.InitialUpdatesMade = true;
-                            break;
-                        case 3:
-                            await TileMaker.GenerateTiles(Constants.Tile4SaveFolder, Constants.Tile4Id, Tile4Settings.Instance.Interval, Tile4Settings.Instance.RootFolder, Tile4Settings.Instance.IncludeSubfolders, Tile4Settings.Instance.Shuffle, true);
-                            Tile4Settings.Instance.InitialUpdatesMade = true;
-                            break;
-                    }
-                }
+                if (SecondaryTile.Exists(_tileId))
+                    await TileMaker.CreateTileUpdates(_tileNumber, true);
             }
         }
 
@@ -142,7 +128,7 @@ namespace Kozlowski.Slide
 
             if (folder != null)
             {
-                switch (tileNumber)
+                switch (_tileNumber)
                 {
                     case 1:
                         Tile2Settings.Instance.RootFolder = folder;
@@ -161,7 +147,7 @@ namespace Kozlowski.Slide
         {
             Debug.WriteLine("Pin click");
 
-            if (SecondaryTile.Exists(tileId))
+            if (SecondaryTile.Exists(_tileId))
             {
                 // Unpin
                 var secondaryTile = new SecondaryTile(Constants.Tile2Id);
@@ -177,12 +163,12 @@ namespace Kozlowski.Slide
             {
                 // Pin
                 var logo = new Uri("ms-appx:///Assets/Logo.png");
-                var tileActivationArguments = tileId + " was pinned at = " + DateTime.Now.ToLocalTime().ToString();
+                var tileActivationArguments = string.Format("{0} was pinned at = {1}", _tileId, DateTime.Now.ToLocalTime().ToString());
 
                 var newTileDesiredSize = TileSize.Square150x150;
 
-                var secondaryTile = new SecondaryTile(tileId,
-                                                        string.Format("Slide {0}", tileNumber + 1),
+                var secondaryTile = new SecondaryTile(_tileId,
+                                                        string.Format("Slide {0}", _tileNumber),
                                                         tileActivationArguments,
                                                         logo,
                                                         newTileDesiredSize);
@@ -197,9 +183,7 @@ namespace Kozlowski.Slide
                 var pinned = await secondaryTile.RequestCreateAsync();
 
                 if (pinned)
-                {
-                    CreateUpdates(tileNumber);
-                }
+                    await TileMaker.CreateTileUpdates(_tileNumber, true);
             }
         }
 

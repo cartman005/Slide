@@ -30,15 +30,16 @@ namespace Kozlowski.Slide
 {
     /// <summary>
     /// The main and only page of Slide. Contains a FlipView which displays the selected images.
+    /// This displays a full screen slide show of the selected images.
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private NavigationHelper navigationHelper;
-        private ObservableDictionary defaultViewModel = new ObservableDictionary();
-        private List<StorageFile> fileList;
-        private DispatcherTimer timer;
-        private bool isPaused;
-        private Storyboard story;
+        private NavigationHelper _navigationHelper;
+        private ObservableDictionary _defaultViewModel = new ObservableDictionary();
+        private List<StorageFile> _fileList;
+        private DispatcherTimer _timer;
+        private bool _isPaused;
+        private Storyboard _story;
 
         /// <summary>
         /// The collection of images to be displayed for the slideshow.
@@ -50,7 +51,7 @@ namespace Kozlowski.Slide
         /// </summary>
         public ObservableDictionary DefaultViewModel
         {
-            get { return this.defaultViewModel; }
+            get { return this._defaultViewModel; }
         }
 
         /// <summary>
@@ -58,23 +59,23 @@ namespace Kozlowski.Slide
         /// </summary>
         public NavigationHelper NavigationHelper
         {
-            get { return this.navigationHelper; }
+            get { return this._navigationHelper; }
         }
 
         public MainPage()
         {
             this.InitializeComponent();
-            this.navigationHelper = new NavigationHelper(this);
-            this.navigationHelper.LoadState += NavigationHelper_LoadState;
-            this.navigationHelper.SaveState += NavigationHelper_SaveState;
+            this._navigationHelper = new NavigationHelper(this);
+            this._navigationHelper.LoadState += NavigationHelper_LoadState;
+            this._navigationHelper.SaveState += NavigationHelper_SaveState;
             
             GetSettings().PropertyChanged += Settings_Changed;
 
-            timer = new DispatcherTimer();
-            timer.Tick += Timer_Tick;
-            isPaused = true;
+            _timer = new DispatcherTimer();
+            _timer.Tick += Timer_Tick;
+            _isPaused = true;
 
-            fileList = new List<StorageFile>();
+            _fileList = new List<StorageFile>();
         }
 
         /// <summary>
@@ -94,7 +95,7 @@ namespace Kozlowski.Slide
             Debug.WriteLine("Loading state");
 
             // Set up timer first in case it gets started
-            timer.Interval = TimeSpan.FromSeconds(GetSettings().Interval);
+            _timer.Interval = TimeSpan.FromSeconds(GetSettings().Interval);
             Debug.WriteLine("Timer set to {0}", GetSettings().Interval);
 
             // Try to load previous Index, Items collection and paused state
@@ -152,8 +153,8 @@ namespace Kozlowski.Slide
             FlipView.ItemsSource = Items;
             FlipView.SelectedIndex = initialIndex;
 
-            fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
-            isPaused = wasPaused; // Should be set before calling LoadMoreFiles
+            _fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
+            _isPaused = wasPaused; // Should be set before calling LoadMoreFiles
             await LoadMoreFiles(Constants.ImagesToLoad);
             UpdateName((ListItem)FlipView.SelectedItem);
             FlipView.SelectionChanged += FlipView_SelectionChanged;
@@ -172,7 +173,7 @@ namespace Kozlowski.Slide
             FlipView.Focus(Windows.UI.Xaml.FocusState.Programmatic);
 
             // Hide and show the appropriate AppBar buttons
-            TogglePlayPauseButton(isPaused);
+            TogglePlayPauseButton(_isPaused);
 
             if (GetSettings().Animate)
                 Animate(GetSettings().Interval);
@@ -181,8 +182,7 @@ namespace Kozlowski.Slide
             if (!GetSettings().InitialUpdatesMade)
             {
                 Debug.WriteLine("Generate initial updates");
-                await TileMaker.GenerateTiles(GetSettings().SaveFolder, GetSettings().TileId, GetSettings().Interval, GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle, true);
-                GetSettings().InitialUpdatesMade = true;
+                await TileMaker.CreateTileUpdates(GetSettings().TileNumber, true);
             }
         }
 
@@ -201,7 +201,7 @@ namespace Kozlowski.Slide
 
             // Save the SelectedIndex and IsPaused
             e.PageState.Add(Constants.SettingsName_SelectedIndex, FlipView.SelectedIndex);
-            e.PageState.Add(Constants.SettingsName_IsPaused, isPaused);
+            e.PageState.Add(Constants.SettingsName_IsPaused, _isPaused);
 
             // Save Items collection
             var sessionData = new MemoryStream();
@@ -240,10 +240,10 @@ namespace Kozlowski.Slide
         private void ResetTimer()
         {
             Debug.WriteLine("Reset Timer");
-            if (!isPaused)
+            if (!_isPaused)
             {
-                timer.Stop();
-                timer.Start();
+                _timer.Stop();
+                _timer.Start();
             }
         }
               
@@ -255,22 +255,22 @@ namespace Kozlowski.Slide
             for (; count > 0; count--)
             {
                 // Check if more files need to be loaded
-                if (fileList.Count <= 0)
-                    fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
+                if (_fileList.Count <= 0)
+                    _fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
 
                 // Set index depending on shuffle setting
                 if (GetSettings().Shuffle)
-                    index = SingleRandom.Instance.Next(0, fileList.Count);
+                    index = SingleRandom.Instance.Next(0, _fileList.Count);
                 else
                 {
                     index = 0;
                 }
 
                 // Add to Items if enough files were found
-                if (fileList.Count >= index + 1)
+                if (_fileList.Count >= index + 1)
                 {
-                    Items.Add(new ListItem { FilePath = fileList[index].Path, Name = fileList[index].DisplayName });
-                    fileList.RemoveAt(index);
+                    Items.Add(new ListItem { FilePath = _fileList[index].Path, Name = _fileList[index].DisplayName });
+                    _fileList.RemoveAt(index);
                 }
                 else
                 {
@@ -325,12 +325,12 @@ namespace Kozlowski.Slide
         /// in addition to page state preserved during an earlier session.
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            navigationHelper.OnNavigatedTo(e);
+            _navigationHelper.OnNavigatedTo(e);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            navigationHelper.OnNavigatedFrom(e);
+            _navigationHelper.OnNavigatedFrom(e);
         }
 
         #endregion
@@ -349,7 +349,7 @@ namespace Kozlowski.Slide
             img.RenderTransform = new ScaleTransform();
             img.RenderTransformOrigin = RandomPoint();
 
-            story = new Storyboard();
+            _story = new Storyboard();
 
             var xAnim = new DoubleAnimation();
             var yAnim = new DoubleAnimation();
@@ -363,8 +363,8 @@ namespace Kozlowski.Slide
             xAnim.To = Constants.ScaleDecimal;
             yAnim.To = Constants.ScaleDecimal;
 
-            story.Children.Add(xAnim);
-            story.Children.Add(yAnim);
+            _story.Children.Add(xAnim);
+            _story.Children.Add(yAnim);
 
             Storyboard.SetTarget(xAnim, img);
             Storyboard.SetTarget(yAnim, img);
@@ -372,8 +372,8 @@ namespace Kozlowski.Slide
             Storyboard.SetTargetProperty(xAnim, "(UIElement.RenderTransform).(ScaleTransform.ScaleX)");
             Storyboard.SetTargetProperty(yAnim, "(UIElement.RenderTransform).(ScaleTransform.ScaleY)");
 
-            if (!isPaused)
-                story.Begin();
+            if (!_isPaused)
+                _story.Begin();
         }
 
         private Point RandomPoint()
@@ -448,20 +448,20 @@ namespace Kozlowski.Slide
 
         private void Play()
         {
-            timer.Start();
-            isPaused = false;
+            _timer.Start();
+            _isPaused = false;
 
-            if (story != null)
-                story.Begin();
+            if (_story != null)
+                _story.Begin();
         }
 
         private void Pause()
         {
-            timer.Stop();
-            isPaused = true;
+            _timer.Stop();
+            _isPaused = true;
 
-            if (story != null)
-                story.Stop();
+            if (_story != null)
+                _story.Stop();
         }
 
         private void TogglePlayPauseButton(bool showPlayButton)
@@ -525,7 +525,7 @@ namespace Kozlowski.Slide
                     ResetTimer();
                     break;
                 case VirtualKey.Space:
-                    if (timer.IsEnabled)
+                    if (_timer.IsEnabled)
                         Pause();
                     else
                         Play();
@@ -535,12 +535,12 @@ namespace Kozlowski.Slide
 
         private void PlayPause_Click(object sender, RoutedEventArgs e)
         {
-            if (isPaused)
+            if (_isPaused)
                 Play();
             else
                 Pause();
 
-            TogglePlayPauseButton(isPaused);
+            TogglePlayPauseButton(_isPaused);
         }
 
         private async void Clear_Click(object sender, RoutedEventArgs e)
@@ -548,7 +548,7 @@ namespace Kozlowski.Slide
             Debug.WriteLine("Clear images");
 
             FlipView.SelectionChanged -= FlipView_SelectionChanged;
-            fileList.Clear();
+            _fileList.Clear();
             Items.Clear();
             await LoadMoreFiles(Constants.ImagesToLoad);
             UpdateName((ListItem)FlipView.SelectedItem);
@@ -557,8 +557,7 @@ namespace Kozlowski.Slide
             ResetTimer();
 
             // Regenerate tile updates
-            await TileMaker.GenerateTiles(GetSettings().SaveFolder, GetSettings().TileId, GetSettings().Interval, GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle, true);
-            GetSettings().InitialUpdatesMade = true;
+            await TileMaker.CreateTileUpdates(GetSettings().TileNumber, true);
         }
 
         private async void OpenFile_Click(object sender, RoutedEventArgs e)
@@ -574,14 +573,14 @@ namespace Kozlowski.Slide
         /// This handler is not responsible for updating the images used for the tiles.
         /// </summary>
         /// <param name="sender">Unused parameter.</param>
-        /// <param name="e">Holds information about the property that was changed.</param>
+        /// <param name="e">Contains details about the property that was changed.</param>
         private async void Settings_Changed(object sender, PropertyChangedEventArgs e)
         {
             Debug.WriteLine("Settings Changed");
 
             // Interval
             if (e.PropertyName == Constants.SettingsName_Interval)
-                timer.Interval = TimeSpan.FromSeconds(GetSettings().Interval);
+                _timer.Interval = TimeSpan.FromSeconds(GetSettings().Interval);
 
             // Change storyboard if animation or interval settings change
             if (e.PropertyName == Constants.SettingsName_Animate || e.PropertyName == Constants.SettingsName_Interval)
@@ -601,15 +600,15 @@ namespace Kozlowski.Slide
                 }
 
                 // Clear file list, as files are missing
-                fileList.Clear();
-                fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
+                _fileList.Clear();
+                _fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
                 await LoadMoreFiles(Constants.ImagesToLoad);
                 FlipView.SelectionChanged += FlipView_SelectionChanged;
             }
 
             // Start the timer if not paused
-            if (!isPaused && !timer.IsEnabled)
-                timer.Start();
+            if (!_isPaused && !_timer.IsEnabled)
+                _timer.Start();
         }
 
         /// <summary>
@@ -627,8 +626,8 @@ namespace Kozlowski.Slide
                 return;
 
             // Reset the animation
-            if (story != null)
-                story.Stop();
+            if (_story != null)
+                _story.Stop();
 
             if (GetSettings().Animate)
                 Animate(GetSettings().Interval);
@@ -701,7 +700,7 @@ namespace Kozlowski.Slide
         private void MainAppBar_Opened(object sender, object e)
         {
             // Hide and show the appropriate Play/Pause button
-            TogglePlayPauseButton(isPaused);
+            TogglePlayPauseButton(_isPaused);
         }
         #endregion
 

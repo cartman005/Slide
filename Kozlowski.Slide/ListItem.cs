@@ -7,7 +7,7 @@ namespace Kozlowski.Slide
     /// </summary>
     public class ListItem : INotifyPropertyChanged
     {
-        private string filePath;
+        private string _filePath;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -18,13 +18,13 @@ namespace Kozlowski.Slide
         {
             get
             {
-                return filePath;
+                return _filePath;
             }
             set
             {
                 if (value != null)
                 {
-                    filePath = value;
+                    _filePath = value;
                     NotifyPropertyChanged("FilePath");
                 }
             }

@@ -29,8 +29,10 @@ namespace Kozlowski.Slide
     /// </summary>
     sealed partial class App : Application
     {
-        private Settings settingsInstance;
-        private int tileId;
+        /// <summary>
+        /// Stores the instance of Settings associated with this instance of the full screen slide show app.
+        /// </summary>
+        private Settings _settingsInstance;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -42,8 +44,12 @@ namespace Kozlowski.Slide
             this.Suspending += OnSuspending;
         }
 
-        public Settings Settings { get { return settingsInstance; } }
-        public int TileId { get { return tileId; } }
+        /// <summary>
+        /// Returns the Settings instance associated with this instance of the slide show.
+        /// By default this is the main tile (tile 1) Settings instance, however if the app is launched through a secondary tile,
+        /// it will be the Settings instance corresponding to that tile.
+        /// </summary>
+        public Settings Settings { get { return _settingsInstance; } }
 
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
@@ -61,36 +67,31 @@ namespace Kozlowski.Slide
             }
             */
 #endif
-            // Set up settings instance
+            // Set up Settings instance depending on how the app was launched
             if (string.IsNullOrEmpty(e.Arguments))
             {
-                // Main tile
-                settingsInstance = Tile1Settings.Instance;
-                tileId = 0;
+                // App launched through the main tile
+                _settingsInstance = Tile1Settings.Instance;
             }
             else
             {
-                // Secondary tile
+                // App launched through a secondary tile
                 switch (e.TileId)
                 {
-                    case "SlideSecondaryTile1":
-                        settingsInstance = Tile2Settings.Instance;
-                        tileId = 1;
+                    case Constants.TILE_2_ID:
+                        _settingsInstance = Tile2Settings.Instance;
                         break;
-                    case "SlideSecondaryTile2":
-                        settingsInstance = Tile3Settings.Instance;
-                        tileId = 2;
+                    case Constants.TILE_3_ID:
+                        _settingsInstance = Tile3Settings.Instance;
                         break;
-                    case "SlideSecondaryTile3":
-                        settingsInstance = Tile4Settings.Instance;
-                        tileId = 3;
+                    case Constants.TILE_4_ID:
+                        _settingsInstance = Tile4Settings.Instance;
                         break;
                     default:
                         // Invalid tile ID
                         throw new NotImplementedException();
                 }
             }
-
  
             Frame rootFrame = Window.Current.Content as Frame;
 
@@ -101,6 +102,7 @@ namespace Kozlowski.Slide
                 // Create a Frame to act as the navigation context and navigate to the first page
                 rootFrame = new Frame();
                 SuspensionManager.RegisterFrame(rootFrame, "appFrame");
+
                 // Set the default language
                 rootFrame.Language = Windows.Globalization.ApplicationLanguages.Languages[0];
 
@@ -119,43 +121,63 @@ namespace Kozlowski.Slide
             if (rootFrame.Content == null)
             {
                 // When the navigation stack isn't restored navigate to the first page,
-                // configuring the new page by passing required information as a navigation
-                // parameter
+                // configuring the new page by passing required information as a navigation parameter
                 rootFrame.Navigate(typeof(MainPage), e.Arguments);
             }
             // Ensure the current window is active
             Window.Current.Activate();
         }
 
+        /// <summary>
+        /// Settings the OnCommandsRequested handler for the SettingsFlyouts.
+        /// </summary>
+        /// <param name="args">Unused parameter</param>
         protected override void OnWindowCreated(WindowCreatedEventArgs args)
         {
             SettingsPane.GetForCurrentView().CommandsRequested += OnCommandsRequested;
         }
 
+        /// <summary>
+        /// Creates a SettingsFlyout for each tile when the Charms bar is opened.
+        /// Secondary tile options will not be shown if background access is not permitted.
+        /// </summary>
+        /// <param name="sender">Unused parameter.</param>
+        /// <param name="args">Unused parameter.</param>
         private void OnCommandsRequested(SettingsPane sender, SettingsPaneCommandsRequestedEventArgs args)
         {
-            args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(0), (handler) => ShowSettingsFlyout(0)));
+            // Main tile
+            args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile1Number), (handler) => ShowSettingsFlyout(Constants.Tile1Number)));
 
+            // Secondary tiles if background access is available
             var result = BackgroundExecutionManager.GetAccessStatus();
             if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity || result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
             {
-                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(1), (handler) => ShowSettingsFlyout(1)));
-                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(2), (handler) => ShowSettingsFlyout(2)));
-                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(3), (handler) => ShowSettingsFlyout(3)));
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile2Number), (handler) => ShowSettingsFlyout(Constants.Tile2Number)));
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile3Number), (handler) => ShowSettingsFlyout(Constants.Tile3Number)));
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile4Number), (handler) => ShowSettingsFlyout(Constants.Tile4Number)));
             }
         }
 
-        public string FormatOptionsTitle(int number)
+        /// <summary>
+        /// Helper function to the title of the SettingsFlyout according to the tile's number and if it is the flyout used to control the current set of images in the full screen slide show.
+        /// </summary>
+        /// <param name="tileNumber">The number of the tile to be formatted.</param>
+        /// <returns>The formatted title of the SettingsFlyout.</returns>
+        public string FormatOptionsTitle(int tileNumber)
         {
-            if (tileId == number)
-                return string.Format("Tile {0} Options (Current)", number + 1);
+            if (this.Settings.TileNumber == tileNumber)
+                return string.Format("Tile {0} Options (Current)", tileNumber);
             else
-                return string.Format("Tile {0} Options", number + 1);
+                return string.Format("Tile {0} Options", tileNumber);
         }
 
-        public void ShowSettingsFlyout(int number)
+        /// <summary>
+        /// Displays the SettingsFlyout for the specified tile number.
+        /// </summary>
+        /// <param name="tileNumber">The number of the tile whose settings will be displayed.</param>
+        public void ShowSettingsFlyout(int tileNumber)
         {
-            var settings = new SlideSettingsFlyout(number);
+            var settings = new SlideSettingsFlyout(tileNumber);
             settings.Show();
         }
 

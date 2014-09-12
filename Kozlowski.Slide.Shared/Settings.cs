@@ -151,6 +151,11 @@ namespace Kozlowski.Slide
                 SetSetting<bool>(Constants.SettingsName_Animate, value);
             }
         }
+
+        /// <summary>
+        /// Gets the number of the tile for use in displaying settings.
+        /// </summary>
+        public abstract int TileNumber { get; }
         
         /// <summary>
         /// Gets the ID of the tile for creating secondary tiles.
@@ -231,6 +236,11 @@ namespace Kozlowski.Slide
         private Tile1Settings(): base() { }
 
         /// <summary>
+        /// Gets the number of tile 1.
+        /// </summary>
+        public override int TileNumber { get { return Constants.Tile1Number; } }
+
+        /// <summary>
         /// Gets the ID of the tile 1.
         /// This is blank because a tile ID is not needed for the main app tile. 
         /// </summary>
@@ -259,6 +269,11 @@ namespace Kozlowski.Slide
         /// Calls the base constructor.
         /// </summary>
         private Tile2Settings(): base() { }
+
+        /// <summary>
+        /// Gets the number of tile 2.
+        /// </summary>
+        public override int TileNumber { get { return Constants.Tile2Number; } }
 
         /// <summary>
         /// Gets the ID of tile 2.
@@ -290,6 +305,11 @@ namespace Kozlowski.Slide
         private Tile3Settings(): base() { }
 
         /// <summary>
+        /// Gets the number of tile 3.
+        /// </summary>
+        public override int TileNumber { get { return Constants.Tile3Number; } }
+
+        /// <summary>
         /// Gets the ID of tile 3.
         /// </summary>
         public override string TileId { get { return Constants.Tile3Id; } }
@@ -317,6 +337,11 @@ namespace Kozlowski.Slide
         /// Calls the base constructor.
         /// </summary>
         private Tile4Settings(): base() { }
+
+        /// <summary>
+        /// Gets the number of tile 4.
+        /// </summary>
+        public override int TileNumber { get { return Constants.Tile4Number; } }
 
         /// <summary>
         /// Gets the ID of tile 4.

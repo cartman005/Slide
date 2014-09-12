@@ -1,4 +1,5 @@
-﻿using Windows.Storage;
+﻿using Windows.Foundation;
+using Windows.Storage;
 namespace Kozlowski.Slide.Shared
 {
     /// <summary>
@@ -21,32 +22,97 @@ namespace Kozlowski.Slide.Shared
         /// Gets the entry point of the background tasks.
         /// </summary>
         public static string TaskEntryPoint { get { return "Kozlowski.Slide.Background.BackgroundTileMaker"; } }
+        #endregion
+
+        #region Tile Numbers
+        /// <summary>
+        /// The number main tile (tile 1).
+        /// This integer is needed for switch statements.
+        /// </summary>
+        public const int TILE_1_NUMBER = 1;
 
         /// <summary>
-        /// Gets the ID of the main tile (Tile 1).
+        /// The number of the first secondary tile (tile 2).
+        /// This integer is needed for switch statements.
+        /// </summary>
+        public const int TILE_2_NUMBER = 2;
+
+        /// <summary>
+        /// The number of the second secondary tile (Tile 3).
+        /// This integer is needed for switch statements.
+        /// </summary>
+        public const int TILE_3_NUMBER = 3;
+
+        /// <summary>
+        /// The ID of the third secondary tile (tile 4).
+        /// This integer is needed for switch statements.
+        /// </summary>
+        public const int TILE_4_NUMBER = 4;
+
+        /// <summary>
+        /// Gets the number of the main tile.
+        /// </summary>
+        public static int Tile1Number { get { return TILE_1_NUMBER; } }
+
+        /// <summary>
+        /// Gets the number of the first secondary tile.
+        /// </summary>
+        public static int Tile2Number { get { return TILE_2_NUMBER; } }
+
+        /// <summary>
+        /// Gets the number of the second secondary tile.
+        /// </summary>
+        public static int Tile3Number { get { return TILE_3_NUMBER; } }
+
+        /// <summary>
+        /// Gets the number of the third secondary tile.
+        /// </summary>
+        public static int Tile4Number { get { return TILE_4_NUMBER; } }
+
+        /// <summary>
+        /// The ID of the main tile (tile 1).
         /// This is blank because a tile ID is not needed for the main app tile.
+        /// This string is needed for switch statements.
         /// </summary>
-        public static string Tile1Id { get { return ""; } }
+        public const string TILE_1_ID = "";
 
         /// <summary>
-        /// Gets the ID of the first secondary tile (Tile 2).
+        /// The ID of the first secondary tile (tile 2).
+        /// This string is needed for switch statements.
         /// </summary>
-        public static string Tile2Id { get { return "SlideTile2"; } }
+        public const string TILE_2_ID = "SlideTile2";
 
         /// <summary>
-        /// Gets the ID of the second secondary tile (Tile 3).
+        /// The ID of the second secondary tile (Tile 3).
+        /// This string is needed for switch statements.
         /// </summary>
-        public static string Tile3Id { get { return "SlideTile3"; } }
+        public const string TILE_3_ID = "SlideTile3";
 
         /// <summary>
-        /// Gets the ID of the third secondary tile (Tile 4).
+        /// The ID of the third secondary tile (tile 4).
+        /// This string is needed for switch statements.
         /// </summary>
-        public static string Tile4Id { get { return "SlideTile4"; } }
+        public const string TILE_4_ID = "SlideTile4";
 
         /// <summary>
-        /// Gets the interval for scheduling the timer background task.
+        /// Gets the ID of the main tile (tile 1).
         /// </summary>
-        public static int BackgroundTaskInterval { get { return 15; } }
+        public static string Tile1Id { get { return TILE_1_ID; } }
+
+        /// <summary>
+        /// Gets the ID of the first secondary tile (tile 2).
+        /// </summary>
+        public static string Tile2Id { get { return TILE_2_ID; } }
+
+        /// <summary>
+        /// Gets the ID of the third secondary tile (tile 3).
+        /// </summary>
+        public static string Tile3Id { get { return TILE_3_ID; } }
+
+        /// <summary>
+        /// Gets the ID of the third secondary tile (tile 4).
+        /// </summary>
+        public static string Tile4Id { get { return TILE_4_ID; } }
         #endregion
 
         #region Settings Names
@@ -95,22 +161,22 @@ namespace Kozlowski.Slide.Shared
 
         #region File Names
         /// <summary>
-        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the main tile (Tile 1).
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the main tile (tile 1).
         /// </summary>
         public static string Tile1SaveFolder { get { return "Tile1"; } }
 
         /// <summary>
-        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the first secondary tile (Tile 2).
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the first secondary tile (tile 2).
         /// </summary>
         public static string Tile2SaveFolder { get { return "Tile2"; } }
 
         /// <summary>
-        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the second secondary tile (Tile 3).
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the second secondary tile (tile 3).
         /// </summary>
         public static string Tile3SaveFolder { get { return "Tile3"; } }
 
         /// <summary>
-        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the third secondary tile (Tile 4).
+        /// Gets the name of the folder in which to store the cached tile update images in the AppData folder for the third secondary tile (tile 4).
         /// </summary>
         public static string Tile4SaveFolder { get { return "Tile4"; } }
 
@@ -181,6 +247,11 @@ namespace Kozlowski.Slide.Shared
         public static bool DefaultAnimateSetting { get { return true; } }
 
         /// <summary>
+        /// Gets the interval for scheduling the timer background task.
+        /// </summary>
+        public static int BackgroundTaskInterval { get { return 15; } }
+
+        /// <summary>
         /// Gets the decimal by which to scale the images when animating.
         /// </summary>
         public static double ScaleDecimal { get { return 1.25; } }
@@ -191,6 +262,12 @@ namespace Kozlowski.Slide.Shared
         /// No more than 6 updates can exist at the same time.
         /// </summary>
         public static double ConcurrentTiles { get { return 3; } }
+
+        /// <summary>
+        /// Gets the dimensions of the maximum tile size available for the app.
+        /// This is currently 310x310.
+        /// </summary>
+        public static Size MaxTileSize { get { return new Size(310, 310); } }
         #endregion
     }
 }
