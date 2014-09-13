@@ -128,13 +128,16 @@ namespace Kozlowski.Slide
             {
                 switch (_tileNumber)
                 {
-                    case 1:
+                    case Constants.TILE_1_NUMBER:
+                        Tile1Settings.Instance.RootFolder = folder;
+                        break;
+                    case Constants.TILE_2_NUMBER:
                         Tile2Settings.Instance.RootFolder = folder;
                         break;
-                    case 2:
+                    case Constants.TILE_3_NUMBER:
                         Tile3Settings.Instance.RootFolder = folder;
                         break;
-                    case 3:
+                    case Constants.TILE_4_NUMBER:
                         Tile4Settings.Instance.RootFolder = folder;
                         break;
                 }

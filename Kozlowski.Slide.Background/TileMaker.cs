@@ -41,8 +41,9 @@ namespace Kozlowski.Slide.Background
                 fileTypes.Add(".png");
                 fileTypes.Add(".tiff");
                 var queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileTypes);
-
-                queryOptions.IndexerOption = IndexerOption.UseIndexerWhenAvailable;
+                
+                // This is causing an InvalidCastException by returning files that have been moved
+                //queryOptions.IndexerOption = IndexerOption.UseIndexerWhenAvailable;
 
                 if (includeSubfolders)
                     queryOptions.FolderDepth = FolderDepth.Deep;
@@ -62,6 +63,7 @@ namespace Kozlowski.Slide.Background
                 var query = folder.CreateFileQueryWithOptions(queryOptions);
 
                 var fileList = await query.GetFilesAsync();
+
                 if (fileList.Count < 1)
                 {
                     Debug.WriteLine("No pictures found");

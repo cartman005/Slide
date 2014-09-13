@@ -9,7 +9,7 @@ namespace Kozlowski.Slide.Background
     /// <summary>
     /// This class is used to run the background task which creates and schedules the Start screen tile updates.
     /// </summary>
-    public sealed class BackgroundTileMaker : IBackgroundTask
+    public sealed class BackgroundTask : IBackgroundTask
     {
         /// <summary>
         /// Performs the work of the background task.

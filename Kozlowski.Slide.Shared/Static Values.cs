@@ -21,7 +21,7 @@ namespace Kozlowski.Slide.Shared
         /// <summary>
         /// Gets the entry point of the background tasks.
         /// </summary>
-        public static string TaskEntryPoint { get { return "Kozlowski.Slide.Background.BackgroundTileMaker"; } }
+        public static string TaskEntryPoint { get { return "Kozlowski.Slide.Background.BackgroundTask"; } }
         #endregion
 
         #region Tile Numbers

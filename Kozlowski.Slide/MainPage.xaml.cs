@@ -61,6 +61,9 @@ namespace Kozlowski.Slide
             get { return this._navigationHelper; }
         }
 
+        /// <summary>
+        /// Performs initializations and assigns event handlers.
+        /// </summary>
         public MainPage()
         {
             this.InitializeComponent();
@@ -152,12 +155,6 @@ namespace Kozlowski.Slide
             FlipView.ItemsSource = Items;
             FlipView.SelectedIndex = initialIndex;
 
-            _fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle, GetSettings().StartingFilename));
-            _isPaused = wasPaused; // Should be set before calling LoadMoreFiles
-            await LoadMoreFiles(Constants.ImagesToLoad);
-            UpdateName((ListItem)FlipView.SelectedItem);
-            FlipView.SelectionChanged += FlipView_SelectionChanged;
-
             // Register background task
             var result = await BackgroundExecutionManager.RequestAccessAsync();
             if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity ||
@@ -166,6 +163,14 @@ namespace Kozlowski.Slide
                 RegisterTimerTask((uint)Constants.BackgroundTaskInterval);
                 RegisterUserTask();
             }
+
+            // Load files
+            ProgressRing.IsActive = true;
+            _isPaused = wasPaused; // Should be set before calling LoadMoreFiles
+            await LoadMoreFiles(Constants.ImagesToLoad);
+            UpdateName((ListItem)FlipView.SelectedItem);
+            FlipView.SelectionChanged += FlipView_SelectionChanged;
+            ProgressRing.IsActive = false;
 
             // Set the input focus to ensure that keyboard events are raised
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
@@ -277,7 +282,7 @@ namespace Kozlowski.Slide
                     Pause();
 
                     // Create the message dialog and set its content
-                    var messageDialog = new MessageDialog("No image files were found in the source folder.");
+                    var messageDialog = new MessageDialog("No image files were found in the selected folder.");
 
                     // Add commands and set their callbacks; both buttons use the same callback function instead of inline event handlers
                     messageDialog.Commands.Add(new UICommand(
@@ -312,8 +317,8 @@ namespace Kozlowski.Slide
 
             return;
         }   
-        #region NavigationHelper registration
 
+        #region NavigationHelper registration
         /// The methods provided in this section are simply used to allow
         /// NavigationHelper to respond to the page's navigation methods.
         /// 
@@ -331,7 +336,6 @@ namespace Kozlowski.Slide
         {
             _navigationHelper.OnNavigatedFrom(e);
         }
-
         #endregion
 
         // This function was adapted from a post by Iris Classon on 06/28/2012 on her blog "In Love With Code" here:
@@ -599,10 +603,12 @@ namespace Kozlowski.Slide
                 }
 
                 // Clear file list, as files are missing
+                ProgressRing.IsActive = true;
                 _fileList.Clear();
                 _fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle, GetSettings().StartingFilename));
                 await LoadMoreFiles(Constants.ImagesToLoad);
                 FlipView.SelectionChanged += FlipView_SelectionChanged;
+                ProgressRing.IsActive = false;
             }
 
             // Start the timer if not paused
@@ -612,7 +618,7 @@ namespace Kozlowski.Slide
 
         /// <summary>
         /// Handles the selection of the FlipView being changed.
-        /// This event is triggered on startup and when the FlipView is moved forward or backward by mouse, touch, keyboard and timer events.
+        /// This event is triggered on startup and when the FlipView is moved forward or backward by click, scroll, touch, keyboard and timer events.
         /// Resets the animation, timer and loads more files if necessary.
         /// </summary>
         /// <param name="sender">Unused parameter.</param>
