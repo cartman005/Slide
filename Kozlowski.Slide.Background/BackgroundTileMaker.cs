@@ -1,9 +1,7 @@
 ﻿using Kozlowski.Slide.Shared;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.ApplicationModel.Background;
-using Windows.Storage;
 using Windows.UI.StartScreen;
 
 namespace Kozlowski.Slide.Background

@@ -10,7 +10,6 @@ using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Search;
 using Windows.UI.Notifications;
-using Windows.UI.StartScreen;
 
 namespace Kozlowski.Slide.Background
 {
@@ -21,13 +20,16 @@ namespace Kozlowski.Slide.Background
     public sealed class TileMaker
     {
         /// <summary>
-        /// Gets the 
+        /// Gets the list of image files in the specified directory to be used in tile updates.
+        /// If the shuffle parameter is true, the list that is returned will be ordered by filename, starting with the file following the startingFile.
+        /// The files that come before the startingFile will be added to the end of the list in order for a complete loop of filenames.
         /// </summary>
-        /// <param name="folder"></param>
-        /// <param name="includeSubfolders"></param>
-        /// <param name="shuffle"></param>
+        /// <param name="folder">The parent folder in which to search for image files.</param>
+        /// <param name="includeSubfolders">Whether or not to include image files inside of subfolders of the parent directory.</param>
+        /// <param name="shuffle">Whether or not the files will be shuffled. This saves time by not ordering the files if it is not necessary.</param>
+        /// <param name="startingFilename">The file to pick up the file order from. The first file will be the next to alphabetically follow this filename. This parameter is not used if the shuffle parameter is true.</param>
         /// <returns>A list of the image files to be used in the slideshow.</returns>
-        public static IAsyncOperation<IReadOnlyList<StorageFile>> GetImageList(StorageFolder folder, bool includeSubfolders, bool shuffle)
+        public static IAsyncOperation<IReadOnlyList<StorageFile>> GetImageList(StorageFolder folder, bool includeSubfolders, bool shuffle, string startingFilename)
         {
             return Task.Run<IReadOnlyList<StorageFile>>(async () =>
             {
@@ -67,6 +69,23 @@ namespace Kozlowski.Slide.Background
                 else
                 {
                     Debug.WriteLine("{0} pictures found", fileList.Count);
+
+                    // Find the first filename that follows the starting file chronologically
+                    if (!shuffle && startingFilename != "")
+                    {
+                        Debug.WriteLine("Start with file {0}", startingFilename);
+                        var tempList = new List<StorageFile>();
+                        tempList.AddRange(fileList);
+                        
+                        var startingIndex = tempList.FindIndex(x => x.Path.CompareTo(startingFilename) > 0);
+
+                        if (startingIndex > 0)
+                        {
+                            tempList.AddRange(tempList.GetRange(0, startingIndex));
+                            tempList.RemoveRange(0, startingIndex);
+                            fileList = tempList as IReadOnlyList<StorageFile>;
+                        }
+                    }
                 }
 
                 return fileList;
@@ -139,7 +158,7 @@ namespace Kozlowski.Slide.Background
                     encoder.SetPixelData(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Premultiplied, (uint)dimensions.Width, (uint)dimensions.Height, 96, 96, pixelData.DetachPixelData());
                     await encoder.FlushAsync();
 
-                    // Create the update
+                    // Create the tile update
                     // Parent, 150x150 tile
                     var parentTile = TileUpdateManager.GetTemplateContent(TileTemplateType.TileSquare150x150Image);
                     var tileImageAttributes = (XmlElement)parentTile.GetElementsByTagName("image").Item(0);
@@ -194,9 +213,10 @@ namespace Kozlowski.Slide.Background
         /// <param name="seconds">The number of seconds between updates.</param>
         /// <param name="includeSubfolders">Whether or not to include subfolders inside of the source folder to find images for tile updates.</param>
         /// <param name="shuffle">Whether or not to shuffle the order of the images used for tile updates.</param>
+        /// <param name="startingFilename">The filename to start after when creating the tiles in alphabetical order. This parameter is ignored if the shuffle parameter is true.</param>
         /// <param name="clearExisting">Whether or not to clear the existing tile update queue before adding the new tile updates.</param>
-        /// <returns>A Task representing the completed tile update creation.</returns>
-        private static async Task CreateTileUpdates(string tileId, StorageFolder sourceFolder,  string destinationFolder, int seconds, bool includeSubfolders, bool shuffle, bool clearExisting)
+        /// <returns>The filename of the last image used in the tile creation.</returns>
+        private static async Task<string> CreateTileUpdates(string tileId, StorageFolder sourceFolder, string destinationFolder, int seconds, bool includeSubfolders, bool shuffle, string startingFilename, bool clearExisting)
         {
             TileUpdater updater;
 
@@ -207,10 +227,11 @@ namespace Kozlowski.Slide.Background
 
             updater.EnableNotificationQueue(true);
 
+            // Clear the tile notification queue
             if (clearExisting)
                 updater.Clear();
 
-            // Clear existing images by deleting the specifed tile's subfolder in AppData
+            // Clear existing image cache by deleting the specifed tile's subfolder in AppData
             try
             {
                 var folder = await ApplicationData.Current.LocalFolder.GetFolderAsync(destinationFolder);
@@ -222,11 +243,11 @@ namespace Kozlowski.Slide.Background
             }
 
             var now = DateTime.Now;
-            var planTill = now.AddMinutes(30);
-            var updateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0).AddMinutes(1);
+            var planUntil = now.AddMinutes(Constants.BackgroundTaskInterval);
+            var updateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0).AddMinutes(2); // updateTime must be in the future when the ScheduledTileNotification is created, so add a 2 minute buffer
 
             var fileList = new List<StorageFile>();
-            fileList.AddRange(await GetImageList(sourceFolder, includeSubfolders, shuffle));
+            fileList.AddRange(await GetImageList(sourceFolder, includeSubfolders, shuffle, startingFilename));
 
             // Create the first tile
             int index;
@@ -242,19 +263,18 @@ namespace Kozlowski.Slide.Background
                 file = fileList[index];
                 fileList.RemoveAt(index);
 
-                var tile = await CreateTileUpdate( file, destinationFolder, (int)Constants.MaxTileSize.Width, (int)Constants.MaxTileSize.Height);
+                var tile = await CreateTileUpdate(file, destinationFolder, (int)Constants.MaxTileSize.Width, (int)Constants.MaxTileSize.Height);
                 if (tile != null)
                 {
-                    //updater.Update(new TileNotification(tile) { ExpirationTime = now.AddMinutes(1) });
-                    updater.Update(new TileNotification(tile) { ExpirationTime = now.AddSeconds((seconds * Constants.ConcurrentTiles) > 60 ? seconds * Constants.ConcurrentTiles : 60) });
+                    updater.Update(new TileNotification(tile));
                 }
 
                 // Create the rest of the tiles
-                Debug.WriteLine("Create updates from {0} to {1}", updateTime, planTill);
-                for (var startPlanning = updateTime; startPlanning < planTill; startPlanning = startPlanning.AddSeconds(seconds))
+                Debug.WriteLine("Create updates from {0} to {1}", updateTime, planUntil);
+                for (var startPlanning = updateTime; startPlanning < planUntil; startPlanning = startPlanning.AddSeconds(seconds))
                 {
                     if (fileList.Count < 1)
-                        fileList.AddRange(await GetImageList(sourceFolder, includeSubfolders, shuffle));
+                        fileList.AddRange(await GetImageList(sourceFolder, includeSubfolders, shuffle, startingFilename));
 
                     if (shuffle)
                         index = SingleRandom.Instance.Next(0, fileList.Count);
@@ -283,11 +303,16 @@ namespace Kozlowski.Slide.Background
                     else
                     {
                         Debug.WriteLine("No images found");
-                        return;
+                        return "";
                         // TODO This should be handled
                     }
                 }
+
+                // Return the full filename of the last used image
+                return file.Path;
             }
+
+            return "";
         }
 
         /// <summary>
@@ -295,30 +320,37 @@ namespace Kozlowski.Slide.Background
         /// This function does not check whether or not the given tile exists so this should be done calling the function.
         /// </summary>
         /// <param name="tileNumber">The tile to create updates for, using the settings associated with the tile number.</param>
+        /// <param name="clearExisting">Whether or not to clear the existing tile updates in the queue.</param>
         public static IAsyncAction CreateTileUpdates(int tileNumber, bool clearExisting)
         {
             return Task.Run(async () =>
             {
+                string lastFilename;
+
                 switch (tileNumber)
                 {
                     case Constants.TILE_1_NUMBER:
-                        Debug.WriteLine("Creating primary tile updates");
-                        await CreateTileUpdates("", Tile1Settings.Instance.RootFolder, Constants.Tile1SaveFolder, Tile1Settings.Instance.Interval, Tile1Settings.Instance.IncludeSubfolders, Tile1Settings.Instance.Shuffle, clearExisting);
+                        Debug.WriteLine("Creating main tile updates");
+                        lastFilename = await CreateTileUpdates("", Tile1Settings.Instance.RootFolder, Constants.Tile1SaveFolder, Tile1Settings.Instance.Interval, Tile1Settings.Instance.IncludeSubfolders, Tile1Settings.Instance.Shuffle, (clearExisting ? "" : Tile1Settings.Instance.StartingFilename), clearExisting);
+                        Tile1Settings.Instance.StartingFilename = lastFilename;
                         Tile1Settings.Instance.InitialUpdatesMade = true;
                         break;
                     case Constants.TILE_2_NUMBER:
-                        Debug.WriteLine("Creating secondary tile 1 updates");
-                        await CreateTileUpdates(Constants.Tile2Id, Tile2Settings.Instance.RootFolder, Constants.Tile2SaveFolder, Tile2Settings.Instance.Interval, Tile2Settings.Instance.IncludeSubfolders, Tile2Settings.Instance.Shuffle, clearExisting);
+                        Debug.WriteLine("Creating tile 2 updates");
+                        lastFilename = await CreateTileUpdates(Constants.Tile2Id, Tile2Settings.Instance.RootFolder, Constants.Tile2SaveFolder, Tile2Settings.Instance.Interval, Tile2Settings.Instance.IncludeSubfolders, Tile2Settings.Instance.Shuffle, (clearExisting ? "" : Tile2Settings.Instance.StartingFilename), clearExisting);
+                        Tile2Settings.Instance.StartingFilename = lastFilename;
                         Tile2Settings.Instance.InitialUpdatesMade = true;
                         break;
                     case Constants.TILE_3_NUMBER:
-                        Debug.WriteLine("Creating secondary tile 2 updates");
-                        await CreateTileUpdates(Constants.Tile3Id, Tile3Settings.Instance.RootFolder, Constants.Tile3SaveFolder, Tile3Settings.Instance.Interval, Tile3Settings.Instance.IncludeSubfolders, Tile3Settings.Instance.Shuffle, clearExisting);
+                        Debug.WriteLine("Creating tile 3 updates");
+                        lastFilename = await CreateTileUpdates(Constants.Tile3Id, Tile3Settings.Instance.RootFolder, Constants.Tile3SaveFolder, Tile3Settings.Instance.Interval, Tile3Settings.Instance.IncludeSubfolders, Tile3Settings.Instance.Shuffle, (clearExisting ? "" : Tile3Settings.Instance.StartingFilename), clearExisting);
+                        Tile3Settings.Instance.StartingFilename = lastFilename;
                         Tile3Settings.Instance.InitialUpdatesMade = true;
                         break;
                     case Constants.TILE_4_NUMBER:
-                        Debug.WriteLine("Creating secondary tile 3 updates");
-                        await CreateTileUpdates(Constants.Tile4Id, Tile4Settings.Instance.RootFolder, Constants.Tile4SaveFolder, Tile4Settings.Instance.Interval, Tile4Settings.Instance.IncludeSubfolders, Tile4Settings.Instance.Shuffle, clearExisting);
+                        Debug.WriteLine("Creating tile 4 updates");
+                        lastFilename = await CreateTileUpdates(Constants.Tile4Id, Tile4Settings.Instance.RootFolder, Constants.Tile4SaveFolder, Tile4Settings.Instance.Interval, Tile4Settings.Instance.IncludeSubfolders, Tile4Settings.Instance.Shuffle, (clearExisting ? "" : Tile4Settings.Instance.StartingFilename), clearExisting);
+                        Tile4Settings.Instance.StartingFilename = lastFilename;
                         Tile4Settings.Instance.InitialUpdatesMade = true;
                         break;
                     default:

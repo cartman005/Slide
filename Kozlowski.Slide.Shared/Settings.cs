@@ -153,6 +153,20 @@ namespace Kozlowski.Slide
         }
 
         /// <summary>
+        /// Gets or sets the starting filename to use when retrieving files in order for tile updates.
+        /// </summary>
+        public string StartingFilename
+        {
+            get
+            {
+                return GetSetting<string>(Constants.SettingsName_StartingFilename, "");
+            }
+            set
+            {
+                SetSetting<string>(Constants.SettingsName_StartingFilename, value);
+            }
+        }
+        /// <summary>
         /// Gets the number of the tile for use in displaying settings.
         /// </summary>
         public abstract int TileNumber { get; }

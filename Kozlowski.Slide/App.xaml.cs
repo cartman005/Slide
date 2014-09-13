@@ -145,17 +145,21 @@ namespace Kozlowski.Slide
         /// <param name="args">Unused parameter.</param>
         private void OnCommandsRequested(SettingsPane sender, SettingsPaneCommandsRequestedEventArgs args)
         {
-            // Main tile
-            args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile1Number), (handler) => ShowSettingsFlyout(Constants.Tile1Number)));
-
-            // Secondary tiles if background access is available
+            // Show secondary tile options if background access is available
             var result = BackgroundExecutionManager.GetAccessStatus();
             if (result == BackgroundAccessStatus.AllowedMayUseActiveRealTimeConnectivity || result == BackgroundAccessStatus.AllowedWithAlwaysOnRealTimeConnectivity)
             {
+                // Main tile
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile1Number), (handler) => ShowSettingsFlyout(Constants.Tile1Number)));
+                
+                // Secondary tiles
                 args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile2Number), (handler) => ShowSettingsFlyout(Constants.Tile2Number)));
                 args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile3Number), (handler) => ShowSettingsFlyout(Constants.Tile3Number)));
                 args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile4Number), (handler) => ShowSettingsFlyout(Constants.Tile4Number)));
             }
+            else
+                // Main tile
+                args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Options", (handler) => ShowSettingsFlyout(Constants.Tile1Number)));
         }
 
         /// <summary>

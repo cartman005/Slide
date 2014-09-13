@@ -143,9 +143,15 @@ namespace Kozlowski.Slide.Shared
         public static string SettingsName_Animate { get { return "Animate"; } }
 
         /// <summary>
-        /// Gets the name of the name of the switch that 
+        /// Gets the name of the name of the switch that indicates that the first set of tile updates have been created.
+        /// This should be done on the first run of the tile.
         /// </summary>
         public static string SettingsName_InitialUpdatesMade { get { return "InitialUpdatesMade"; } }
+
+        /// <summary>
+        /// Gets the name of the name of the setting that stores the first file to begin with when retrieving ordered images for tile updates.
+        /// </summary>
+        public static string SettingsName_StartingFilename { get { return "StartingFilename"; } }
 
         // Temporary
         /// <summary>
@@ -247,9 +253,10 @@ namespace Kozlowski.Slide.Shared
         public static bool DefaultAnimateSetting { get { return true; } }
 
         /// <summary>
-        /// Gets the interval for scheduling the timer background task.
+        /// Gets the interval for scheduling the timer background task, in minutes.
+        /// This cannot be less than 15 minutes.
         /// </summary>
-        public static int BackgroundTaskInterval { get { return 15; } }
+        public static int BackgroundTaskInterval { get { return 30; } }
 
         /// <summary>
         /// Gets the decimal by which to scale the images when animating.

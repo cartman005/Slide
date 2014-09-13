@@ -1,11 +1,9 @@
 ﻿using Kozlowski.Slide.Background;
 using Kozlowski.Slide.Shared;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using Windows.Foundation;
-using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.StartScreen;
 using Windows.UI.Xaml;

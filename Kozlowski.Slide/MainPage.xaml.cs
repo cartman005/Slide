@@ -17,7 +17,6 @@ using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Popups;
-using Windows.UI.StartScreen;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -153,7 +152,7 @@ namespace Kozlowski.Slide
             FlipView.ItemsSource = Items;
             FlipView.SelectedIndex = initialIndex;
 
-            _fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
+            _fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle, GetSettings().StartingFilename));
             _isPaused = wasPaused; // Should be set before calling LoadMoreFiles
             await LoadMoreFiles(Constants.ImagesToLoad);
             UpdateName((ListItem)FlipView.SelectedItem);
@@ -256,7 +255,7 @@ namespace Kozlowski.Slide
             {
                 // Check if more files need to be loaded
                 if (_fileList.Count <= 0)
-                    _fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
+                    _fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle, GetSettings().StartingFilename));
 
                 // Set index depending on shuffle setting
                 if (GetSettings().Shuffle)
@@ -601,7 +600,7 @@ namespace Kozlowski.Slide
 
                 // Clear file list, as files are missing
                 _fileList.Clear();
-                _fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle));
+                _fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle, GetSettings().StartingFilename));
                 await LoadMoreFiles(Constants.ImagesToLoad);
                 FlipView.SelectionChanged += FlipView_SelectionChanged;
             }
