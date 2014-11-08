@@ -265,7 +265,7 @@
             <FlipView.ItemTemplate>
                 <DataTemplate>
                     <Grid Name="MainGrid">
-                        <Image Name="MainImage" Source="{Binding FilePath, Converter={StaticResource ImageConverter}}" Stretch="None" />
+                        <Image Name="MainImage" Source="{Binding FilePath, Converter={StaticResource ImageConverter}}" Stretch="None"/>
                     </Grid>
                 </DataTemplate>
             </FlipView.ItemTemplate>

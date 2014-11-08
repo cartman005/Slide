@@ -81,7 +81,7 @@ namespace Kozlowski.Slide
 
                         // Set the DecodePixelWidth to save memory
                         // Only set one value (height or width) to preserve the proportion
-                        var dimensions = TileMaker.GetDimensions((int)decoder.PixelWidth, (int)decoder.PixelHeight, (int)bounds.Width, (int)bounds.Height);
+                        var dimensions = TileMaker.GetDimensions((int)decoder.PixelWidth, (int)decoder.PixelHeight, (int)bounds.Width, (int)bounds.Height, true);
                         image.DecodePixelWidth = (int)dimensions.Width;
                         //image.DecodePixelHeight = (int)dimensions.Height;
                         await image.SetSourceAsync(fileStream);

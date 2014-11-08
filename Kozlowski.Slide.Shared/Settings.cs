@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
+using Windows.UI.Core;
+using Windows.UI.Xaml;
 
 namespace Kozlowski.Slide
 {
@@ -170,7 +172,7 @@ namespace Kozlowski.Slide
         /// Gets the number of the tile for use in displaying settings.
         /// </summary>
         public abstract int TileNumber { get; }
-        
+
         /// <summary>
         /// Gets the ID of the tile for creating secondary tiles.
         /// </summary>
@@ -183,12 +185,15 @@ namespace Kozlowski.Slide
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void NotifyPropertyChanged(string propertyName)
+        protected async void NotifyPropertyChanged(string propertyName)
         {
-            Debug.WriteLine("NotifyPropertyChanged " + propertyName);
+            Debug.WriteLine("NotifyPropertyChanged {0} from {1}", propertyName, TileId);
             if (PropertyChanged != null)
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                {
+                    PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                });
             }
         }
 
@@ -247,7 +252,7 @@ namespace Kozlowski.Slide
         /// <summary>
         /// Calls the base constructor.
         /// </summary>
-        private Tile1Settings(): base() { }
+        private Tile1Settings() : base() { }
 
         /// <summary>
         /// Gets the number of tile 1.
@@ -282,7 +287,7 @@ namespace Kozlowski.Slide
         /// <summary>
         /// Calls the base constructor.
         /// </summary>
-        private Tile2Settings(): base() { }
+        private Tile2Settings() : base() { }
 
         /// <summary>
         /// Gets the number of tile 2.
@@ -316,7 +321,7 @@ namespace Kozlowski.Slide
         /// <summary>
         /// Calls the base constructor.
         /// </summary>
-        private Tile3Settings(): base() { }
+        private Tile3Settings() : base() { }
 
         /// <summary>
         /// Gets the number of tile 3.
@@ -350,7 +355,7 @@ namespace Kozlowski.Slide
         /// <summary>
         /// Calls the base constructor.
         /// </summary>
-        private Tile4Settings(): base() { }
+        private Tile4Settings() : base() { }
 
         /// <summary>
         /// Gets the number of tile 4.

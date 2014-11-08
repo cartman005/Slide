@@ -158,7 +158,7 @@ namespace Kozlowski.Slide
                 args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile4Number), (handler) => ShowSettingsFlyout(Constants.Tile4Number)));
             }
             else
-                // Main tile
+                // Main tile only
                 args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Options", (handler) => ShowSettingsFlyout(Constants.Tile1Number)));
         }
 

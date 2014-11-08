@@ -179,6 +179,8 @@ namespace Kozlowski.Slide
             // Hide and show the appropriate AppBar buttons
             TogglePlayPauseButton(_isPaused);
 
+            ResetTimer();
+
             if (GetSettings().Animate)
                 Animate(GetSettings().Interval);
 
@@ -363,8 +365,9 @@ namespace Kozlowski.Slide
             xAnim.Duration = TimeSpan.FromSeconds(seconds);
             yAnim.Duration = TimeSpan.FromSeconds(seconds);
 
-            xAnim.To = Constants.ScaleDecimal;
-            yAnim.To = Constants.ScaleDecimal;
+            var scaleAmount = RandomScale();
+            xAnim.To = scaleAmount;
+            yAnim.To = scaleAmount;
 
             _story.Children.Add(xAnim);
             _story.Children.Add(yAnim);
@@ -417,6 +420,26 @@ namespace Kozlowski.Slide
             }
 
             return point;
+        }
+
+        private double RandomScale()
+        {
+            var rand = SingleRandom.Instance;
+
+            int x = rand.Next(0, 2);
+            
+            switch(x)
+            {
+                case 0:
+                    // Zoom out
+                    return 1.0 - (Constants.ScaleDecimal / 2);
+                case 1:
+                    // Zoom in
+                    return 1.0 + Constants.ScaleDecimal;
+                default:
+                    // No zoom
+                    return 1.0;
+            }
         }
                
         /// <summary>
@@ -546,19 +569,26 @@ namespace Kozlowski.Slide
             TogglePlayPauseButton(_isPaused);
         }
 
-        private async void Clear_Click(object sender, RoutedEventArgs e)
+        private async Task ClearFiles()
         {
-            Debug.WriteLine("Clear images");
-
+            _timer.Stop();
+            ProgressRing.IsActive = true;
             FlipView.SelectionChanged -= FlipView_SelectionChanged;
             _fileList.Clear();
             Items.Clear();
             await LoadMoreFiles(Constants.ImagesToLoad);
             UpdateName((ListItem)FlipView.SelectedItem);
+            ProgressRing.IsActive = false;
             FlipView.SelectionChanged += FlipView_SelectionChanged;
             Debug.WriteLine("Selected index is {0}", FlipView.SelectedIndex);
             ResetTimer();
+        }
 
+        private async void Clear_Click(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine("Clear images");
+            await ClearFiles();
+            
             // Regenerate tile updates
             await TileMaker.CreateTileUpdates(GetSettings().TileNumber, true);
         }
@@ -579,7 +609,7 @@ namespace Kozlowski.Slide
         /// <param name="e">Contains details about the property that was changed.</param>
         private async void Settings_Changed(object sender, PropertyChangedEventArgs e)
         {
-            Debug.WriteLine("Settings Changed");
+            Debug.WriteLine("Settings Changed in MainPage");
 
             // Interval
             if (e.PropertyName == Constants.SettingsName_Interval)
@@ -603,12 +633,7 @@ namespace Kozlowski.Slide
                 }
 
                 // Clear file list, as files are missing
-                ProgressRing.IsActive = true;
-                _fileList.Clear();
-                _fileList.AddRange(await TileMaker.GetImageList(GetSettings().RootFolder, GetSettings().IncludeSubfolders, GetSettings().Shuffle, GetSettings().StartingFilename));
-                await LoadMoreFiles(Constants.ImagesToLoad);
-                FlipView.SelectionChanged += FlipView_SelectionChanged;
-                ProgressRing.IsActive = false;
+                await ClearFiles();
             }
 
             // Start the timer if not paused

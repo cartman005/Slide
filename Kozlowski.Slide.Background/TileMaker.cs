@@ -43,7 +43,7 @@ namespace Kozlowski.Slide.Background
                 var queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileTypes);
                 
                 // This is causing an InvalidCastException by returning files that have been moved
-                //queryOptions.IndexerOption = IndexerOption.UseIndexerWhenAvailable;
+                queryOptions.IndexerOption = IndexerOption.UseIndexerWhenAvailable;
 
                 if (includeSubfolders)
                     queryOptions.FolderDepth = FolderDepth.Deep;
@@ -102,7 +102,7 @@ namespace Kozlowski.Slide.Background
         /// <param name="destinationFolder">The name of the folder in which to store the cached image file for the tile update.</param>
         /// <param name="tileWidth">The width of the cached tile image. This should be the width of the largest tile size.</param>
         /// <param name="tileHeight">The height of the cached tile image. This should be the height of the largest tile size.</param>
-        /// <returns></returns>
+        /// <returns>The created tile, or null if the operation failed.</returns>
         private static async Task<XmlDocument> CreateTileUpdate(StorageFile file, string destinationFolder, int tileWidth, int tileHeight)
         {
             try
@@ -114,7 +114,7 @@ namespace Kozlowski.Slide.Background
                 using (var fileStream = await file.OpenAsync(FileAccessMode.Read))
                 {
                     var decoder = await BitmapDecoder.CreateAsync(fileStream);
-                    var dimensions = TileMaker.GetDimensions((int)decoder.PixelWidth, (int)decoder.PixelHeight, tileWidth, tileHeight);
+                    var dimensions = TileMaker.GetDimensions((int)decoder.PixelWidth, (int)decoder.PixelHeight, tileWidth, tileHeight, false);
 
                     // Resize the image to 310x310 and save to Local AppData folder
                     var transform = new BitmapTransform() { ScaledWidth = (uint)dimensions.Width, ScaledHeight = (uint)dimensions.Height };
@@ -158,6 +158,7 @@ namespace Kozlowski.Slide.Background
                     }
 
                     encoder.SetPixelData(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Premultiplied, (uint)dimensions.Width, (uint)dimensions.Height, 96, 96, pixelData.DetachPixelData());
+                    //encoder.SetPixelData(BitmapPixelFormat.Rgba8, BitmapAlphaMode.Ignore, (uint)dimensions.Width, (uint)dimensions.Height, 96, 96, pixelData.DetachPixelData());
                     await encoder.FlushAsync();
 
                     // Create the tile update
@@ -244,12 +245,12 @@ namespace Kozlowski.Slide.Background
                 Debug.WriteLine("Tile updates folder not found: '{0}'", ex);
             }
 
-            var now = DateTime.Now;
-            var planUntil = now.AddMinutes(Constants.BackgroundTaskInterval);
-            var updateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0).AddMinutes(2); // updateTime must be in the future when the ScheduledTileNotification is created, so add a 2 minute buffer
-
             var fileList = new List<StorageFile>();
             fileList.AddRange(await GetImageList(sourceFolder, includeSubfolders, shuffle, startingFilename));
+
+            var now = DateTime.Now;
+            var planUntil = now.AddMinutes(Constants.BackgroundTaskInterval);
+            var updateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 5);
 
             // Create the first tile
             int index;
@@ -273,6 +274,7 @@ namespace Kozlowski.Slide.Background
 
                 // Create the rest of the tiles
                 Debug.WriteLine("Create updates from {0} to {1}", updateTime, planUntil);
+                TimeSpan offset = TimeSpan.FromSeconds(0); // Used to handle scheduling difference between the updateTime and present time, to account for processing time
                 for (var startPlanning = updateTime; startPlanning < planUntil; startPlanning = startPlanning.AddSeconds(seconds))
                 {
                     if (fileList.Count < 1)
@@ -296,10 +298,17 @@ namespace Kozlowski.Slide.Background
                         tile = await CreateTileUpdate(file, destinationFolder, (int)Constants.MaxTileSize.Width, (int)Constants.MaxTileSize.Width);
                         if (tile != null)
                         {
+                            // Account for processing time from loading files
+                            if (DateTime.Now >= startPlanning + offset)
+                            {
+                                offset = (DateTime.Now - startPlanning);
+                                Debug.WriteLine("Increasing the offset to {0}", offset.TotalSeconds);
+                            }
+                            
                             // Tile shouldn't expire less than 60 seconds after it is scheduled for timing reasons
                             //var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddSeconds((seconds * Constants.ConcurrentTiles) > 60 ? seconds * Constants.ConcurrentTiles : 60) };
-                            var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning));
-                            updater.AddToSchedule(scheduledNotification);
+                            var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning + offset));
+                            updater.AddToSchedule(scheduledNotification);      
                         }
                     }
                     else
@@ -370,35 +379,32 @@ namespace Kozlowski.Slide.Background
         /// <param name="originalHeight">The original height of the image to be resized.</param>
         /// <param name="targetWidth">The maximum width of the resized image.</param>
         /// <param name="targetHeight">The maximum height of the resized image.</param>
+        /// <param name="fitIntoFrame">Whether or not the entire image must fit into the target dimensions or one dimension can go outside the target.</param>
         /// <returns>The appropriate dimensions for the resized image within the target dimensions.</returns>
-        public static Size GetDimensions(int originalWidth, int originalHeight, int targetWidth, int targetHeight)
-        {
+        public static Size GetDimensions(int originalWidth, int originalHeight, int targetWidth, int targetHeight, bool fitIntoFrame)
+        {              
+            // Don't resize
+            if (originalWidth <= targetWidth && originalHeight <= targetHeight)
+                return new Size() { Width = originalWidth, Height = originalHeight };
+
+            // Resize
             var newDimensions = new Size();
+            double ratio = (double)originalHeight / originalWidth;
 
-            if (originalWidth >= targetWidth && originalHeight >= targetHeight)
+            // Landscape
+            if (fitIntoFrame || ratio <= 1)
             {
-                // Resize the image
-                double ratio = (double)originalHeight / originalWidth;
+                newDimensions.Width = targetWidth;
+                newDimensions.Height = (targetWidth * ratio);
+            }
 
-                // Landscape
-                if (ratio <= 1)
-                {
-                    newDimensions.Width = targetWidth;
-                    newDimensions.Height = (int)(targetWidth * ratio);
-                }
-                // Portrait
-                else
-                {
-                    newDimensions.Width = (int)(targetHeight * (1 / ratio));
-                    newDimensions.Height = targetHeight;
-                }
-            }
-            else
+            // Portrait
+            if ((fitIntoFrame && newDimensions.Height > targetHeight) || ratio > 1)
             {
-                // Don't resize
-                newDimensions.Width = originalWidth;
-                newDimensions.Height = originalHeight;
+                newDimensions.Width = (targetHeight * (1 / ratio));
+                newDimensions.Height = targetHeight;
             }
+            
             return newDimensions;
         }
     }

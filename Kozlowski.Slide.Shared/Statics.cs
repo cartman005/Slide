@@ -261,7 +261,7 @@ namespace Kozlowski.Slide.Shared
         /// <summary>
         /// Gets the decimal by which to scale the images when animating.
         /// </summary>
-        public static double ScaleDecimal { get { return 1.25; } }
+        public static double ScaleDecimal { get { return 0.25; } }
 
         /// <summary>
         /// Gets the number of tile updates that are allowed to overlap.

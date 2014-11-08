@@ -76,7 +76,7 @@ namespace Kozlowski.Slide
         /// <param name="e">Contains details on the property that was changed.</param>
         private async void Settings_Changed(object sender, PropertyChangedEventArgs e)
         {
-            Debug.WriteLine("Settings Changed");
+            Debug.WriteLine("Settings Changed in SettingsFlyout");
 
             if (e.PropertyName == Constants.SettingsName_Interval || e.PropertyName == Constants.SettingsName_ImagesLocation || e.PropertyName == Constants.SettingsName_Shuffle || e.PropertyName == Constants.SettingsName_Subfolders)
             {
@@ -120,7 +120,7 @@ namespace Kozlowski.Slide
             folderPicker.FileTypeFilter.Add(".jpeg");
             folderPicker.FileTypeFilter.Add(".png");
             folderPicker.FileTypeFilter.Add(".tiff");
-            folderPicker.SettingsIdentifier = "FolderPicker";
+            folderPicker.SettingsIdentifier = _tileId;
 
             var folder = await folderPicker.PickSingleFolderAsync();
 
@@ -156,7 +156,9 @@ namespace Kozlowski.Slide
                 var rect = GetElementRect((FrameworkElement)sender);
                 var placement = Windows.UI.Popups.Placement.Above;
 
-                await secondaryTile.RequestDeleteForSelectionAsync(rect, placement);
+                var unpinned = await secondaryTile.RequestDeleteForSelectionAsync(rect, placement);
+                if (unpinned)
+                    TogglePinButton(false);
 
                 // TODO Delete files and updates?
             }
@@ -184,7 +186,12 @@ namespace Kozlowski.Slide
                 var pinned = await secondaryTile.RequestCreateAsync();
 
                 if (pinned)
+                {
+                    Debug.WriteLine("Update UI");
+                    TogglePinButton(true);
+                    Debug.WriteLine("UI updated");
                     await TileMaker.CreateTileUpdates(_tileNumber, true);
+                }
             }
         }
 

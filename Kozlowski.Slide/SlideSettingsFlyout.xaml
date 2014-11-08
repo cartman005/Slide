@@ -16,18 +16,19 @@
             <TextBlock Text="Pictures Location" Style="{StaticResource TitleTextBlockStyle}"/>
             <StackPanel Margin="0,7,0,0" Orientation="Vertical">
                 <TextBox
-                    Header="Root Folder"
-                    HorizontalAlignment="Left"
-                    Width="250"
-                    IsEnabled="False"
-                    Text="{Binding FolderPath}"/>
+            		Header="Root Folder"
+            		HorizontalAlignment="Left"
+            		Width="250"
+            		IsEnabled="False"
+            		Text="{Binding FolderPath}"
+            		TextWrapping="Wrap"/>
                 <Button
-                    x:Name="Browse"
-                    Content="Browse"
-                    Click="BrowseForRootFolder"
-                    VerticalAlignment="Bottom"
-                    ToolTipService.ToolTip="Choose pictures source folder"
-                    TabIndex="0" />
+            		x:Name="Browse"
+            		Content="Browse"
+            		Click="BrowseForRootFolder"
+            		VerticalAlignment="Bottom"
+            		ToolTipService.ToolTip="Choose pictures source folder"
+            		TabIndex="0" />
             </StackPanel>
             <ToggleSwitch
                 Name="SubfoldersSwitch"
