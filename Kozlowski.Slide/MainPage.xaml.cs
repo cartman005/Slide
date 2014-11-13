@@ -13,6 +13,7 @@ using System.Xml;
 using Windows.ApplicationModel.Background;
 using Windows.Foundation;
 using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI.Core;
@@ -150,7 +151,30 @@ namespace Kozlowski.Slide
             }
 
             if (Items == null)
+            {
                 Items = new ObservableCollection<ListItem>();
+                
+                // Prompt for source folder
+                // Create the message dialog and set its content
+                var messageDialog = new MessageDialog("Choose folder to load images from.");
+
+                // Add commands and set their callbacks; both buttons use the same callback function instead of inline event handlers
+                messageDialog.Commands.Add(new UICommand(
+                    Constants.CHANGE_FOLDER,
+                    new UICommandInvokedHandler(this.CommandInvokedHandler)));
+                messageDialog.Commands.Add(new UICommand(
+                    Constants.CLOSE,
+                    new UICommandInvokedHandler(this.CommandInvokedHandler)));
+
+                // Set the command that will be invoked by default
+                messageDialog.DefaultCommandIndex = 0;
+
+                // Set the command to be invoked when escape is pressed
+                messageDialog.CancelCommandIndex = 1;
+
+                // Show the message dialog
+                await messageDialog.ShowAsync();
+            }
 
             FlipView.ItemsSource = Items;
             FlipView.SelectedIndex = initialIndex;
@@ -291,6 +315,9 @@ namespace Kozlowski.Slide
                         Constants.TRY_AGAIN,
                         new UICommandInvokedHandler(this.CommandInvokedHandler)));
                     messageDialog.Commands.Add(new UICommand(
+                        Constants.CHANGE_FOLDER,
+                        new UICommandInvokedHandler(this.CommandInvokedHandler)));
+                    messageDialog.Commands.Add(new UICommand(
                         Constants.CLOSE,
                         new UICommandInvokedHandler(this.CommandInvokedHandler)));
 
@@ -298,7 +325,7 @@ namespace Kozlowski.Slide
                     messageDialog.DefaultCommandIndex = 0;
 
                     // Set the command to be invoked when escape is pressed
-                    messageDialog.CancelCommandIndex = 1;
+                    messageDialog.CancelCommandIndex = 2;
 
                     // Show the message dialog
                     await messageDialog.ShowAsync();
@@ -517,7 +544,7 @@ namespace Kozlowski.Slide
         /// Handles the user response from Message Dialogs.
         /// </summary>
         /// <param name="command">Contains the label of the command that was chosen.</param>
-        private void CommandInvokedHandler(IUICommand command)
+        private async void CommandInvokedHandler(IUICommand command)
         {
             switch (command.Label)
             {
@@ -525,6 +552,27 @@ namespace Kozlowski.Slide
                     // Try loading next image again
                     MoveForward();
                     Play();
+                    break;
+
+                case Constants.CHANGE_FOLDER:
+                    // Allow the user to choose a different source folder
+                    var folderPicker = new FolderPicker();
+                    // TODO Factor this method out?
+                    folderPicker.ViewMode = PickerViewMode.List;
+                    folderPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+                    folderPicker.FileTypeFilter.Add(".bmp");
+                    folderPicker.FileTypeFilter.Add(".gif");
+                    folderPicker.FileTypeFilter.Add(".jpg");
+                    folderPicker.FileTypeFilter.Add(".jpeg");
+                    folderPicker.FileTypeFilter.Add(".png");
+                    folderPicker.FileTypeFilter.Add(".tiff");
+                    folderPicker.SettingsIdentifier = GetSettings().TileId;
+
+                    var folder = await folderPicker.PickSingleFolderAsync();
+
+                    if (folder != null)
+                        GetSettings().RootFolder = folder;
+
                     break;
 
                 case Constants.CLOSE:

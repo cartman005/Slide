@@ -198,6 +198,12 @@ namespace Kozlowski.Slide.Shared
         /// </summary>
         public const string TRY_AGAIN = "Try again";
 
+
+        /// <summary>
+        /// The change folder message.
+        /// </summary>
+        public const string CHANGE_FOLDER = "Change folder";
+
         /// <summary>
         /// The close message.
         /// </summary>
