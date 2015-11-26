@@ -33,11 +33,11 @@ namespace Kozlowski.Slide
             {
                 var filePath = (string)value;
                 var bitmapImage = new BitmapImage();
-// Hide await warning
+                // Hide await warning
 #pragma warning disable 4014
                 SetSource(bitmapImage, filePath);
 #pragma warning restore 4014
-                
+
                 return bitmapImage;
             }
             return DependencyProperty.UnsetValue;
@@ -67,7 +67,7 @@ namespace Kozlowski.Slide
         {
             BitmapDecoder decoder;
             var bounds = Window.Current.Bounds;
-            
+
             StorageFile imageFile = null;
             imageFile = await StorageFile.GetFileFromPathAsync(path);
             if (imageFile != null)
@@ -89,5 +89,5 @@ namespace Kozlowski.Slide
                 }
             }
         }
-    } 
+    }
 }

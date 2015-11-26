@@ -37,7 +37,7 @@ namespace Kozlowski.Slide
             this.InitializeComponent();
             this.Title = string.Format("Slide Tile {0}", _tileNumber);
 
-            switch(_tileNumber)
+            switch (_tileNumber)
             {
                 case Constants.TILE_1_NUMBER:
                     _tileId = Constants.Tile1Id;
@@ -179,10 +179,10 @@ namespace Kozlowski.Slide
                 secondaryTile.VisualElements.Square150x150Logo = new Uri("ms-appx:///Assets/Logo.png");
                 secondaryTile.VisualElements.Wide310x150Logo = new Uri("ms-appx:///Assets/Wide310x150Logo.png");
                 secondaryTile.VisualElements.Square310x310Logo = new Uri("ms-appx:///Assets/Square310x310Logo.png");
-                
+
                 // Doesn't make sense to have tile roam due to file path
                 secondaryTile.RoamingEnabled = false;
-                                
+
                 var pinned = await secondaryTile.RequestCreateAsync();
 
                 if (pinned)

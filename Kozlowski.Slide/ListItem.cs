@@ -29,7 +29,7 @@ namespace Kozlowski.Slide
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the display name of the image.
         /// </summary>

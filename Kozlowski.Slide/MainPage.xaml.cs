@@ -71,7 +71,7 @@ namespace Kozlowski.Slide
             this._navigationHelper = new NavigationHelper(this);
             this._navigationHelper.LoadState += NavigationHelper_LoadState;
             this._navigationHelper.SaveState += NavigationHelper_SaveState;
-            
+
             GetSettings().PropertyChanged += Settings_Changed;
 
             _timer = new DispatcherTimer();
@@ -153,7 +153,7 @@ namespace Kozlowski.Slide
             if (Items == null)
             {
                 Items = new ObservableCollection<ListItem>();
-                
+
                 // Prompt for source folder
                 // Create the message dialog and set its content
                 var messageDialog = new MessageDialog("Choose folder to load images from.");
@@ -276,7 +276,7 @@ namespace Kozlowski.Slide
                 _timer.Start();
             }
         }
-              
+
         private async Task LoadMoreFiles(int count)
         {
             Debug.WriteLine("Load more files");
@@ -345,7 +345,7 @@ namespace Kozlowski.Slide
             }
 
             return;
-        }   
+        }
 
         #region NavigationHelper registration
         /// The methods provided in this section are simply used to allow
@@ -419,7 +419,7 @@ namespace Kozlowski.Slide
             int y = rand.Next(0, 3);
 
             // Set X
-            switch(x)
+            switch (x)
             {
                 case 0:
                     point.X = 0.0;
@@ -454,8 +454,8 @@ namespace Kozlowski.Slide
             var rand = SingleRandom.Instance;
 
             int x = rand.Next(0, 2);
-            
-            switch(x)
+
+            switch (x)
             {
                 case 0:
                     // Zoom out
@@ -468,7 +468,7 @@ namespace Kozlowski.Slide
                     return 1.0;
             }
         }
-               
+
         /// <summary>
         /// Recursively locates all child Image elements of the given XAML parent object.
         /// This function was adapted from a post by Jerry Nixon on 05/08/2013 on StackOverflow here:
@@ -538,7 +538,7 @@ namespace Kozlowski.Slide
 
             MainAppBar.UpdateLayout();
         }
-   
+
         #region Event handlers
         /// <summary>
         /// Handles the user response from Message Dialogs.
@@ -636,7 +636,7 @@ namespace Kozlowski.Slide
         {
             Debug.WriteLine("Clear images");
             await ClearFiles();
-            
+
             // Regenerate tile updates
             await TileMaker.CreateTileUpdates(GetSettings().TileNumber, true);
         }
@@ -675,7 +675,7 @@ namespace Kozlowski.Slide
             {
                 // Clear images following the current index, leave images that were already passed
                 FlipView.SelectionChanged -= FlipView_SelectionChanged;
-                for (int i = FlipView.SelectedIndex + 1; i < Items.Count; )
+                for (int i = FlipView.SelectedIndex + 1; i < Items.Count;)
                 {
                     Items.RemoveAt(i);
                 }

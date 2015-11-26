@@ -41,7 +41,7 @@ namespace Kozlowski.Slide.Background
                 fileTypes.Add(".png");
                 fileTypes.Add(".tiff");
                 var queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileTypes);
-                
+
                 // This is causing an InvalidCastException by returning files that have been moved
                 queryOptions.IndexerOption = IndexerOption.UseIndexerWhenAvailable;
 
@@ -78,7 +78,7 @@ namespace Kozlowski.Slide.Background
                         Debug.WriteLine("Start with file {0}", startingFilename);
                         var tempList = new List<StorageFile>();
                         tempList.AddRange(fileList);
-                        
+
                         var startingIndex = tempList.FindIndex(x => x.Path.CompareTo(startingFilename) > 0);
 
                         if (startingIndex > 0)
@@ -304,11 +304,11 @@ namespace Kozlowski.Slide.Background
                                 offset = (DateTime.Now - startPlanning);
                                 Debug.WriteLine("Increasing the offset to {0}", offset.TotalSeconds);
                             }
-                            
+
                             // Tile shouldn't expire less than 60 seconds after it is scheduled for timing reasons
                             //var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddSeconds((seconds * Constants.ConcurrentTiles) > 60 ? seconds * Constants.ConcurrentTiles : 60) };
                             var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning + offset));
-                            updater.AddToSchedule(scheduledNotification);      
+                            updater.AddToSchedule(scheduledNotification);
                         }
                     }
                     else
@@ -382,7 +382,7 @@ namespace Kozlowski.Slide.Background
         /// <param name="fitIntoFrame">Whether or not the entire image must fit into the target dimensions or one dimension can go outside the target.</param>
         /// <returns>The appropriate dimensions for the resized image within the target dimensions.</returns>
         public static Size GetDimensions(int originalWidth, int originalHeight, int targetWidth, int targetHeight, bool fitIntoFrame)
-        {              
+        {
             // Don't resize
             if (originalWidth <= targetWidth && originalHeight <= targetHeight)
                 return new Size() { Width = originalWidth, Height = originalHeight };
@@ -404,7 +404,7 @@ namespace Kozlowski.Slide.Background
                 newDimensions.Width = (targetHeight * (1 / ratio));
                 newDimensions.Height = targetHeight;
             }
-            
+
             return newDimensions;
         }
     }

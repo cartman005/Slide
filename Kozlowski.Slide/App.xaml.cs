@@ -10,8 +10,6 @@ using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Background;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Windows.Storage;
-using Windows.UI.ApplicationSettings;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -92,7 +90,7 @@ namespace Kozlowski.Slide
                         throw new NotImplementedException();
                 }
             }
- 
+
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
@@ -134,9 +132,10 @@ namespace Kozlowski.Slide
         /// <param name="args">Unused parameter</param>
         protected override void OnWindowCreated(WindowCreatedEventArgs args)
         {
-            SettingsPane.GetForCurrentView().CommandsRequested += OnCommandsRequested;
+            // SettingsPane.GetForCurrentView().CommandsRequested += OnCommandsRequested;
         }
 
+        /*
         /// <summary>
         /// Creates a SettingsFlyout for each tile when the Charms bar is opened.
         /// Secondary tile options will not be shown if background access is not permitted.
@@ -151,7 +150,7 @@ namespace Kozlowski.Slide
             {
                 // Main tile
                 args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile1Number), (handler) => ShowSettingsFlyout(Constants.Tile1Number)));
-                
+
                 // Secondary tiles
                 args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile2Number), (handler) => ShowSettingsFlyout(Constants.Tile2Number)));
                 args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", FormatOptionsTitle(Constants.Tile3Number), (handler) => ShowSettingsFlyout(Constants.Tile3Number)));
@@ -161,6 +160,7 @@ namespace Kozlowski.Slide
                 // Main tile only
                 args.Request.ApplicationCommands.Add(new SettingsCommand("SlideOptions", "Options", (handler) => ShowSettingsFlyout(Constants.Tile1Number)));
         }
+        */
 
         /// <summary>
         /// Helper function to the title of the SettingsFlyout according to the tile's number and if it is the flyout used to control the current set of images in the full screen slide show.

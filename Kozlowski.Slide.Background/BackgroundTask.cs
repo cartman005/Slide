@@ -17,7 +17,7 @@ namespace Kozlowski.Slide.Background
         /// </summary>
         /// <param name="taskInstance">The instance of the background process.</param>
         public async void Run(IBackgroundTaskInstance taskInstance)
-        {        
+        {
             var defferal = taskInstance.GetDeferral();
             Debug.WriteLine("Started the background task");
 
@@ -38,6 +38,6 @@ namespace Kozlowski.Slide.Background
 
             Debug.WriteLine("Finished the background task");
             defferal.Complete();
-        }        
+        }
     }
 }
