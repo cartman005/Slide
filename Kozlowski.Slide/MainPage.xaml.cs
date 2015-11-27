@@ -154,6 +154,7 @@ namespace Kozlowski.Slide
             {
                 Items = new ObservableCollection<ListItem>();
 
+                /*
                 // Prompt for source folder
                 // Create the message dialog and set its content
                 var messageDialog = new MessageDialog("Choose folder to load images from.");
@@ -174,6 +175,7 @@ namespace Kozlowski.Slide
 
                 // Show the message dialog
                 await messageDialog.ShowAsync();
+                */
             }
 
             FlipView.ItemsSource = Items;
@@ -565,6 +567,7 @@ namespace Kozlowski.Slide
                     folderPicker.FileTypeFilter.Add(".jpg");
                     folderPicker.FileTypeFilter.Add(".jpeg");
                     folderPicker.FileTypeFilter.Add(".png");
+                    folderPicker.FileTypeFilter.Add(".tif");
                     folderPicker.FileTypeFilter.Add(".tiff");
                     folderPicker.SettingsIdentifier = GetSettings().TileId;
 
@@ -623,13 +626,20 @@ namespace Kozlowski.Slide
             ProgressRing.IsActive = true;
             FlipView.SelectionChanged -= FlipView_SelectionChanged;
             _fileList.Clear();
+            FlipView.SelectedIndex = 0;
+            Debug.WriteLine(Items.Count);
             Items.Clear();
-            await LoadMoreFiles(Constants.ImagesToLoad);
+            Debug.WriteLine(Items.Count);
+            await LoadMoreFiles(Constants.ImagesToLoad);            
             UpdateName((ListItem)FlipView.SelectedItem);
-            ProgressRing.IsActive = false;
             FlipView.SelectionChanged += FlipView_SelectionChanged;
+            ProgressRing.IsActive = false;
             Debug.WriteLine("Selected index is {0}", FlipView.SelectedIndex);
+            
             ResetTimer();
+
+            if (GetSettings().Animate)
+                Animate(GetSettings().Interval);
         }
 
         private async void Clear_Click(object sender, RoutedEventArgs e)

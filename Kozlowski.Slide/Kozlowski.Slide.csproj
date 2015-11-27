@@ -17,7 +17,11 @@
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PackageCertificateKeyFile>Slide_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>Kozlowski.Slide_StoreKey.pfx</PackageCertificateKeyFile>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+    <PackageCertificateThumbprint>0CDC2A7C078F9C9C0E507661EBDC33829DFF4B46</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
@@ -93,6 +97,7 @@
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Kozlowski.Slide_StoreKey.pfx" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
@@ -120,24 +125,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\RelayCommand.cs" />
-    <Content Include="Assets\SlideAppList-targetsize16.png" />
-    <Content Include="Assets\SlideAppList-targetsize24.png" />
-    <Content Include="Assets\SlideAppList-targetsize256.png" />
-    <Content Include="Assets\SlideAppList-targetsize48.png" />
     <Content Include="Assets\SlideAppList.scale-100.png" />
     <Content Include="Assets\SlideAppList.scale-125.png" />
     <Content Include="Assets\SlideAppList.scale-150.png" />
     <Content Include="Assets\SlideAppList.scale-200.png" />
     <Content Include="Assets\SlideAppList.scale-400.png" />
-    <Content Include="Assets\SlideAppList.targetsize-16.png" />
-    <Content Include="Assets\SlideAppList.targetsize-24.png" />
-    <Content Include="Assets\SlideAppList.targetsize-256.png" />
-    <Content Include="Assets\SlideAppList.targetsize-48.png" />
-    <Content Include="Assets\SlideBadgeLogo-scale100.png" />
-    <Content Include="Assets\SlideBadgeLogo-scale125.png" />
-    <Content Include="Assets\SlideBadgeLogo-scale150.png" />
-    <Content Include="Assets\SlideBadgeLogo-scale200.png" />
-    <Content Include="Assets\SlideBadgeLogo-scale400.png" />
+    <Content Include="Assets\SlideAppList.targetsize-16_altform-unplated.png" />
+    <Content Include="Assets\SlideAppList.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\SlideAppList.targetsize-256_altform-unplated.png" />
+    <Content Include="Assets\SlideAppList.targetsize-48_altform-unplated.png" />
     <Content Include="Assets\SlideBadgeLogo.scale-100.png" />
     <Content Include="Assets\SlideBadgeLogo.scale-125.png" />
     <Content Include="Assets\SlideBadgeLogo.scale-150.png" />
@@ -163,11 +159,6 @@
     <Content Include="Assets\SlideSplash.scale-150.png" />
     <Content Include="Assets\SlideSplash.scale-200.png" />
     <Content Include="Assets\SlideSplash.scale-400.png" />
-    <Content Include="Assets\SlideStoreLogo-scale100.png" />
-    <Content Include="Assets\SlideStoreLogo-scale125.png" />
-    <Content Include="Assets\SlideStoreLogo-scale150.png" />
-    <Content Include="Assets\SlideStoreLogo-scale200.png" />
-    <Content Include="Assets\SlideStoreLogo-scale400.png" />
     <Content Include="Assets\SlideStoreLogo.scale-100.png" />
     <Content Include="Assets\SlideStoreLogo.scale-125.png" />
     <Content Include="Assets\SlideStoreLogo.scale-150.png" />
@@ -178,8 +169,7 @@
     <Content Include="Assets\SlideWideTile.scale-150.png" />
     <Content Include="Assets\SlideWideTile.scale-200.png" />
     <Content Include="Assets\SlideWideTile.scale-400.png" />
-    <Content Include="Assets\SlidMedTile-scale125.png" />
-    <Content Include="Assets\SlidMedTile-scale150.png" />
+    <None Include="Package.StoreAssociation.xml" />
     <Content Include="Properties\Default.rd.xml" />
   </ItemGroup>
   <ItemGroup>

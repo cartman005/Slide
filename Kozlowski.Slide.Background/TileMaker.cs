@@ -39,6 +39,7 @@ namespace Kozlowski.Slide.Background
                 fileTypes.Add(".jpg");
                 fileTypes.Add(".jpeg");
                 fileTypes.Add(".png");
+                fileTypes.Add(".tif");
                 fileTypes.Add(".tiff");
                 var queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileTypes);
 
@@ -148,7 +149,8 @@ namespace Kozlowski.Slide.Background
                         case ".png":
                             encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, destinationStream);
                             break;
-
+                        
+                        case ".tif":
                         case ".tiff":
                             encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.TiffEncoderId, destinationStream);
                             break;
@@ -250,9 +252,9 @@ namespace Kozlowski.Slide.Background
 
             var now = DateTime.Now;
             var planUntil = now.AddMinutes(Constants.BackgroundTaskInterval);
-            var updateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 5);
+            var updateTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second);
 
-            // Create the first tile
+            // Create the first tile, immediately
             int index;
             StorageFile file;
 
@@ -272,7 +274,7 @@ namespace Kozlowski.Slide.Background
                     updater.Update(new TileNotification(tile));
                 }
 
-                // Create the rest of the tiles
+                // Create the rest of the tiles, scheduled for later
                 Debug.WriteLine("Create updates from {0} to {1}", updateTime, planUntil);
                 TimeSpan offset = TimeSpan.FromSeconds(0); // Used to handle scheduling difference between the updateTime and present time, to account for processing time
                 for (var startPlanning = updateTime; startPlanning < planUntil; startPlanning = startPlanning.AddSeconds(seconds))
@@ -301,13 +303,13 @@ namespace Kozlowski.Slide.Background
                             // Account for processing time from loading files
                             if (DateTime.Now >= startPlanning + offset)
                             {
-                                offset = (DateTime.Now - startPlanning);
+                                offset = (DateTime.Now - startPlanning) + TimeSpan.FromSeconds(5);
                                 Debug.WriteLine("Increasing the offset to {0}", offset.TotalSeconds);
                             }
 
                             // Tile shouldn't expire less than 60 seconds after it is scheduled for timing reasons
-                            //var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning)) { ExpirationTime = startPlanning.AddSeconds((seconds * Constants.ConcurrentTiles) > 60 ? seconds * Constants.ConcurrentTiles : 60) };
-                            var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning + offset));
+                            var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning + offset)) { ExpirationTime = startPlanning.AddSeconds((seconds * Constants.ConcurrentTiles) > 60 ? seconds * Constants.ConcurrentTiles : 60) };
+                            // var scheduledNotification = new ScheduledTileNotification(tile, new DateTimeOffset(startPlanning + offset));
                             updater.AddToSchedule(scheduledNotification);
                         }
                     }
